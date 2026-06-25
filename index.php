@@ -43,7 +43,8 @@ Session::start();
 
 // Request Routing Logic
 $method = $_SERVER['REQUEST_METHOD'];
-$requestUri = $_SERVER['REQUEST_URI'];
+// Decode percent-encoded URLs (e.g. %20 for spaces in folder name)
+$requestUri = urldecode($_SERVER['REQUEST_URI']);
 
 // Clean base path (useful when running in a subdirectory under XAMPP htdocs)
 $basePath = implode('/', array_slice(explode('/', $_SERVER['SCRIPT_NAME']), 0, -1)) . '/';
@@ -59,6 +60,11 @@ if (($pos = strpos($route, '?')) !== false) {
     $route = substr($route, 0, $pos);
 }
 $route = '/' . ltrim($route, '/');
+
+// If routing directly to index.php or directory index, treat as root '/'
+if ($route === '/index.php') {
+    $route = '/';
+}
 
 // Routing table
 $routes = [
