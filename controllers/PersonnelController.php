@@ -1,0 +1,176 @@
+<?php
+/**
+ * Personnel & Postings Controller
+ */
+
+class PersonnelController {
+
+    // List personnel (camp isolated for SNCO)
+    public function index() {
+        $personnelList = Personnel::getAll();
+        $camps = Camp::getAll(true);
+        
+        $pageTitle = 'Personnel Management';
+        include __DIR__ . '/../views/personnel/index.php';
+    }
+
+    // View specific personnel profile and history
+    public function view() {
+        try {
+            $serviceNumber = Security::sanitize($_GET['service_number'] ?? '');
+            if (empty($serviceNumber)) {
+                throw new Exception("Service number is required.");
+            }
+
+            $person = Personnel::getByServiceNumber($serviceNumber);
+            if (!$person) {
+                throw new Exception("Personnel profile not found.");
+            }
+
+            $postings = Posting::getHistory($serviceNumber);
+            
+            // Get camps for editing form
+            $camps = Camp::getAll(true);
+
+            $pageTitle = "Profile: " . htmlspecialchars($person['rank'] . ' ' . $person['full_name']);
+            include __DIR__ . '/../views/personnel/view.php';
+        } catch (Exception $e) {
+            Session::set('error_message', $e->getMessage());
+            Response::redirect('/personnel');
+        }
+    }
+
+    // Search personnel (JSON endpoint for AJAX auto-completion)
+    public function search() {
+        try {
+            $query = Security::sanitize($_GET['q'] ?? $_GET['query'] ?? '');
+            if (strlen($query) < 2) {
+                return Response::json([]);
+            }
+            $results = Personnel::search($query);
+            return Response::json($results);
+        } catch (Exception $e) {
+            return Response::json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    // View posting history of specific personnel
+    public function history() {
+        try {
+            $serviceNumber = Security::sanitize($_GET['service_number'] ?? '');
+            if (empty($serviceNumber)) {
+                throw new Exception("Service number is required.");
+            }
+
+            $person = Personnel::getByServiceNumber($serviceNumber);
+            if (!$person) {
+                throw new Exception("Personnel profile not found.");
+            }
+
+            $postings = Posting::getHistory($serviceNumber);
+
+            $pageTitle = "Posting History - " . htmlspecialchars($person['rank'] . ' ' . $person['full_name']);
+            include __DIR__ . '/../views/personnel/history.php';
+        } catch (Exception $e) {
+            Session::set('error_message', $e->getMessage());
+            Response::redirect('/personnel');
+        }
+    }
+
+    // List postings records
+    public function postingsIndex() {
+        $postings = Posting::getHistory();
+        $camps = Camp::getAll(true);
+
+        $pageTitle = 'Postings History';
+        include __DIR__ . '/../views/postings/index.php';
+    }
+
+    // Add new personnel profile
+    public function addPersonnel() {
+        try {
+            Security::verifyCsrf();
+
+            $serviceNumber = Security::sanitize($_POST['service_number'] ?? '');
+            $rank = Security::sanitize($_POST['rank'] ?? '');
+            $initials = Security::sanitize($_POST['initials'] ?? '');
+            $fullName = Security::sanitize($_POST['full_name'] ?? '');
+            $trade = Security::sanitize($_POST['trade'] ?? '');
+            $squadron = Security::sanitize($_POST['squadron'] ?? '');
+            $campId = (int)($_POST['camp_id'] ?? 0);
+            $contactNumber = Security::sanitize($_POST['contact_number'] ?? null);
+            $email = Security::sanitize($_POST['email'] ?? '');
+            $status = Security::sanitize($_POST['status'] ?? 'Active');
+
+            if (empty($serviceNumber) || empty($rank) || empty($fullName) || empty($campId) || empty($email)) {
+                throw new Exception("Missing required fields.");
+            }
+
+            Personnel::save($serviceNumber, $rank, $initials, $fullName, $trade, $squadron, $campId, $contactNumber, $email, $status, false);
+
+            Session::set('success_message', "Personnel profile $serviceNumber created successfully.");
+            Response::redirect('/personnel');
+        } catch (Exception $e) {
+            Session::set('error_message', $e->getMessage());
+            Response::redirect('/personnel');
+        }
+    }
+
+    // Edit personnel profile
+    public function editPersonnel() {
+        try {
+            Security::verifyCsrf();
+
+            $serviceNumber = Security::sanitize($_POST['service_number'] ?? '');
+            $rank = Security::sanitize($_POST['rank'] ?? '');
+            $initials = Security::sanitize($_POST['initials'] ?? '');
+            $fullName = Security::sanitize($_POST['full_name'] ?? '');
+            $trade = Security::sanitize($_POST['trade'] ?? '');
+            $squadron = Security::sanitize($_POST['squadron'] ?? '');
+            $campId = (int)($_POST['camp_id'] ?? 0);
+            $contactNumber = Security::sanitize($_POST['contact_number'] ?? null);
+            $email = Security::sanitize($_POST['email'] ?? '');
+            $status = Security::sanitize($_POST['status'] ?? 'Active');
+
+            if (empty($serviceNumber) || empty($rank) || empty($fullName) || empty($campId) || empty($email)) {
+                throw new Exception("Missing required fields.");
+            }
+
+            Personnel::save($serviceNumber, $rank, $initials, $fullName, $trade, $squadron, $campId, $contactNumber, $email, $status, true);
+
+            Session::set('success_message', "Personnel profile $serviceNumber updated successfully.");
+            Response::redirect('/personnel/view?service_number=' . urlencode($serviceNumber));
+        } catch (Exception $e) {
+            Session::set('error_message', $e->getMessage());
+            Response::redirect('/personnel');
+        }
+    }
+
+    // Create a camp transfer posting record
+    public function addPosting() {
+        try {
+            Security::verifyCsrf();
+
+            $serviceNumber = Security::sanitize($_POST['service_number'] ?? '');
+            $fromCampId = (int)($_POST['from_camp_id'] ?? 0);
+            $toCampId = (int)($_POST['to_camp_id'] ?? 0);
+            $effectiveDate = Security::sanitize($_POST['effective_date'] ?? date('Y-m-d'));
+
+            if (empty($serviceNumber) || empty($fromCampId) || empty($toCampId)) {
+                throw new Exception("Missing required transfer credentials.");
+            }
+
+            if ($fromCampId === $toCampId) {
+                throw new Exception("Transfer destination cannot be the same as the origin camp.");
+            }
+
+            Posting::addPostingRecord($serviceNumber, $fromCampId, $toCampId, $effectiveDate);
+
+            Session::set('success_message', "Transfer posting for $serviceNumber completed successfully.");
+            Response::redirect('/postings');
+        } catch (Exception $e) {
+            Session::set('error_message', $e->getMessage());
+            Response::redirect('/postings');
+        }
+    }
+}
