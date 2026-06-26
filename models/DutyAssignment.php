@@ -308,4 +308,19 @@ class DutyAssignment {
 
         return $conflicts;
     }
+
+    // Update assignment status
+    public static function updateStatus($assignmentId, $status, $supervisorRemarks = null) {
+        $db = Database::getInstance()->getConnection();
+        $stmt = $db->prepare("
+            UPDATE duty_assignments 
+            SET status = :status, supervisor_remarks = :remarks 
+            WHERE assignment_id = :id
+        ");
+        return $stmt->execute([
+            ':status' => $status,
+            ':remarks' => $supervisorRemarks,
+            ':id' => $assignmentId
+        ]);
+    }
 }

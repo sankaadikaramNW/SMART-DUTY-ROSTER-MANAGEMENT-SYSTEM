@@ -102,6 +102,7 @@ $routes = [
         '/postings/add' => 'PersonnelController@addPosting',
         '/rosters/save' => 'RosterController@saveRoster',
         '/rosters/action' => 'RosterController@submitApproval',
+        '/rosters/assignment-action' => 'RosterController@submitAssignmentApproval',
         '/camps/save' => 'AdminController@saveCamp',
         '/shifts/save' => 'AdminController@saveShift',
         '/duty-types/save' => 'AdminController@saveDutyType',

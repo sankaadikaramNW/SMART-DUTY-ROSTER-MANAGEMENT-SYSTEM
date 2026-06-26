@@ -48,6 +48,7 @@ include __DIR__ . '/../layout/header.php';
                                 <th>Duty Type</th>
                                 <th>Shift Watch</th>
                                 <th>Priority</th>
+                                <th>Status/Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -71,6 +72,42 @@ include __DIR__ . '/../layout/header.php';
                                         elseif ($prio === 'Medium') $pClass = 'bg-warning text-dark';
                                         ?>
                                         <span class="badge <?= $pClass ?> px-2 py-1 rounded small"><?= $prio ?></span>
+                                    </td>
+                                    <td>
+                                        <?php if ($roleName === 'OCPROVST' && $roster['status'] === 'Submitted' && $as['status'] === 'Pending'): ?>
+                                            <!-- Approve: direct hidden-input form submit -->
+                                            <form action="<?= BASE_URL ?>/rosters/assignment-action" method="POST" class="d-inline">
+                                                <?= Security::csrfField() ?>
+                                                <input type="hidden" name="assignment_id" value="<?= (int)$as['assignment_id'] ?>">
+                                                <input type="hidden" name="roster_id" value="<?= (int)$roster['roster_id'] ?>">
+                                                <input type="hidden" name="status" value="Approved">
+                                                <input type="hidden" name="supervisor_remarks" value="">
+                                                <button type="submit" class="btn btn-sm btn-success py-1 px-2 me-1" title="Approve">
+                                                    <i class="fas fa-check"></i> Approve
+                                                </button>
+                                            </form>
+                                            <!-- Reject: triggers Bootstrap modal -->
+                                            <button type="button"
+                                                class="btn btn-sm btn-danger py-1 px-2"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#rejectModal"
+                                                data-assignment-id="<?= (int)$as['assignment_id'] ?>"
+                                                data-roster-id="<?= (int)$roster['roster_id'] ?>"
+                                                data-person="<?= htmlspecialchars($as['rank'] . ' ' . $as['full_name']) ?>"
+                                                title="Reject">
+                                                <i class="fas fa-xmark"></i> Reject
+                                            </button>
+                                        <?php else: ?>
+                                            <?php 
+                                            $badgeClass = 'bg-secondary';
+                                            if ($as['status'] === 'Approved') $badgeClass = 'bg-success';
+                                            elseif ($as['status'] === 'Rejected') $badgeClass = 'bg-danger';
+                                            ?>
+                                            <span class="badge <?= $badgeClass ?> px-2.5 py-1 rounded small"><?= htmlspecialchars($as['status']) ?></span>
+                                            <?php if ($as['supervisor_remarks']): ?>
+                                                <div class="small text-muted mt-1 font-italic" style="font-size:0.75rem;">Reason: <?= htmlspecialchars($as['supervisor_remarks']) ?></div>
+                                            <?php endif; ?>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -100,95 +137,79 @@ include __DIR__ . '/../layout/header.php';
 
         <!-- OCPROVST Approval workflow action panel -->
         <?php if ($roleName === 'OCPROVST' && $roster['status'] === 'Submitted'): ?>
-            <div class="glass-card p-4 mb-4" style="border-left: 3px solid var(--accent-indigo);">
-                <h5 class="fw-bold mb-3 text-info"><i class="fas fa-stamp me-2"></i> Workflow Review</h5>
-                <form action="<?= BASE_URL ?>/rosters/action" method="POST" class="approval-form">
-                    <?= Security::csrfField() ?>
-                    <input type="hidden" name="roster_id" value="<?= $roster['roster_id'] ?>">
-                    
-                    <div class="mb-3">
-                        <label for="remarks" class="form-label text-secondary small">Decision Notes / Remarks</label>
-                        <textarea class="form-control form-control-custom" id="remarks" name="remarks" rows="3" placeholder="Provide reason if rejecting or returning..."></textarea>
+            <!-- Reject Modal for individual assignment actions -->
+            <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-danger text-white border-0">
+                            <h5 class="modal-title fw-bold" id="rejectModalLabel">
+                                <i class="fas fa-xmark-circle me-2"></i> Reject Duty Assignment
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="<?= BASE_URL ?>/rosters/assignment-action" method="POST" id="rejectForm">
+                            <?= Security::csrfField() ?>
+                            <input type="hidden" name="assignment_id" id="rejectAssignmentId" value="">
+                            <input type="hidden" name="roster_id" id="rejectRosterId" value="">
+                            <input type="hidden" name="status" value="Rejected">
+                            <div class="modal-body p-4">
+                                <div class="mb-3">
+                                    <p class="text-secondary mb-1">Rejecting assignment for:</p>
+                                    <p class="fw-bold text-dark" id="rejectPersonName"></p>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="rejectReasonInput" class="form-label fw-medium text-dark">
+                                        Reason for Rejection <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea
+                                        class="form-control"
+                                        id="rejectReasonInput"
+                                        name="supervisor_remarks"
+                                        rows="3"
+                                        placeholder="Provide a clear reason for rejection..."
+                                        required
+                                        minlength="3"></textarea>
+                                    <div class="form-text text-muted">This reason will be visible to the SNCO.</div>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0 pt-0">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="fas fa-times me-1"></i> Cancel
+                                </button>
+                                <button type="submit" class="btn btn-danger" id="confirmRejectBtn">
+                                    <i class="fas fa-xmark me-1"></i> Confirm Rejection
+                                </button>
+                            </div>
+                        </form>
                     </div>
-
-                    <div class="d-grid gap-2 d-sm-flex justify-content-sm-end mt-3">
-                        <button type="submit" name="action" value="Reject" class="btn btn-danger py-2 px-3">
-                            <i class="fas fa-xmark"></i> ✖ Reject
-                        </button>
-                        <button type="submit" name="action" value="Return" class="btn btn-warning py-2 px-3 text-dark fw-medium">
-                            <i class="fas fa-arrow-rotate-left"></i> ↩ Return Draft
-                        </button>
-                        <button type="submit" name="action" value="Approve" class="btn btn-success py-2 px-3">
-                            <i class="fas fa-check"></i> ✔ Approve
-                        </button>
-                    </div>
-                </form>
+                </div>
             </div>
-            
             <script>
             document.addEventListener('DOMContentLoaded', () => {
-                const form = document.querySelector('.approval-form');
-                if (form) {
-                    const remarksInput = form.querySelector('textarea[name="remarks"]');
-                    const btnReject = form.querySelector('button[value="Reject"]');
-                    const btnReturn = form.querySelector('button[value="Return"]');
-                    const btnApprove = form.querySelector('button[value="Approve"]');
-
-                    let selectedAction = '';
-
-                    btnReject?.addEventListener('click', () => { selectedAction = 'Reject'; });
-                    btnReturn?.addEventListener('click', () => { selectedAction = 'Return'; });
-                    btnApprove?.addEventListener('click', () => { selectedAction = 'Approve'; });
-
-                    form.addEventListener('submit', (e) => {
-                        if (selectedAction === 'Approve') {
-                            const confirmApprove = confirm('Approve this duty roster?');
-                            if (!confirmApprove) {
-                                e.preventDefault();
-                            }
-                        } else if (selectedAction === 'Reject') {
-                            let reason = remarksInput.value.trim();
-                            if (!reason) {
-                                reason = prompt('Reject this duty roster?\nReason (Required):');
-                                if (reason === null) {
-                                    e.preventDefault();
-                                    return;
-                                }
-                                reason = reason.trim();
-                                if (!reason) {
-                                    alert('Reason is required to reject the roster.');
-                                    e.preventDefault();
-                                    return;
-                                }
-                                remarksInput.value = reason;
-                            } else {
-                                const confirmReject = confirm('Reject this duty roster?');
-                                if (!confirmReject) {
-                                    e.preventDefault();
-                                }
-                            }
-                        } else if (selectedAction === 'Return') {
-                            let remarks = remarksInput.value.trim();
-                            if (!remarks) {
-                                remarks = prompt('Return this roster to Draft?\nRemarks (Required):');
-                                if (remarks === null) {
-                                    e.preventDefault();
-                                    return;
-                                }
-                                remarks = remarks.trim();
-                                if (!remarks) {
-                                    alert('Remarks are required to return the roster.');
-                                    e.preventDefault();
-                                    return;
-                                }
-                                remarksInput.value = remarks;
-                            } else {
-                                const confirmReturn = confirm('Return this roster to Draft?');
-                                if (!confirmReturn) {
-                                    e.preventDefault();
-                                }
-                            }
+                const rejectModal = document.getElementById('rejectModal');
+                if (rejectModal) {
+                    rejectModal.addEventListener('show.bs.modal', (event) => {
+                        const button = event.relatedTarget;
+                        document.getElementById('rejectAssignmentId').value = button.getAttribute('data-assignment-id');
+                        document.getElementById('rejectRosterId').value     = button.getAttribute('data-roster-id');
+                        document.getElementById('rejectPersonName').textContent = button.getAttribute('data-person');
+                        document.getElementById('rejectReasonInput').value  = '';
+                    });
+                }
+                const rejectForm = document.getElementById('rejectForm');
+                if (rejectForm) {
+                    rejectForm.addEventListener('submit', (e) => {
+                        const reason = document.getElementById('rejectReasonInput').value.trim();
+                        if (!reason) {
+                            e.preventDefault();
+                            document.getElementById('rejectReasonInput').classList.add('is-invalid');
+                            return;
                         }
+                        document.getElementById('confirmRejectBtn').disabled = true;
+                        document.getElementById('confirmRejectBtn').innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Rejecting...';
+                    });
+                    document.getElementById('rejectReasonInput').addEventListener('input', function() {
+                        if (this.value.trim()) this.classList.remove('is-invalid');
                     });
                 }
             });

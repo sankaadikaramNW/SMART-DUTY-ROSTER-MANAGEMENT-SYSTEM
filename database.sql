@@ -143,6 +143,7 @@ CREATE TABLE IF NOT EXISTS `duty_assignments` (
   `conflict_level` ENUM('Normal', 'Warning', 'Critical') DEFAULT 'Normal',
   `justification` TEXT NULL,
   `supervisor_remarks` TEXT NULL,
+  `status` ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (`roster_id`) REFERENCES `duty_rosters` (`roster_id`) ON DELETE CASCADE,

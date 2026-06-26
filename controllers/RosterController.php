@@ -384,4 +384,83 @@ class RosterController {
             Response::redirect('/rosters');
         }
     }
+
+    // Approve/Reject individual duty assignment
+    public function submitAssignmentApproval() {
+        // Determine redirect target for error handling
+        $referer = $_SERVER['HTTP_REFERER'] ?? '';
+        $errorRedirect = (strpos($referer, 'rosters/approve') !== false)
+            ? '/rosters/approve'
+            : '/rosters/view?id=' . (int)($_POST['roster_id'] ?? 0);
+
+        try {
+            Security::verifyCsrf();
+
+            $roleName = Session::get('role_name');
+            if ($roleName !== 'OCPROVST' && $roleName !== 'Administrator') {
+                throw new Exception("Unauthorized Access: Only OCPROVST can approve/reject duty assignments.");
+            }
+
+            $assignmentId      = (int)($_POST['assignment_id'] ?? 0);
+            $rosterId          = (int)($_POST['roster_id'] ?? 0);
+            $status            = Security::sanitize($_POST['status'] ?? '');
+            $supervisorRemarks = trim(Security::sanitize($_POST['supervisor_remarks'] ?? ''));
+
+            if (!$assignmentId || !$rosterId) {
+                throw new Exception("Invalid assignment or roster ID.");
+            }
+
+            if (!in_array($status, ['Approved', 'Rejected'])) {
+                throw new Exception("Invalid approval status: '{$status}'. Must be Approved or Rejected.");
+            }
+
+            if ($status === 'Rejected' && empty($supervisorRemarks)) {
+                throw new Exception("A reason is required when rejecting an assignment.");
+            }
+
+            $roster = Roster::getById($rosterId);
+            if (!$roster) {
+                throw new Exception("Roster not found.");
+            }
+            if ($roster['status'] !== 'Submitted') {
+                throw new Exception("Roster is not in Submitted status. Current status: '{$roster['status']}'.");
+            }
+
+            // Store null instead of empty string for approved remarks
+            $remarksToSave = !empty($supervisorRemarks) ? $supervisorRemarks : null;
+
+            // Update assignment status in the database
+            DutyAssignment::updateStatus($assignmentId, $status, $remarksToSave);
+
+            // Audit log
+            Logger::audit('Roster Management', "Assignment ID {$assignmentId} set to '{$status}' in Roster ID {$rosterId}. Remarks: {$supervisorRemarks}");
+
+            // Notify SNCO if assignment is rejected
+            if ($status === 'Rejected') {
+                $db   = Database::getInstance()->getConnection();
+                $stmt = $db->prepare("SELECT service_number FROM users WHERE user_id = ?");
+                $stmt->execute([$roster['created_by']]);
+                $sncoServiceNum = $stmt->fetchColumn();
+                if ($sncoServiceNum) {
+                    Notification::add(
+                        $sncoServiceNum,
+                        "Assignment Rejected in Roster",
+                        "An assignment was rejected by OCPROVST in roster '{$roster['roster_name']}'. Reason: {$supervisorRemarks}"
+                    );
+                }
+            }
+
+            Session::set('success_message', "Assignment has been {$status} successfully.");
+
+            // Redirect back to the page that submitted the form
+            if (strpos($referer, 'rosters/approve') !== false) {
+                Response::redirect('/rosters/approve');
+            } else {
+                Response::redirect('/rosters/view?id=' . $rosterId);
+            }
+        } catch (Exception $e) {
+            Session::set('error_message', $e->getMessage());
+            Response::redirect($errorRedirect);
+        }
+    }
 }

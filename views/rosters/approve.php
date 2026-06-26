@@ -60,19 +60,22 @@ include __DIR__ . '/../layout/header.php';
                             $key = $as['duty_date'] . '_' . $as['shift_id'] . '_' . $as['duty_type_id'];
                             if (!isset($groupedAssignments[$key])) {
                                 $groupedAssignments[$key] = [
-                                    'duty_date' => $as['duty_date'],
-                                    'shift_name' => $as['shift_name'],
-                                    'start_time' => $as['start_time'],
-                                    'end_time' => $as['end_time'],
+                                    'duty_date'      => $as['duty_date'],
+                                    'shift_name'     => $as['shift_name'],
+                                    'start_time'     => $as['start_time'],
+                                    'end_time'       => $as['end_time'],
                                     'duty_type_name' => $as['duty_type_name'],
-                                    'remarks' => $as['remarks'],
-                                    'personnel' => []
+                                    'remarks'        => $as['remarks'],
+                                    'personnel'      => []
                                 ];
                             }
                             $groupedAssignments[$key]['personnel'][] = [
+                                'assignment_id'  => $as['assignment_id'],
                                 'service_number' => $as['service_number'],
-                                'rank' => $as['rank'],
-                                'full_name' => $as['full_name']
+                                'rank'           => $as['rank'],
+                                'full_name'      => $as['full_name'],
+                                'status'         => $as['status'],
+                                'supervisor_remarks' => $as['supervisor_remarks'] ?? ''
                             ];
                         }
                         ?>
@@ -96,9 +99,50 @@ include __DIR__ . '/../layout/header.php';
                                                 <div class="text-secondary small fw-medium mb-1">Personnel Assigned:</div>
                                                 <ul class="list-unstyled mb-0">
                                                     <?php foreach ($group['personnel'] as $pers): ?>
-                                                        <li class="d-flex align-items-center gap-2 mb-1 p-1 bg-white bg-opacity-50 rounded">
-                                                            <span class="font-monospace small text-primary fw-bold"><?= htmlspecialchars($pers['service_number']) ?></span>
-                                                            <span class="text-dark small"><?= htmlspecialchars($pers['rank'] . ' ' . $pers['full_name']) ?></span>
+                                                        <li class="d-flex align-items-center justify-content-between gap-2 mb-2 p-2 bg-white bg-opacity-50 rounded">
+                                                            <div class="d-flex align-items-center gap-2">
+                                                                <span class="font-monospace small text-primary fw-bold"><?= htmlspecialchars($pers['service_number']) ?></span>
+                                                                <span class="text-dark small"><?= htmlspecialchars($pers['rank'] . ' ' . $pers['full_name']) ?></span>
+                                                            </div>
+                                                            <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                                                                <?php if ($pers['status'] === 'Pending'): ?>
+                                                                    <!-- Approve Button (direct form submit) -->
+                                                                    <form action="<?= BASE_URL ?>/rosters/assignment-action" method="POST" class="d-inline">
+                                                                        <?= Security::csrfField() ?>
+                                                                        <input type="hidden" name="assignment_id" value="<?= (int)$pers['assignment_id'] ?>">
+                                                                        <input type="hidden" name="roster_id" value="<?= (int)$r['roster_id'] ?>">
+                                                                        <input type="hidden" name="status" value="Approved">
+                                                                        <input type="hidden" name="supervisor_remarks" value="">
+                                                                        <button type="submit" class="btn btn-sm btn-success py-1 px-2" style="font-size: 0.72rem;" title="Approve this duty assignment">
+                                                                            <i class="fas fa-check"></i> Approve
+                                                                        </button>
+                                                                    </form>
+                                                                    <!-- Reject Button (triggers modal) -->
+                                                                    <button type="button"
+                                                                        class="btn btn-sm btn-danger py-1 px-2"
+                                                                        style="font-size: 0.72rem;"
+                                                                        title="Reject this duty assignment"
+                                                                        data-bs-toggle="modal"
+                                                                        data-bs-target="#rejectModal"
+                                                                        data-assignment-id="<?= (int)$pers['assignment_id'] ?>"
+                                                                        data-roster-id="<?= (int)$r['roster_id'] ?>"
+                                                                        data-person="<?= htmlspecialchars($pers['rank'] . ' ' . $pers['full_name']) ?>">
+                                                                        <i class="fas fa-xmark"></i> Reject
+                                                                    </button>
+                                                                <?php else: ?>
+                                                                    <?php 
+                                                                    $badgeClass = $pers['status'] === 'Approved' ? 'bg-success' : 'bg-danger';
+                                                                    ?>
+                                                                    <span class="badge <?= $badgeClass ?> px-2 py-1 rounded small" style="font-size: 0.65rem;">
+                                                                        <?= htmlspecialchars($pers['status']) ?>
+                                                                    </span>
+                                                                    <?php if ($pers['supervisor_remarks']): ?>
+                                                                        <span class="small text-muted" style="font-size: 0.7rem;" title="<?= htmlspecialchars($pers['supervisor_remarks']) ?>">
+                                                                            <i class="fas fa-comment-dots text-warning"></i>
+                                                                        </span>
+                                                                    <?php endif; ?>
+                                                                <?php endif; ?>
+                                                            </div>
                                                         </li>
                                                     <?php endforeach; ?>
                                                 </ul>
@@ -114,29 +158,6 @@ include __DIR__ . '/../layout/header.php';
                                 </div>
                             <?php endforeach; ?>
                         </div>
-
-                        <!-- Approval Actions Form -->
-                        <form action="<?= BASE_URL ?>/rosters/action" method="POST" class="approval-form mt-4 pt-4 border-top border-secondary border-opacity-10">
-                            <?= Security::csrfField() ?>
-                            <input type="hidden" name="roster_id" value="<?= $r['roster_id'] ?>">
-                            
-                            <div class="mb-4">
-                                <label for="remarks_<?= $r['roster_id'] ?>" class="form-label text-secondary small fw-medium">Workflow Review Remarks / Notes</label>
-                                <textarea class="form-control form-control-custom" id="remarks_<?= $r['roster_id'] ?>" name="remarks" rows="2" placeholder="Provide decision notes or reasons if rejecting or returning..."></textarea>
-                            </div>
-
-                            <div class="d-grid gap-2 d-sm-flex justify-content-sm-end">
-                                <button type="submit" name="action" value="Reject" class="btn btn-danger py-2.5 px-4">
-                                    <i class="fas fa-xmark me-1"></i> ✖ Reject
-                                </button>
-                                <button type="submit" name="action" value="Return" class="btn btn-warning py-2.5 px-4 text-dark fw-medium">
-                                    <i class="fas fa-arrow-rotate-left me-1"></i> ↩ Return to Draft
-                                </button>
-                                <button type="submit" name="action" value="Approve" class="btn btn-success py-2.5 px-4">
-                                    <i class="fas fa-check me-1"></i> ✔ Approve
-                                </button>
-                            </div>
-                        </form>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -144,74 +165,93 @@ include __DIR__ . '/../layout/header.php';
     </div>
 <?php endif; ?>
 
-<!-- Confirmation JS -->
+<!-- Reject Reason Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white border-0">
+                <h5 class="modal-title fw-bold" id="rejectModalLabel">
+                    <i class="fas fa-xmark-circle me-2"></i> Reject Duty Assignment
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="<?= BASE_URL ?>/rosters/assignment-action" method="POST" id="rejectForm">
+                <?= Security::csrfField() ?>
+                <input type="hidden" name="assignment_id" id="rejectAssignmentId" value="">
+                <input type="hidden" name="roster_id" id="rejectRosterId" value="">
+                <input type="hidden" name="status" value="Rejected">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <p class="text-secondary mb-1">Rejecting assignment for:</p>
+                        <p class="fw-bold text-dark" id="rejectPersonName"></p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="rejectReasonInput" class="form-label fw-medium text-dark">
+                            Reason for Rejection <span class="text-danger">*</span>
+                        </label>
+                        <textarea 
+                            class="form-control" 
+                            id="rejectReasonInput" 
+                            name="supervisor_remarks" 
+                            rows="3" 
+                            placeholder="Provide a clear reason for rejection..."
+                            required
+                            minlength="3"></textarea>
+                        <div class="form-text text-muted">This reason will be visible to the SNCO.</div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-danger" id="confirmRejectBtn">
+                        <i class="fas fa-xmark me-1"></i> Confirm Rejection
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const approvalForms = document.querySelectorAll('.approval-form');
-    approvalForms.forEach(form => {
-        const remarksInput = form.querySelector('textarea[name="remarks"]');
-        
-        const btnReject = form.querySelector('button[value="Reject"]');
-        const btnReturn = form.querySelector('button[value="Return"]');
-        const btnApprove = form.querySelector('button[value="Approve"]');
+    // Populate reject modal with assignment details
+    const rejectModal = document.getElementById('rejectModal');
+    if (rejectModal) {
+        rejectModal.addEventListener('show.bs.modal', (event) => {
+            const button = event.relatedTarget;
+            const assignmentId = button.getAttribute('data-assignment-id');
+            const rosterId     = button.getAttribute('data-roster-id');
+            const personName   = button.getAttribute('data-person');
 
-        let selectedAction = '';
+            document.getElementById('rejectAssignmentId').value = assignmentId;
+            document.getElementById('rejectRosterId').value     = rosterId;
+            document.getElementById('rejectPersonName').textContent = personName;
+            document.getElementById('rejectReasonInput').value  = '';
+        });
+    }
 
-        btnReject?.addEventListener('click', () => { selectedAction = 'Reject'; });
-        btnReturn?.addEventListener('click', () => { selectedAction = 'Return'; });
-        btnApprove?.addEventListener('click', () => { selectedAction = 'Approve'; });
+    // Validate reject form before submit
+    const rejectForm = document.getElementById('rejectForm');
+    if (rejectForm) {
+        rejectForm.addEventListener('submit', (e) => {
+            const reason = document.getElementById('rejectReasonInput').value.trim();
+            if (!reason) {
+                e.preventDefault();
+                document.getElementById('rejectReasonInput').classList.add('is-invalid');
+                return;
+            }
+            document.getElementById('rejectReasonInput').classList.remove('is-invalid');
+            document.getElementById('confirmRejectBtn').disabled = true;
+            document.getElementById('confirmRejectBtn').innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Rejecting...';
+        });
 
-        form.addEventListener('submit', (e) => {
-            if (selectedAction === 'Approve') {
-                const confirmApprove = confirm('Approve this duty roster?');
-                if (!confirmApprove) {
-                    e.preventDefault();
-                }
-            } else if (selectedAction === 'Reject') {
-                let reason = remarksInput.value.trim();
-                if (!reason) {
-                    reason = prompt('Reject this duty roster?\nReason (Required):');
-                    if (reason === null) {
-                        e.preventDefault();
-                        return;
-                    }
-                    reason = reason.trim();
-                    if (!reason) {
-                        alert('Reason is required to reject the roster.');
-                        e.preventDefault();
-                        return;
-                    }
-                    remarksInput.value = reason;
-                } else {
-                    const confirmReject = confirm('Reject this duty roster?');
-                    if (!confirmReject) {
-                        e.preventDefault();
-                    }
-                }
-            } else if (selectedAction === 'Return') {
-                let remarks = remarksInput.value.trim();
-                if (!remarks) {
-                    remarks = prompt('Return this roster to Draft?\nRemarks (Required):');
-                    if (remarks === null) {
-                        e.preventDefault();
-                        return;
-                    }
-                    remarks = remarks.trim();
-                    if (!remarks) {
-                        alert('Remarks are required to return the roster.');
-                        e.preventDefault();
-                        return;
-                    }
-                    remarksInput.value = remarks;
-                } else {
-                    const confirmReturn = confirm('Return this roster to Draft?');
-                    if (!confirmReturn) {
-                        e.preventDefault();
-                    }
-                }
+        document.getElementById('rejectReasonInput').addEventListener('input', function() {
+            if (this.value.trim()) {
+                this.classList.remove('is-invalid');
             }
         });
-    });
+    }
 });
 </script>
 
