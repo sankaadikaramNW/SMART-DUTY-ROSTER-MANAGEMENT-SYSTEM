@@ -9,10 +9,11 @@ class User {
     public static function authenticate($serviceNumber, $password) {
         $db = Database::getInstance()->getConnection();
         $stmt = $db->prepare("
-            SELECT u.*, r.role_name, p.camp_id, p.full_name, p.rank 
+            SELECT u.*, r.role_name, p.camp_id, p.full_name, rk.rank_name AS rank 
             FROM users u
             JOIN roles r ON u.role_id = r.role_id
             JOIN personnel p ON u.service_number = p.service_number
+            LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
             WHERE u.service_number = :service_number AND u.status = 'Active' AND p.status = 'Active'
         ");
         $stmt->execute([':service_number' => $serviceNumber]);
@@ -28,15 +29,33 @@ class User {
     public static function getAll() {
         $db = Database::getInstance()->getConnection();
         $stmt = $db->prepare("
-            SELECT u.*, r.role_name, p.full_name, p.rank, p.camp_id, c.camp_name 
+            SELECT u.*, r.role_name, p.full_name, rk.rank_name AS rank, p.camp_id, c.camp_name 
             FROM users u
             JOIN roles r ON u.role_id = r.role_id
             JOIN personnel p ON u.service_number = p.service_number
+            LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
             JOIN camps c ON p.camp_id = c.camp_id
             ORDER BY u.user_id ASC
         ");
         $stmt->execute();
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Retrieve dynamic profile details by joining users, personnel, ranks, and camps
+     */
+    public static function getProfileInfo($userId) {
+        $db = Database::getInstance()->getConnection();
+        $stmt = $db->prepare("
+            SELECT u.user_id, p.initials, p.full_name, rk.rank_short_name, rk.rank_name, c.camp_name
+            FROM users u
+            JOIN personnel p ON u.service_number = p.service_number
+            LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
+            LEFT JOIN camps c ON p.camp_id = c.camp_id
+            WHERE u.user_id = :user_id
+        ");
+        $stmt->execute([':user_id' => $userId]);
+        return $stmt->fetch();
     }
 
     // Retrieve single user ID

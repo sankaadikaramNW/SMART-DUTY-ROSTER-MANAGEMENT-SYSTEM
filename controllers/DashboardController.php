@@ -50,7 +50,7 @@ class DashboardController {
         // 5. TODAY'S DUTY CREW — all personnel assigned to duty today (for this camp)
         $todayCrewSql = "
             SELECT a.assignment_id, a.duty_date, a.status AS assignment_status,
-                   p.service_number, p.rank, p.initials, p.full_name,
+                   p.service_number, rk.rank_name AS rank, p.initials, p.full_name,
                    s.shift_name, s.start_time, s.end_time,
                    t.duty_type_name,
                    r.roster_name, r.roster_id,
@@ -59,6 +59,7 @@ class DashboardController {
             JOIN duty_rosters r    ON a.roster_id = r.roster_id
             JOIN camps c           ON r.camp_id   = c.camp_id
             JOIN personnel p       ON a.service_number = p.service_number
+            LEFT JOIN ranks rk     ON p.rank_id   = rk.rank_id
             JOIN shifts s          ON a.shift_id  = s.shift_id
             JOIN duty_types t      ON a.duty_type_id = t.duty_type_id
             WHERE a.duty_date = CURDATE()
@@ -69,7 +70,7 @@ class DashboardController {
             $todayCrewSql .= " AND r.camp_id = ?";
             $todayParams[] = $restrictedCampId;
         }
-        $todayCrewSql .= " ORDER BY s.start_time ASC, p.rank ASC";
+        $todayCrewSql .= " ORDER BY s.start_time ASC, rk.display_order ASC";
         $stmt = $db->prepare($todayCrewSql);
         $stmt->execute($todayParams);
         $todayCrew = $stmt->fetchAll();

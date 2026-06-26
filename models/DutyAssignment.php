@@ -9,11 +9,18 @@ class DutyAssignment {
     public static function getByRosterId($rosterId) {
         $db = Database::getInstance()->getConnection();
         $stmt = $db->prepare("
-            SELECT a.*, p.rank, p.initials, p.full_name, s.shift_name, s.start_time, s.end_time, t.duty_type_name
+            SELECT a.*, rk.rank_name AS rank, p.initials, p.full_name, p.trade, p.squadron, p.status AS personnel_status, c.camp_name,
+                   s.shift_name, s.start_time, s.end_time, t.duty_type_name,
+                   pos.effective_date AS posting_effective_date,
+                   pos_from.camp_name AS posting_from_camp_name
             FROM duty_assignments a
             JOIN personnel p ON a.service_number = p.service_number
+            LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
+            JOIN camps c ON p.camp_id = c.camp_id
             JOIN shifts s ON a.shift_id = s.shift_id
             JOIN duty_types t ON a.duty_type_id = t.duty_type_id
+            LEFT JOIN postings pos ON p.service_number = pos.service_number AND pos.status = 'Active'
+            LEFT JOIN camps pos_from ON pos.from_camp_id = pos_from.camp_id
             WHERE a.roster_id = :roster_id
             ORDER BY a.duty_date ASC, s.start_time ASC
         ");
@@ -64,11 +71,12 @@ class DutyAssignment {
     public static function getCalendarData($campId, $startDate, $endDate, $statusList = []) {
         $db = Database::getInstance()->getConnection();
         
-        $sql = "SELECT a.*, p.rank, p.initials, p.full_name, s.shift_name, s.start_time, s.end_time, t.duty_type_name, r.roster_name, r.status AS roster_status, c.camp_name
+        $sql = "SELECT a.*, rk.rank_name AS rank, p.initials, p.full_name, s.shift_name, s.start_time, s.end_time, t.duty_type_name, r.roster_name, r.status AS roster_status, c.camp_name
                 FROM duty_assignments a
                 JOIN duty_rosters r ON a.roster_id = r.roster_id
                 JOIN camps c ON r.camp_id = c.camp_id
                 JOIN personnel p ON a.service_number = p.service_number
+                LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
                 JOIN shifts s ON a.shift_id = s.shift_id
                 JOIN duty_types t ON a.duty_type_id = t.duty_type_id
                 WHERE r.camp_id = :camp_id AND a.duty_date BETWEEN :start_date AND :end_date";
@@ -123,7 +131,12 @@ class DutyAssignment {
         if (!empty($serviceNumbers)) {
             // Fetch personnel status and camp details
             $placeholders = implode(',', array_fill(0, count($serviceNumbers), '?'));
-            $stmt = $db->prepare("SELECT service_number, rank, full_name, status, camp_id FROM personnel WHERE service_number IN ($placeholders)");
+            $stmt = $db->prepare("
+                SELECT p.service_number, rk.rank_name AS rank, p.full_name, p.status, p.camp_id 
+                FROM personnel p
+                LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
+                WHERE p.service_number IN ($placeholders)
+            ");
             $stmt->execute($serviceNumbers);
             foreach ($stmt->fetchAll() as $p) {
                 $personnelMap[$p['service_number']] = $p;

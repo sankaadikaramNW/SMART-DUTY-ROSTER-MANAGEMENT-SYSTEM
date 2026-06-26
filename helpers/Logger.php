@@ -7,6 +7,16 @@ class Logger {
 
     // Log general debug/error entries to file fallback
     public static function log($message, $level = 'INFO') {
+        // Enforce log level filtering
+        $configuredLevel = defined('LOG_LEVEL') ? LOG_LEVEL : 'debug';
+        $levels = ['DEBUG' => 0, 'INFO' => 1, 'WARNING' => 2, 'ERROR' => 3];
+        $currentVal = $levels[strtoupper($level)] ?? 1;
+        $configuredVal = $levels[strtoupper($configuredLevel)] ?? 0;
+        
+        if ($currentVal < $configuredVal) {
+            return; // Skip logging below configured level
+        }
+
         $logDir = __DIR__ . '/../logs/';
         if (!file_exists($logDir)) {
             mkdir($logDir, 0755, true);

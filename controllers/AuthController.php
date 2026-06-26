@@ -8,6 +8,7 @@ class AuthController {
     // Render Login View
     public function loginView() {
         $pageTitle = 'Login';
+        $isLoginPage = true;
         include __DIR__ . '/../views/auth/login.php';
     }
 

@@ -6,6 +6,8 @@
             </footer>
         </div> <!-- Close main-layout -->
     </div> <!-- Close app-container -->
+    <?php elseif (isset($isLoginPage) && $isLoginPage): ?>
+        </div> <!-- Close login-wrapper -->
     <?php else: ?>
         </div> <!-- Close content-wrapper container -->
         

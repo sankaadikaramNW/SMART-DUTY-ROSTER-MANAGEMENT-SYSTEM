@@ -12,11 +12,12 @@ class Posting {
         // Enforce location restrictions for SNCO
         $restrictedCampId = LocationMiddleware::getCampConstraint();
         
-        $sql = "SELECT p.*, fc.camp_name as from_camp, tc.camp_name as to_camp, pers.full_name, pers.rank 
+        $sql = "SELECT p.*, fc.camp_name as from_camp, tc.camp_name as to_camp, pers.full_name, rk.rank_name AS rank 
                 FROM postings p 
                 JOIN camps fc ON p.from_camp_id = fc.camp_id 
                 JOIN camps tc ON p.to_camp_id = tc.camp_id 
                 JOIN personnel pers ON p.service_number = pers.service_number 
+                LEFT JOIN ranks rk ON pers.rank_id = rk.rank_id
                 WHERE 1=1";
         
         $params = [];

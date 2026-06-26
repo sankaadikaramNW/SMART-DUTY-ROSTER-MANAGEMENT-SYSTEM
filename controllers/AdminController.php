@@ -29,6 +29,14 @@ class AdminController {
         include __DIR__ . '/../views/admin/duty_types.php';
     }
 
+    // List Ranks
+    public function ranksIndex() {
+        $ranks = Rank::getAll();
+
+        $pageTitle = 'Manage Ranks';
+        include __DIR__ . '/../views/admin/ranks.php';
+    }
+
     // List User Accounts
     public function usersIndex() {
         $users = User::getAll();
@@ -135,6 +143,32 @@ class AdminController {
         } catch (Exception $e) {
             Session::set('error_message', $e->getMessage());
             Response::redirect('/duty-types');
+        }
+    }
+
+    // Create or Update Rank
+    public function saveRank() {
+        try {
+            Security::verifyCsrf();
+
+            $rankId = isset($_POST['rank_id']) && $_POST['rank_id'] !== '' ? (int)$_POST['rank_id'] : null;
+            $rankCode = strtoupper(Security::sanitize($_POST['rank_code'] ?? ''));
+            $rankName = Security::sanitize($_POST['rank_name'] ?? '');
+            $rankShortName = Security::sanitize($_POST['rank_short_name'] ?? '');
+            $displayOrder = isset($_POST['display_order']) ? (int)$_POST['display_order'] : 0;
+            $status = Security::sanitize($_POST['status'] ?? 'Active');
+
+            if (empty($rankCode) || empty($rankName) || empty($rankShortName)) {
+                throw new Exception("Rank code, name, and short name are required.");
+            }
+
+            Rank::save($rankId, $rankCode, $rankName, $rankShortName, $displayOrder, $status);
+
+            Session::set('success_message', "Rank '$rankName' saved successfully.");
+            Response::redirect('/ranks');
+        } catch (Exception $e) {
+            Session::set('error_message', $e->getMessage());
+            Response::redirect('/ranks');
         }
     }
 

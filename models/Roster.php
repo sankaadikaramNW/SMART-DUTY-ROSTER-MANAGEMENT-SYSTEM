@@ -14,11 +14,12 @@ class Roster {
             $campId = $restrictedCampId;
         }
 
-        $sql = "SELECT r.*, c.camp_name, p.full_name AS creator_name, p.rank AS creator_rank
+        $sql = "SELECT r.*, c.camp_name, p.full_name AS creator_name, rk.rank_name AS creator_rank
                 FROM duty_rosters r
                 JOIN camps c ON r.camp_id = c.camp_id
                 JOIN users u ON r.created_by = u.user_id
                 JOIN personnel p ON u.service_number = p.service_number
+                LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
                 WHERE 1=1";
         
         $params = [];
@@ -41,11 +42,12 @@ class Roster {
     public static function getById($id) {
         $db = Database::getInstance()->getConnection();
         $stmt = $db->prepare("
-            SELECT r.*, c.camp_name, p.full_name AS creator_name, p.rank AS creator_rank
+            SELECT r.*, c.camp_name, p.full_name AS creator_name, rk.rank_name AS creator_rank
             FROM duty_rosters r
             JOIN camps c ON r.camp_id = c.camp_id
             JOIN users u ON r.created_by = u.user_id
             JOIN personnel p ON u.service_number = p.service_number
+            LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
             WHERE r.roster_id = :roster_id
         ");
         $stmt->execute([':roster_id' => $id]);

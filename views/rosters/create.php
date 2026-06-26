@@ -89,14 +89,45 @@ include __DIR__ . '/../layout/header.php';
                                         </select>
                                     </td>
                                     <td>
-                                        <select class="form-select form-control-custom row-personnel" required>
-                                            <option value="">-- Select Personnel --</option>
-                                            <?php foreach ($personnel as $p): ?>
-                                                <option value="<?= $p['service_number'] ?>" <?= $as['service_number'] === $p['service_number'] ? 'selected' : '' ?>>
-                                                    <?= htmlspecialchars($p['rank'] . ' ' . $p['full_name']) ?> (<?= htmlspecialchars($p['service_number']) ?>)
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
+                                        <div class="position-relative personnel-search-wrapper">
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text bg-transparent border-secondary text-secondary"><i class="fas fa-search"></i></span>
+                                                <input type="text" class="form-control form-control-custom row-personnel-search-input" placeholder="Type Service Number..." autocomplete="off" value="<?= $as ? htmlspecialchars($as['rank'] . ' ' . $as['full_name'] . ' (' . $as['service_number'] . ')') : '' ?>" required>
+                                                <input type="hidden" class="row-personnel" value="<?= htmlspecialchars($as['service_number']) ?>">
+                                                <button type="button" class="btn btn-outline-secondary clear-search-btn" style="display: <?= $as ? 'block' : 'none' ?>;"><i class="fas fa-xmark"></i></button>
+                                            </div>
+                                            
+                                            <!-- Autocomplete suggestions dropdown -->
+                                            <div class="autocomplete-suggestions dropdown-menu w-100 bg-dark text-light border-secondary" style="display: none; max-height: 200px; overflow-y: auto; z-index: 1050; position: absolute;"></div>
+                                            
+                                            <!-- Loading spinner -->
+                                            <div class="search-spinner position-absolute end-0 top-0 mt-2 me-5 text-info" style="display: none; z-index: 1060;">
+                                                <i class="fas fa-spinner fa-spin"></i>
+                                            </div>
+
+                                            <!-- Selected Personnel Detailed Card -->
+                                            <div class="card personnel-card border-secondary bg-dark text-light mt-2 p-2 shadow-sm" style="display: <?= $as ? 'block' : 'none' ?>; text-align: left; font-size: 0.8rem;">
+                                                <div class="card-body p-1">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <h6 class="card-title mb-1 fw-bold text-info" style="font-size: 0.85rem;"><span class="card-rank-name"><?= $as ? htmlspecialchars($as['rank']) : '' ?></span> <span class="card-full-name"><?= $as ? htmlspecialchars($as['full_name']) : '' ?></span></h6>
+                                                        <?php
+                                                        $pStatus = $as['personnel_status'] ?? 'Active';
+                                                        $statusClass = 'bg-success';
+                                                        if ($pStatus === 'Leave') $statusClass = 'bg-warning';
+                                                        elseif ($pStatus === 'Temporary Duty') $statusClass = 'bg-info';
+                                                        ?>
+                                                        <span class="badge card-status <?= $statusClass ?> bg-opacity-25 border border-<?= substr($statusClass, 3) ?> border-opacity-25 text-<?= substr($statusClass, 3) === 'warning' ? 'warning' : (substr($statusClass, 3) === 'success' ? 'success' : 'info') ?> small rounded-pill px-2"><?= htmlspecialchars($pStatus) ?></span>
+                                                    </div>
+                                                    <div class="row g-1 small text-secondary mt-1">
+                                                        <div class="col-6"><strong>SN:</strong> <span class="card-service-number"><?= $as ? htmlspecialchars($as['service_number']) : '' ?></span></div>
+                                                        <div class="col-6"><strong>Trade:</strong> <span class="card-trade"><?= $as ? htmlspecialchars($as['trade'] ?? '') : '' ?></span></div>
+                                                        <div class="col-6"><strong>Squadron:</strong> <span class="card-squadron"><?= $as ? htmlspecialchars($as['squadron'] ?? '') : '' ?></span></div>
+                                                        <div class="col-6"><strong>Camp:</strong> <span class="card-camp"><?= $as ? htmlspecialchars($as['camp_name'] ?? '') : '' ?></span></div>
+                                                        <div class="col-12"><strong>Posting:</strong> <span class="card-posting"><?= $as ? htmlspecialchars($as['posting_from_camp_name'] ? "Moved from {$as['posting_from_camp_name']} effective {$as['posting_effective_date']}" : 'Active Posting') : 'Active Posting' ?></span></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <div class="row-conflict-info mt-1 small" style="display:none;"></div>
                                     </td>
                                     <td>
@@ -147,15 +178,6 @@ include __DIR__ . '/../layout/header.php';
     <?php endforeach; ?>
 </div>
 
-<div id="personnelTemplate" style="display:none;">
-    <option value="">-- Select Personnel --</option>
-    <?php foreach ($personnel as $p): ?>
-        <option value="<?= $p['service_number'] ?>">
-            <?= htmlspecialchars($p['rank'] . ' ' . $p['full_name']) ?> (<?= htmlspecialchars($p['service_number']) ?>)
-        </option>
-    <?php endforeach; ?>
-</div>
-
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const tbody = document.getElementById('assignmentsTbody');
@@ -167,7 +189,6 @@ include __DIR__ . '/../layout/header.php';
 
         const shiftsHtml = document.getElementById('shiftsTemplate').innerHTML;
         const dutyTypesHtml = document.getElementById('dutyTypesTemplate').innerHTML;
-        const personnelHtml = document.getElementById('personnelTemplate').innerHTML;
 
         let rowIndex = tbody.querySelectorAll('.assignment-row').length;
 
@@ -194,9 +215,35 @@ include __DIR__ . '/../layout/header.php';
                     </select>
                 </td>
                 <td>
-                    <select class="form-select form-control-custom row-personnel" required>
-                        ${personnelHtml}
-                    </select>
+                    <div class="position-relative personnel-search-wrapper">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-transparent border-secondary text-secondary"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control form-control-custom row-personnel-search-input" placeholder="Type Service Number..." autocomplete="off" required>
+                            <input type="hidden" class="row-personnel" value="">
+                            <button type="button" class="btn btn-outline-secondary clear-search-btn" style="display: none;"><i class="fas fa-xmark"></i></button>
+                        </div>
+                        <div class="autocomplete-suggestions dropdown-menu w-100 bg-dark text-light border-secondary" style="display: none; max-height: 200px; overflow-y: auto; z-index: 1050; position: absolute;"></div>
+                        
+                        <div class="search-spinner position-absolute end-0 top-0 mt-2 me-5 text-info" style="display: none; z-index: 1060;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+
+                        <div class="card personnel-card border-secondary bg-dark text-light mt-2 p-2 shadow-sm" style="display: none; text-align: left; font-size: 0.8rem;">
+                            <div class="card-body p-1">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <h6 class="card-title mb-1 fw-bold text-info" style="font-size: 0.85rem;"><span class="card-rank-name"></span> <span class="card-full-name"></span></h6>
+                                    <span class="badge card-status bg-success bg-opacity-25 border border-success border-opacity-25 text-success small rounded-pill px-2">Active</span>
+                                </div>
+                                <div class="row g-1 small text-secondary mt-1">
+                                    <div class="col-6"><strong>SN:</strong> <span class="card-service-number"></span></div>
+                                    <div class="col-6"><strong>Trade:</strong> <span class="card-trade"></span></div>
+                                    <div class="col-6"><strong>Squadron:</strong> <span class="card-squadron"></span></div>
+                                    <div class="col-6"><strong>Camp:</strong> <span class="card-camp"></span></div>
+                                    <div class="col-12"><strong>Posting:</strong> <span class="card-posting"></span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="row-conflict-info mt-1 small" style="display:none;"></div>
                 </td>
                 <td>
@@ -221,6 +268,7 @@ include __DIR__ . '/../layout/header.php';
             });
 
             tbody.appendChild(tr);
+            initAutocomplete(tr);
             rowIndex++;
         }
 
@@ -230,6 +278,11 @@ include __DIR__ . '/../layout/header.php';
             addRow();
             addRow();
         } else {
+            // Initialize autocomplete on existing rows
+            tbody.querySelectorAll('.assignment-row').forEach(row => {
+                initAutocomplete(row);
+            });
+
             // Re-bind remove buttons on existing rows
             tbody.querySelectorAll('.remove-row-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -412,6 +465,157 @@ include __DIR__ . '/../layout/header.php';
                 console.error("Save roster request error:", err);
             });
         });
+
+        // Initialize AJAX Auto-complete search on watch assignment row
+        function initAutocomplete(row) {
+            const wrapper = row.querySelector('.personnel-search-wrapper');
+            if (!wrapper) return;
+
+            const input = wrapper.querySelector('.row-personnel-search-input');
+            const hidden = wrapper.querySelector('.row-personnel');
+            const suggestions = wrapper.querySelector('.autocomplete-suggestions');
+            const spinner = wrapper.querySelector('.search-spinner');
+            const card = wrapper.querySelector('.personnel-card');
+            const clearBtn = wrapper.querySelector('.clear-search-btn');
+
+            let debounceTimer;
+
+            input.addEventListener('input', () => {
+                const query = input.value.trim();
+                clearTimeout(debounceTimer);
+
+                if (query.length < 2) {
+                    suggestions.innerHTML = '';
+                    suggestions.style.display = 'none';
+                    return;
+                }
+
+                spinner.style.display = 'block';
+
+                debounceTimer = setTimeout(() => {
+                    fetch(`${BASE_URL}/personnel/search?q=${encodeURIComponent(query)}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            spinner.style.display = 'none';
+                            suggestions.innerHTML = '';
+                            
+                            if (data && data.length > 0) {
+                                data.forEach(item => {
+                                    // Highlight matched text
+                                    const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
+                                    const highlightedSN = item.service_number.replace(regex, '<mark class="p-0 bg-warning text-dark">$1</mark>');
+                                    
+                                    const rankName = item.rank || '';
+                                    const rankShort = item.rank_short_name || '';
+                                    const initials = item.initials || '';
+                                    
+                                    // Extract last name for list display matching example: 123456 CPL S. Perera
+                                    const nameParts = item.full_name.trim().split(' ');
+                                    const lastName = nameParts[nameParts.length - 1];
+                                    const formattedName = `${rankShort} ${initials} ${lastName}`;
+                                    const highlightedName = formattedName.replace(regex, '<mark class="p-0 bg-warning text-dark">$1</mark>');
+                                    const highlightedTrade = item.trade.replace(regex, '<mark class="p-0 bg-warning text-dark">$1</mark>');
+
+                                    const btn = document.createElement('button');
+                                    btn.type = 'button';
+                                    btn.className = 'list-group-item list-group-item-action list-group-item-dark text-light border-secondary small py-2 text-start';
+                                    btn.innerHTML = `
+                                        <strong>${highlightedSN}</strong> ${highlightedName}<br>
+                                        <span class="text-secondary small">Trade: ${highlightedTrade}</span><br>
+                                        <span class="text-secondary small">Camp: ${item.camp_name}</span>
+                                    `;
+
+                                    btn.addEventListener('click', () => {
+                                        // Set input value
+                                        input.value = `${rankName} ${item.full_name} (${item.service_number})`;
+                                        hidden.value = item.service_number;
+                                        clearBtn.style.display = 'block';
+
+                                        // Update card details
+                                        card.querySelector('.card-rank-name').textContent = rankName;
+                                        card.querySelector('.card-full-name').textContent = item.full_name;
+                                        card.querySelector('.card-service-number').textContent = item.service_number;
+                                        card.querySelector('.card-trade').textContent = item.trade;
+                                        card.querySelector('.card-squadron').textContent = item.squadron;
+                                        card.querySelector('.card-camp').textContent = item.camp_name;
+                                        
+                                        // Setup posting info
+                                        let postingText = 'Active Posting';
+                                        if (item.posting_from_camp_name) {
+                                            postingText = `Moved from ${item.posting_from_camp_name} effective ${item.posting_effective_date}`;
+                                        }
+                                        card.querySelector('.card-posting').textContent = postingText;
+
+                                        // Status badge
+                                        const statusBadge = card.querySelector('.card-status');
+                                        statusBadge.textContent = item.status;
+                                        
+                                        // Remove previous classes
+                                        statusBadge.className = 'badge card-status small rounded-pill px-2';
+                                        if (item.status === 'Active') {
+                                            statusBadge.classList.add('bg-success', 'bg-opacity-25', 'border', 'border-success', 'text-success');
+                                        } else if (item.status === 'Leave') {
+                                            statusBadge.classList.add('bg-warning', 'bg-opacity-25', 'border', 'border-warning', 'text-warning');
+                                        } else {
+                                            statusBadge.classList.add('bg-info', 'bg-opacity-25', 'border', 'border-info', 'text-info');
+                                        }
+
+                                        card.style.display = 'block';
+                                        suggestions.innerHTML = '';
+                                        suggestions.style.display = 'none';
+                                        
+                                        // Clear conflict marking since personnel changed
+                                        row.style.borderLeft = 'none';
+                                        const infoDiv = row.querySelector('.row-conflict-info');
+                                        if (infoDiv) {
+                                            infoDiv.style.display = 'none';
+                                            infoDiv.innerHTML = '';
+                                        }
+                                    });
+
+                                    suggestions.appendChild(btn);
+                                });
+                                suggestions.style.display = 'block';
+                            } else {
+                                suggestions.innerHTML = '<div class="list-group-item list-group-item-dark text-muted border-secondary small py-2 text-center">No matches found</div>';
+                                suggestions.style.display = 'block';
+                            }
+                        })
+                        .catch(err => {
+                            spinner.style.display = 'none';
+                            console.error('Error searching:', err);
+                        });
+                }, 300);
+            });
+
+            // Bind click to clear search
+            clearBtn.addEventListener('click', () => {
+                input.value = '';
+                hidden.value = '';
+                clearBtn.style.display = 'none';
+                card.style.display = 'none';
+                suggestions.innerHTML = '';
+                suggestions.style.display = 'none';
+                
+                row.style.borderLeft = 'none';
+                const infoDiv = row.querySelector('.row-conflict-info');
+                if (infoDiv) {
+                    infoDiv.style.display = 'none';
+                    infoDiv.innerHTML = '';
+                }
+            });
+
+            // Close suggestions on clicking elsewhere
+            document.addEventListener('click', (e) => {
+                if (e.target !== input && e.target !== suggestions) {
+                    suggestions.style.display = 'none';
+                }
+            });
+        }
+
+        function escapeRegex(string) {
+            return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+        }
     });
 </script>
 

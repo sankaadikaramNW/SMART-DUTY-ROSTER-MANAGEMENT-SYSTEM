@@ -9,9 +9,10 @@ class AuditLog {
     public static function getAll($module = null, $user = null, $limit = 100, $offset = 0) {
         $db = Database::getInstance()->getConnection();
         
-        $sql = "SELECT a.*, p.full_name, p.rank 
+        $sql = "SELECT a.*, p.full_name, rk.rank_name AS rank 
                 FROM audit_logs a 
                 LEFT JOIN personnel p ON a.service_number = p.service_number 
+                LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
                 WHERE 1=1";
         
         $params = [];

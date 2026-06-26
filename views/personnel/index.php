@@ -20,7 +20,7 @@ include __DIR__ . '/../layout/header.php';
     <div class="mb-4">
         <div class="input-group">
             <span class="input-group-text bg-transparent border-secondary text-secondary"><i class="fas fa-search"></i></span>
-            <input type="text" id="personnelSearchInput" class="form-control form-control-custom" placeholder="Search by service number, full name or trade...">
+            <input type="text" id="personnelSearchInput" class="form-control form-control-custom" placeholder="Search by service no, rank, name or trade...">
         </div>
     </div>
 
@@ -97,16 +97,12 @@ include __DIR__ . '/../layout/header.php';
                             <input type="text" class="form-control form-control-custom" id="service_number" name="service_number" placeholder="e.g. 51837 or admin" pattern="[Aa][Dd][Mm][Ii][Nn]|\d+" title="Must be a valid Service Number (e.g., 51837 or admin)" required>
                         </div>
                         <div class="col-md-6">
-                            <label for="rank" class="form-label text-secondary small">Rank</label>
-                            <select class="form-select form-control-custom" id="rank" name="rank" required>
+                            <label for="rank_id" class="form-label text-secondary small">Rank</label>
+                            <select class="form-select form-control-custom" id="rank_id" name="rank_id" required>
                                 <option value="" disabled selected>Select Rank</option>
-                                <option value="Warrant Officer">Warrant Officer</option>
-                                <option value="Flight Sergeant">Flight Sergeant</option>
-                                <option value="Sergeant">Sergeant</option>
-                                <option value="Corporal">Corporal</option>
-                                <option value="LAC">LAC (Leading Aircraftman)</option>
-                                <option value="SAC">SAC (Senior Aircraftman)</option>
-                                <option value="Aircraftman">Aircraftman</option>
+                                <?php foreach ($ranks as $rk): ?>
+                                    <option value="<?= $rk['rank_id'] ?>"><?= htmlspecialchars($rk['rank_name']) ?> (<?= htmlspecialchars($rk['rank_short_name']) ?>)</option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
                         <div class="col-md-4">
@@ -171,25 +167,85 @@ include __DIR__ . '/../layout/header.php';
 <?php endif; ?>
 
 <script>
-    // Live Search Filter Logic
+    // AJAX Personnel Search
     document.addEventListener('DOMContentLoaded', () => {
         const searchInput = document.getElementById('personnelSearchInput');
-        const rows = document.querySelectorAll('.personnel-row');
+        const tbody = document.querySelector('#personnelTable tbody');
+
+        // Store the original HTML content to restore it when search is cleared
+        const originalHtml = tbody.innerHTML;
 
         searchInput.addEventListener('input', () => {
-            const query = searchInput.value.toLowerCase().trim();
-            rows.forEach(row => {
-                const service = row.querySelector('.search-cell-service').textContent.toLowerCase();
-                const name = row.querySelector('.search-cell-name').textContent.toLowerCase();
-                const trade = row.querySelector('.search-cell-trade').textContent.toLowerCase();
+            const query = searchInput.value.trim();
+            
+            // If empty, restore original table content
+            if (query.length === 0) {
+                tbody.innerHTML = originalHtml;
+                return;
+            }
 
-                if (service.includes(query) || name.includes(query) || trade.includes(query)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
+            // Perform fetch search
+            fetch(`${BASE_URL}/personnel/search?q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    tbody.innerHTML = '';
+                    if (data && data.length > 0) {
+                        data.forEach(p => {
+                            const tr = document.createElement('tr');
+                            tr.className = 'personnel-row';
+                            
+                            let badgeClass = 'bg-secondary';
+                            if (p.status === 'Active') badgeClass = 'bg-success';
+                            else if (p.status === 'Leave') badgeClass = 'bg-warning';
+                            else if (p.status === 'Temporary Duty') badgeClass = 'bg-info';
+                            
+                            const textBadgeClass = badgeClass.replace('bg-', 'text-');
+                            const borderBadgeClass = badgeClass.replace('bg-', 'border-');
+
+                            tr.innerHTML = `
+                                <td class="fw-bold search-cell-service">${escapeHtml(p.service_number)}</td>
+                                <td class="search-cell-name">
+                                    <span class="text-info fw-medium">${escapeHtml(p.rank)}</span> 
+                                    ${escapeHtml(p.initials + ' ' + p.full_name)}
+                                </td>
+                                <td class="search-cell-trade">${escapeHtml(p.trade)}</td>
+                                <td>${escapeHtml(p.squadron)}</td>
+                                <td>${escapeHtml(p.camp_name)}</td>
+                                <td>
+                                    <span class="badge ${badgeClass} bg-opacity-25 border ${borderBadgeClass} border-opacity-25 ${textBadgeClass} px-2 py-1 small rounded-pill">
+                                        ${escapeHtml(p.status)}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="${BASE_URL}/personnel/view?service_number=${encodeURIComponent(p.service_number)}" class="btn btn-sm btn-custom btn-custom-secondary py-1 px-2">
+                                        <i class="fas fa-user"></i> View Profile
+                                    </a>
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    } else {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="7" class="text-center text-secondary py-4">No matching personnel found.</td>
+                            </tr>
+                        `;
+                    }
+                })
+                .catch(err => {
+                    console.error('Error searching personnel:', err);
+                });
         });
+
+        function escapeHtml(string) {
+            if (!string) return '';
+            return String(string)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
     });
 </script>
 

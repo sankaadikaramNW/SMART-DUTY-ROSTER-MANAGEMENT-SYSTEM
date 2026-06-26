@@ -262,7 +262,7 @@ INSERT INTO `personnel` (`service_number`, `rank`, `initials`, `full_name`, `tra
 ('51843', 'LAC', 'W.S.', 'Wasanta Silva', 'Operations', 'No 3 Air Defence', 1, '+94744444443', 'wasanta@slaf.lk', 'Active'),
 -- Airmen in Ratmalana (Camp 2)
 ('51844', 'LAC', 'G.H.', 'Gayan Harsha', 'Aviation Tech', 'No 2 Squadron', 2, '+94755555551', 'gayan@slaf.lk', 'Active'),
-('51845', 'SAC', 'N.J.', 'Nipuna Jayasinghe', 'Provost Guard', 'No 2 Squadron', 2, '+94755555552', 'nipuna@slaf.lk', 'Active');
+('51845', 'LAC', 'N.J.', 'Nipuna Jayasinghe', 'Provost Guard', 'No 2 Squadron', 2, '+94755555552', 'nipuna@slaf.lk', 'Active');
 
 -- Seed Users (Passwords are all hashed using standard BCRYPT of 'Password@123')
 INSERT INTO `users` (`user_id`, `service_number`, `password_hash`, `role_id`, `status`) VALUES

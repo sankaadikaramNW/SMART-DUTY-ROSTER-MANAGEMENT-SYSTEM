@@ -9,6 +9,7 @@ class PersonnelController {
     public function index() {
         $personnelList = Personnel::getAll();
         $camps = Camp::getAll(true);
+        $ranks = Rank::getAll(true); // Fetch active ranks
         
         $pageTitle = 'Personnel Management';
         include __DIR__ . '/../views/personnel/index.php';
@@ -31,6 +32,7 @@ class PersonnelController {
             
             // Get camps for editing form
             $camps = Camp::getAll(true);
+            $ranks = Rank::getAll(true); // Fetch active ranks
 
             $pageTitle = "Profile: " . htmlspecialchars($person['rank'] . ' ' . $person['full_name']);
             include __DIR__ . '/../views/personnel/view.php';
@@ -92,7 +94,7 @@ class PersonnelController {
             Security::verifyCsrf();
 
             $serviceNumber = strtoupper(Security::sanitize($_POST['service_number'] ?? ''));
-            $rank = Security::sanitize($_POST['rank'] ?? '');
+            $rankId = (int)($_POST['rank_id'] ?? 0);
             $initials = Security::sanitize($_POST['initials'] ?? '');
             $fullName = Security::sanitize($_POST['full_name'] ?? '');
             $trade = Security::sanitize($_POST['trade'] ?? '');
@@ -102,7 +104,7 @@ class PersonnelController {
             $email = Security::sanitize($_POST['email'] ?? '');
             $status = Security::sanitize($_POST['status'] ?? 'Active');
 
-            if (empty($serviceNumber) || empty($rank) || empty($fullName) || empty($campId) || empty($email)) {
+            if (empty($serviceNumber) || !$rankId || empty($fullName) || empty($campId) || empty($email)) {
                 throw new Exception("Missing required fields.");
             }
 
@@ -110,7 +112,7 @@ class PersonnelController {
                 throw new Exception("Service Number must follow the format SLAF/BRANCH/NUMBER (e.g., SLAF/AIR/301).");
             }
 
-            Personnel::save($serviceNumber, $rank, $initials, $fullName, $trade, $squadron, $campId, $contactNumber, $email, $status, false);
+            Personnel::save($serviceNumber, $rankId, $initials, $fullName, $trade, $squadron, $campId, $contactNumber, $email, $status, false);
 
             Session::set('success_message', "Personnel profile $serviceNumber created successfully.");
             Response::redirect('/personnel');
@@ -126,7 +128,7 @@ class PersonnelController {
             Security::verifyCsrf();
 
             $serviceNumber = Security::sanitize($_POST['service_number'] ?? '');
-            $rank = Security::sanitize($_POST['rank'] ?? '');
+            $rankId = (int)($_POST['rank_id'] ?? 0);
             $initials = Security::sanitize($_POST['initials'] ?? '');
             $fullName = Security::sanitize($_POST['full_name'] ?? '');
             $trade = Security::sanitize($_POST['trade'] ?? '');
@@ -136,11 +138,11 @@ class PersonnelController {
             $email = Security::sanitize($_POST['email'] ?? '');
             $status = Security::sanitize($_POST['status'] ?? 'Active');
 
-            if (empty($serviceNumber) || empty($rank) || empty($fullName) || empty($campId) || empty($email)) {
+            if (empty($serviceNumber) || !$rankId || empty($fullName) || empty($campId) || empty($email)) {
                 throw new Exception("Missing required fields.");
             }
 
-            Personnel::save($serviceNumber, $rank, $initials, $fullName, $trade, $squadron, $campId, $contactNumber, $email, $status, true);
+            Personnel::save($serviceNumber, $rankId, $initials, $fullName, $trade, $squadron, $campId, $contactNumber, $email, $status, true);
 
             Session::set('success_message', "Personnel profile $serviceNumber updated successfully.");
             Response::redirect('/personnel/view?service_number=' . urlencode($serviceNumber));

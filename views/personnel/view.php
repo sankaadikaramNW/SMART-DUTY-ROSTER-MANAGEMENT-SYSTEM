@@ -127,15 +127,13 @@ include __DIR__ . '/../layout/header.php';
                             <input type="text" class="form-control form-control-custom bg-opacity-10 text-muted" value="<?= htmlspecialchars($person['service_number']) ?>" readonly disabled>
                         </div>
                         <div class="col-md-6">
-                            <label for="rank" class="form-label text-secondary small">Rank</label>
-                            <select class="form-select form-control-custom" id="rank" name="rank" required>
-                                <option value="Warrant Officer" <?= $person['rank'] === 'Warrant Officer' ? 'selected' : '' ?>>Warrant Officer</option>
-                                <option value="Flight Sergeant" <?= $person['rank'] === 'Flight Sergeant' ? 'selected' : '' ?>>Flight Sergeant</option>
-                                <option value="Sergeant" <?= $person['rank'] === 'Sergeant' ? 'selected' : '' ?>>Sergeant</option>
-                                <option value="Corporal" <?= $person['rank'] === 'Corporal' ? 'selected' : '' ?>>Corporal</option>
-                                <option value="LAC" <?= $person['rank'] === 'LAC' ? 'selected' : '' ?>>LAC (Leading Aircraftman)</option>
-                                <option value="SAC" <?= $person['rank'] === 'SAC' ? 'selected' : '' ?>>SAC (Senior Aircraftman)</option>
-                                <option value="Aircraftman" <?= $person['rank'] === 'Aircraftman' ? 'selected' : '' ?>>Aircraftman</option>
+                            <label for="rank_id" class="form-label text-secondary small">Rank</label>
+                            <select class="form-select form-control-custom" id="rank_id" name="rank_id" required>
+                                <?php foreach ($ranks as $rk): ?>
+                                    <option value="<?= $rk['rank_id'] ?>" <?= (int)$person['rank_id'] === (int)$rk['rank_id'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($rk['rank_name']) ?> (<?= htmlspecialchars($rk['rank_short_name']) ?>)
+                                    </option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
                         <div class="col-md-4">

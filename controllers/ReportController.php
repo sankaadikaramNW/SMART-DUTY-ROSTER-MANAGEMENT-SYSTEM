@@ -41,11 +41,12 @@ class ReportController {
 
             $db = Database::getInstance()->getConnection();
 
-            $sql = "SELECT a.*, p.rank, p.initials, p.full_name, p.trade, p.squadron, s.shift_name, s.start_time, s.end_time, t.duty_type_name, r.roster_name, c.camp_name
+            $sql = "SELECT a.*, rk.rank_name AS rank, p.initials, p.full_name, p.trade, p.squadron, s.shift_name, s.start_time, s.end_time, t.duty_type_name, r.roster_name, c.camp_name
                     FROM duty_assignments a
                     JOIN duty_rosters r ON a.roster_id = r.roster_id
                     JOIN camps c ON r.camp_id = c.camp_id
                     JOIN personnel p ON a.service_number = p.service_number
+                    LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
                     JOIN shifts s ON a.shift_id = s.shift_id
                     JOIN duty_types t ON a.duty_type_id = t.duty_type_id
                     WHERE r.camp_id = :camp_id AND a.duty_date BETWEEN :start_date AND :end_date";

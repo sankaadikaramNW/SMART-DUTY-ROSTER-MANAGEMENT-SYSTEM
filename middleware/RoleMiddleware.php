@@ -15,7 +15,7 @@ class RoleMiddleware {
                 '/dashboard', '/logout', 
                 '/personnel', '/personnel/view', '/personnel/search', '/personnel/history', '/personnel/add', '/personnel/edit', '/postings', '/postings/add',
                 '/rosters', '/rosters/create', '/rosters/save', '/rosters/view', '/rosters/approve', '/rosters/assignment-action', '/rosters/calendar', '/rosters/calendar-data', '/rosters/timeline', '/rosters/conflict-check', '/rosters/action',
-                '/camps', '/camps/save', '/shifts', '/shifts/save', '/duty-types', '/duty-types/save', '/users', '/users/save', '/users/status',
+                '/camps', '/camps/save', '/shifts', '/shifts/save', '/duty-types', '/duty-types/save', '/ranks', '/ranks/save', '/users', '/users/save', '/users/status',
                 '/reports', '/reports/generate', '/audit-logs', '/notifications', '/notifications/read'
             ],
             'OCPROVST' => [
