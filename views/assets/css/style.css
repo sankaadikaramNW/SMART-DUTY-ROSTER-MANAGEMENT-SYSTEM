@@ -616,3 +616,23 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 0.8rem;
     font-weight: 500;
 }
+
+/* Modal Theming Overrides for Light Theme */
+.modal-content.glass-card {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--glass-border) !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+
+.modal-header, .modal-footer {
+    border-color: var(--glass-border) !important;
+}
+
+.modal-title {
+    color: var(--text-primary) !important;
+}
+
+.modal-content.glass-card .btn-close-white {
+    filter: none !important;
+}
