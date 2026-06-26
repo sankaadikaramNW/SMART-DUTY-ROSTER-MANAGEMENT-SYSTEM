@@ -29,7 +29,7 @@ include __DIR__ . '/../layout/header.php';
                 <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-25 rounded-circle p-3 mb-3 text-info" style="width: 100px; height: 100px;">
                     <i class="fas fa-user-shield fs-1"></i>
                 </div>
-                <h4 class="fw-bold mb-1 text-light"><?= htmlspecialchars($person['initials'] . ' ' . $person['full_name']) ?></h4>
+                <h4 class="fw-bold mb-1 text-dark"><?= htmlspecialchars($person['initials'] . ' ' . $person['full_name']) ?></h4>
                 <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-25 px-3 py-1 rounded-pill mb-2"><?= htmlspecialchars($person['rank']) ?></span>
                 <div class="text-secondary small fw-bold"><i class="fas fa-hashtag"></i> SERVICE NO: <?= htmlspecialchars($person['service_number']) ?></div>
             </div>
@@ -37,11 +37,11 @@ include __DIR__ . '/../layout/header.php';
             <div class="profile-details-list">
                 <div class="d-flex justify-content-between mb-3">
                     <span class="text-secondary small">Trade / Specialty:</span>
-                    <span class="fw-medium text-light"><?= htmlspecialchars($person['trade']) ?></span>
+                    <span class="fw-medium text-dark"><?= htmlspecialchars($person['trade']) ?></span>
                 </div>
                 <div class="d-flex justify-content-between mb-3">
                     <span class="text-secondary small">Squadron:</span>
-                    <span class="fw-medium text-light"><?= htmlspecialchars($person['squadron']) ?></span>
+                    <span class="fw-medium text-dark"><?= htmlspecialchars($person['squadron']) ?></span>
                 </div>
                 <div class="d-flex justify-content-between mb-3">
                     <span class="text-secondary small">Active Camp / Base:</span>
@@ -49,11 +49,11 @@ include __DIR__ . '/../layout/header.php';
                 </div>
                 <div class="d-flex justify-content-between mb-3">
                     <span class="text-secondary small">Email:</span>
-                    <span class="fw-medium text-light"><?= htmlspecialchars($person['email']) ?></span>
+                    <span class="fw-medium text-dark"><?= htmlspecialchars($person['email']) ?></span>
                 </div>
                 <div class="d-flex justify-content-between mb-3">
                     <span class="text-secondary small">Contact Number:</span>
-                    <span class="fw-medium text-light"><?= htmlspecialchars($person['contact_number'] ?? 'N/A') ?></span>
+                    <span class="fw-medium text-dark"><?= htmlspecialchars($person['contact_number'] ?? 'N/A') ?></span>
                 </div>
                 <div class="d-flex justify-content-between">
                     <span class="text-secondary small">Status:</span>
@@ -64,7 +64,7 @@ include __DIR__ . '/../layout/header.php';
                     elseif ($status === 'Leave') $badgeClass = 'bg-warning';
                     elseif ($status === 'Temporary Duty') $badgeClass = 'bg-info';
                     ?>
-                    <span class="badge <?= $badgeClass ?> bg-opacity-25 border border-<?= substr($badgeClass, 3) ?> border-opacity-25 text-light px-2.5 py-1.5 rounded-pill fw-bold">
+                    <span class="badge <?= $badgeClass ?> bg-opacity-25 border border-<?= substr($badgeClass, 3) ?> border-opacity-25 text-<?= substr($badgeClass, 3) === 'success' ? 'success' : (substr($badgeClass, 3) === 'warning' ? 'warning' : 'info') ?> px-2.5 py-1.5 rounded-pill fw-bold">
                         <?= htmlspecialchars($status) ?>
                     </span>
                 </div>
@@ -88,7 +88,7 @@ include __DIR__ . '/../layout/header.php';
                                     <i class="fas fa-right-left text-secondary small me-1"></i> 
                                     <?= htmlspecialchars($pos['from_camp']) ?> &rarr; <?= htmlspecialchars($pos['to_camp']) ?>
                                 </h6>
-                                <span class="badge rounded-pill bg-<?= $pos['status'] === 'Active' ? 'success' : 'secondary' ?> bg-opacity-25 border border-<?= $pos['status'] === 'Active' ? 'success' : 'secondary' ?> border-opacity-25 text-light font-monospace small px-2">
+                                <span class="badge rounded-pill bg-<?= $pos['status'] === 'Active' ? 'success' : 'secondary' ?> bg-opacity-25 border border-<?= $pos['status'] === 'Active' ? 'success' : 'secondary' ?> border-opacity-25 text-<?= $pos['status'] === 'Active' ? 'success' : 'secondary' ?> font-monospace small px-2">
                                     <?= $pos['status'] ?>
                                 </span>
                             </div>
@@ -109,7 +109,7 @@ include __DIR__ . '/../layout/header.php';
 <!-- Edit Personnel Modal -->
 <?php if ($roleName === 'SNCO' || $roleName === 'Administrator'): ?>
 <div class="modal fade" id="editPersonnelModal" tabindex="-1" aria-labelledby="editPersonnelModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content glass-card bg-dark text-light border-secondary">
             <div class="modal-header border-secondary">
                 <h5 class="modal-title fw-bold" id="editPersonnelModalLabel"><i class="fas fa-user-pen me-2"></i> Edit Personnel Profile</h5>
@@ -190,7 +190,7 @@ include __DIR__ . '/../layout/header.php';
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer border-secondary">
+                <div class="modal-footer border-secondary d-flex flex-column-reverse flex-sm-row justify-content-sm-end gap-2">
                     <button type="button" class="btn btn-custom btn-custom-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-custom btn-custom-primary">Save Changes</button>
                 </div>
@@ -201,7 +201,7 @@ include __DIR__ . '/../layout/header.php';
 
 <!-- Assign Transfer Posting Modal -->
 <div class="modal fade" id="addPostingModal" tabindex="-1" aria-labelledby="addPostingModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content glass-card bg-dark text-light border-secondary">
             <div class="modal-header border-secondary">
                 <h5 class="modal-title fw-bold" id="addPostingModalLabel"><i class="fas fa-right-left me-2"></i> Register Camp Transfer</h5>
@@ -233,7 +233,7 @@ include __DIR__ . '/../layout/header.php';
                         <input type="date" class="form-control form-control-custom" id="effective_date" name="effective_date" value="<?= date('Y-m-d') ?>" required>
                     </div>
                 </div>
-                <div class="modal-footer border-secondary">
+                <div class="modal-footer border-secondary d-flex flex-column-reverse flex-sm-row justify-content-sm-end gap-2">
                     <button type="button" class="btn btn-custom btn-custom-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-custom btn-custom-primary">Complete Posting Transfer</button>
                 </div>

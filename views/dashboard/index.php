@@ -10,7 +10,7 @@ include __DIR__ . '/../layout/header.php';
 
 <!-- Stat Cards -->
 <div class="row g-4 mb-4">
-    <div class="col-md-3">
+    <div class="col-lg-3 col-md-6 col-12">
         <div class="glass-card stat-card p-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h6 class="text-secondary text-uppercase small mb-0">Total Base Personnel</h6>
@@ -20,7 +20,7 @@ include __DIR__ . '/../layout/header.php';
             <span class="small text-muted">Active Provost Guard</span>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-lg-3 col-md-6 col-12">
         <div class="glass-card stat-card p-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h6 class="text-secondary text-uppercase small mb-0">Duty Rosters</h6>
@@ -32,7 +32,7 @@ include __DIR__ . '/../layout/header.php';
     </div>
     
     <?php if ($roleName === 'OCPROVST' || $roleName === 'Administrator'): ?>
-    <div class="col-md-3">
+    <div class="col-lg-3 col-md-6 col-12">
         <div class="glass-card stat-card p-4" style="border-bottom-color: var(--accent-indigo);">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h6 class="text-secondary text-uppercase small mb-0">Pending Approvals</h6>
@@ -43,7 +43,7 @@ include __DIR__ . '/../layout/header.php';
         </div>
     </div>
     <?php else: ?>
-    <div class="col-md-3">
+    <div class="col-lg-3 col-md-6 col-12">
         <div class="glass-card stat-card p-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h6 class="text-secondary text-uppercase small mb-0">Active Shifts</h6>
@@ -55,7 +55,7 @@ include __DIR__ . '/../layout/header.php';
     </div>
     <?php endif; ?>
 
-    <div class="col-md-3">
+    <div class="col-lg-3 col-md-6 col-12">
         <div class="glass-card stat-card p-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h6 class="text-secondary text-uppercase small mb-0">Security State</h6>

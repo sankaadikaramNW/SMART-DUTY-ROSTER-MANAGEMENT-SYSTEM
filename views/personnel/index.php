@@ -82,7 +82,7 @@ include __DIR__ . '/../layout/header.php';
 <!-- Add Personnel Modal -->
 <?php if ($roleName === 'SNCO' || $roleName === 'Administrator'): ?>
 <div class="modal fade" id="addPersonnelModal" tabindex="-1" aria-labelledby="addPersonnelModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content glass-card bg-dark text-light border-secondary">
             <div class="modal-header border-secondary">
                 <h5 class="modal-title fw-bold" id="addPersonnelModalLabel"><i class="fas fa-user-plus me-2"></i> Register New Personnel Profile</h5>
@@ -94,7 +94,7 @@ include __DIR__ . '/../layout/header.php';
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label for="service_number" class="form-label text-secondary small">Service Number</label>
-                            <input type="text" class="form-control form-control-custom" id="service_number" name="service_number" placeholder="e.g. SLAF/AIR/301" required>
+                            <input type="text" class="form-control form-control-custom" id="service_number" name="service_number" placeholder="e.g. 51837 or admin" pattern="[Aa][Dd][Mm][Ii][Nn]|\d+" title="Must be a valid Service Number (e.g., 51837 or admin)" required>
                         </div>
                         <div class="col-md-6">
                             <label for="rank" class="form-label text-secondary small">Rank</label>
@@ -160,7 +160,7 @@ include __DIR__ . '/../layout/header.php';
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer border-secondary">
+                <div class="modal-footer border-secondary d-flex flex-column-reverse flex-sm-row justify-content-sm-end gap-2">
                     <button type="button" class="btn btn-custom btn-custom-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-custom btn-custom-primary">Register Profile</button>
                 </div>

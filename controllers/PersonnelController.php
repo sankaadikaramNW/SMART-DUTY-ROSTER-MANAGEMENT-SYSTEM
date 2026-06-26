@@ -91,7 +91,7 @@ class PersonnelController {
         try {
             Security::verifyCsrf();
 
-            $serviceNumber = Security::sanitize($_POST['service_number'] ?? '');
+            $serviceNumber = strtoupper(Security::sanitize($_POST['service_number'] ?? ''));
             $rank = Security::sanitize($_POST['rank'] ?? '');
             $initials = Security::sanitize($_POST['initials'] ?? '');
             $fullName = Security::sanitize($_POST['full_name'] ?? '');
@@ -104,6 +104,10 @@ class PersonnelController {
 
             if (empty($serviceNumber) || empty($rank) || empty($fullName) || empty($campId) || empty($email)) {
                 throw new Exception("Missing required fields.");
+            }
+
+            if (!Security::validateServiceNumber($serviceNumber)) {
+                throw new Exception("Service Number must follow the format SLAF/BRANCH/NUMBER (e.g., SLAF/AIR/301).");
             }
 
             Personnel::save($serviceNumber, $rank, $initials, $fullName, $trade, $squadron, $campId, $contactNumber, $email, $status, false);

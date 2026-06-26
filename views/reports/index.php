@@ -68,7 +68,7 @@ include __DIR__ . '/../layout/header.php';
                     <!-- Optional Airman Service Number -->
                     <div class="col-12">
                         <label for="service_number" class="form-label text-secondary small">Filter by Specific Service Number (Optional)</label>
-                        <input type="text" class="form-control form-control-custom" id="service_number" name="service_number" placeholder="e.g. SLAF/AIR/301">
+                        <input type="text" class="form-control form-control-custom" id="service_number" name="service_number" placeholder="e.g. 51837 or admin">
                     </div>
 
                     <!-- Export Type Selection -->
@@ -78,13 +78,13 @@ include __DIR__ . '/../layout/header.php';
                         <div class="d-flex gap-4">
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="export_type" id="export_print" value="print" checked>
-                                <label class="form-check-label text-light fw-medium" for="export_print">
+                                <label class="form-check-label text-dark fw-medium" for="export_print">
                                     <i class="fas fa-file-pdf text-danger me-1"></i> Print / PDF Layout
                                 </label>
                             </div>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="export_type" id="export_csv" value="csv">
-                                <label class="form-check-label text-light fw-medium" for="export_csv">
+                                <label class="form-check-label text-dark fw-medium" for="export_csv">
                                     <i class="fas fa-file-excel text-success me-1"></i> Download CSV Data Sheet
                                 </label>
                             </div>
@@ -92,8 +92,11 @@ include __DIR__ . '/../layout/header.php';
                     </div>
                 </div>
 
-                <div class="d-grid mt-5">
-                    <button type="submit" class="btn btn-custom btn-custom-primary justify-content-center py-3">
+                <div class="d-flex flex-column-reverse flex-sm-row justify-content-sm-end gap-2 mt-5 border-top pt-4 border-secondary border-opacity-20">
+                    <button type="reset" class="btn btn-custom btn-custom-secondary">
+                        <i class="fas fa-rotate"></i> Reset
+                    </button>
+                    <button type="submit" class="btn btn-custom btn-custom-primary">
                         <i class="fas fa-file-arrow-down"></i> Generate & Export Report
                     </button>
                 </div>

@@ -123,7 +123,7 @@ include __DIR__ . '/../layout/header.php';
                                 <div class="col">
                                     <div class="glass-card p-3 d-flex align-items-center justify-content-between">
                                         <div>
-                                            <div class="fw-bold text-light">${as.rank} ${as.full_name}</div>
+                                            <div class="fw-bold text-dark">${as.rank} ${as.full_name}</div>
                                             <div class="text-secondary font-monospace" style="font-size: 0.8rem;"><i class="fas fa-hashtag"></i> ${as.service_number}</div>
                                             <div class="small text-muted mt-2"><i class="fas fa-clock"></i> ${as.shift_name} (${as.start_time.substring(0, 5)} - ${as.end_time.substring(0, 5)})</div>
                                         </div>

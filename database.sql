@@ -248,41 +248,41 @@ INSERT INTO `duty_types` (`duty_type_id`, `duty_type_name`, `description`, `stat
 -- Seed Personnel (Admin, OCPROVST, SNCO, and Airmen for different bases)
 INSERT INTO `personnel` (`service_number`, `rank`, `initials`, `full_name`, `trade`, `squadron`, `camp_id`, `contact_number`, `email`, `status`) VALUES
 -- Administrator
-('SLAF/ADMIN/01', 'Warrant Officer', 'A.B.', 'John Smith', 'Admin General', 'Admin HQ', 1, '+94711111111', 'admin@slaf.lk', 'Active'),
+('admin', 'Warrant Officer', 'A.B.', 'John Smith', 'Admin General', 'Admin HQ', 1, '+94711111111', 'admin@slaf.lk', 'Active'),
 -- OCPROVST
-('SLAF/PROV/100', 'Squadron Leader', 'K.L.', 'Kamal Perera', 'Provost Officer', 'Provost Squadron', 1, '+94722222222', 'provost@slaf.lk', 'Active'),
+('51838', 'Squadron Leader', 'K.L.', 'Kamal Perera', 'Provost Officer', 'Provost Squadron', 1, '+94722222222', 'provost@slaf.lk', 'Active'),
 -- SNCO for Ekala
-('SLAF/SNCO/201', 'Flight Sergeant', 'M.R.', 'Rohan Fernando', 'Operations', 'No 3 Air Defence', 1, '+94733333333', 'snco.ekala@slaf.lk', 'Active'),
+('51839', 'Flight Sergeant', 'M.R.', 'Rohan Fernando', 'Operations', 'No 3 Air Defence', 1, '+94733333333', 'snco.ekala@slaf.lk', 'Active'),
 -- SNCO for Ratmalana
-('SLAF/SNCO/202', 'Flight Sergeant', 'A.P.', 'Anura Priyantha', 'Operations', 'No 2 Squadron', 2, '+94733333334', 'snco.ratmalana@slaf.lk', 'Active'),
+('51840', 'Flight Sergeant', 'A.P.', 'Anura Priyantha', 'Operations', 'No 2 Squadron', 2, '+94733333334', 'snco.ratmalana@slaf.lk', 'Active'),
 -- Airmen in Ekala (Camp 1)
-('SLAF/AIR/301', 'Corporal', 'S.T.', 'Saman Thilakarathne', 'Provost Guard', 'Provost Squadron', 1, '+94744444441', 'saman@slaf.lk', 'Active'),
-('SLAF/AIR/302', 'LAC', 'D.M.', 'Dinesh Madushanka', 'Operations', 'No 3 Air Defence', 1, '+94744444442', 'dinesh@slaf.lk', 'Active'),
-('SLAF/AIR/303', 'LAC', 'W.S.', 'Wasanta Silva', 'Operations', 'No 3 Air Defence', 1, '+94744444443', 'wasanta@slaf.lk', 'Active'),
+('51841', 'Corporal', 'S.T.', 'Saman Thilakarathne', 'Provost Guard', 'Provost Squadron', 1, '+94744444441', 'saman@slaf.lk', 'Active'),
+('51842', 'LAC', 'D.M.', 'Dinesh Madushanka', 'Operations', 'No 3 Air Defence', 1, '+94744444442', 'dinesh@slaf.lk', 'Active'),
+('51843', 'LAC', 'W.S.', 'Wasanta Silva', 'Operations', 'No 3 Air Defence', 1, '+94744444443', 'wasanta@slaf.lk', 'Active'),
 -- Airmen in Ratmalana (Camp 2)
-('SLAF/AIR/401', 'LAC', 'G.H.', 'Gayan Harsha', 'Aviation Tech', 'No 2 Squadron', 2, '+94755555551', 'gayan@slaf.lk', 'Active'),
-('SLAF/AIR/402', 'SAC', 'N.J.', 'Nipuna Jayasinghe', 'Provost Guard', 'No 2 Squadron', 2, '+94755555552', 'nipuna@slaf.lk', 'Active');
+('51844', 'LAC', 'G.H.', 'Gayan Harsha', 'Aviation Tech', 'No 2 Squadron', 2, '+94755555551', 'gayan@slaf.lk', 'Active'),
+('51845', 'SAC', 'N.J.', 'Nipuna Jayasinghe', 'Provost Guard', 'No 2 Squadron', 2, '+94755555552', 'nipuna@slaf.lk', 'Active');
 
 -- Seed Users (Passwords are all hashed using standard BCRYPT of 'Password@123')
 INSERT INTO `users` (`user_id`, `service_number`, `password_hash`, `role_id`, `status`) VALUES
-(1, 'SLAF/ADMIN/01', '$2y$10$T1K7.g/6R.w7P/vjW/QzI.wH0/5bL.hU6y8PZcSmVz7x6Q8mQn.I2', 1, 'Active'),
-(2, 'SLAF/PROV/100', '$2y$10$T1K7.g/6R.w7P/vjW/QzI.wH0/5bL.hU6y8PZcSmVz7x6Q8mQn.I2', 2, 'Active'),
-(3, 'SLAF/SNCO/201', '$2y$10$T1K7.g/6R.w7P/vjW/QzI.wH0/5bL.hU6y8PZcSmVz7x6Q8mQn.I2', 3, 'Active'),
-(4, 'SLAF/SNCO/202', '$2y$10$T1K7.g/6R.w7P/vjW/QzI.wH0/5bL.hU6y8PZcSmVz7x6Q8mQn.I2', 3, 'Active'),
-(5, 'SLAF/AIR/301', '$2y$10$T1K7.g/6R.w7P/vjW/QzI.wH0/5bL.hU6y8PZcSmVz7x6Q8mQn.I2', 4, 'Active'),
-(6, 'SLAF/AIR/302', '$2y$10$T1K7.g/6R.w7P/vjW/QzI.wH0/5bL.hU6y8PZcSmVz7x6Q8mQn.I2', 4, 'Active'),
-(7, 'SLAF/AIR/303', '$2y$10$T1K7.g/6R.w7P/vjW/QzI.wH0/5bL.hU6y8PZcSmVz7x6Q8mQn.I2', 4, 'Active'),
-(8, 'SLAF/AIR/401', '$2y$10$T1K7.g/6R.w7P/vjW/QzI.wH0/5bL.hU6y8PZcSmVz7x6Q8mQn.I2', 4, 'Active'),
-(9, 'SLAF/AIR/402', '$2y$10$T1K7.g/6R.w7P/vjW/QzI.wH0/5bL.hU6y8PZcSmVz7x6Q8mQn.I2', 4, 'Active');
+(1, 'admin', '$2y$12$XjMX//wiQfAohrhfp/MZBei3DNtmRyAifbplnAIj.NvNsK93prPPO', 1, 'Active'),
+(2, '51838', '$2y$12$XjMX//wiQfAohrhfp/MZBei3DNtmRyAifbplnAIj.NvNsK93prPPO', 2, 'Active'),
+(3, '51839', '$2y$12$XjMX//wiQfAohrhfp/MZBei3DNtmRyAifbplnAIj.NvNsK93prPPO', 3, 'Active'),
+(4, '51840', '$2y$12$XjMX//wiQfAohrhfp/MZBei3DNtmRyAifbplnAIj.NvNsK93prPPO', 3, 'Active'),
+(5, '51841', '$2y$12$XjMX//wiQfAohrhfp/MZBei3DNtmRyAifbplnAIj.NvNsK93prPPO', 4, 'Active'),
+(6, '51842', '$2y$12$XjMX//wiQfAohrhfp/MZBei3DNtmRyAifbplnAIj.NvNsK93prPPO', 4, 'Active'),
+(7, '51843', '$2y$12$XjMX//wiQfAohrhfp/MZBei3DNtmRyAifbplnAIj.NvNsK93prPPO', 4, 'Active'),
+(8, '51844', '$2y$12$XjMX//wiQfAohrhfp/MZBei3DNtmRyAifbplnAIj.NvNsK93prPPO', 4, 'Active'),
+(9, '51845', '$2y$12$XjMX//wiQfAohrhfp/MZBei3DNtmRyAifbplnAIj.NvNsK93prPPO', 4, 'Active');
 
 -- Seed initial active postings
 INSERT INTO `postings` (`service_number`, `from_camp_id`, `to_camp_id`, `effective_date`, `end_date`, `status`) VALUES
-('SLAF/ADMIN/01', 1, 1, '2025-01-01', NULL, 'Active'),
-('SLAF/PROV/100', 1, 1, '2025-01-01', NULL, 'Active'),
-('SLAF/SNCO/201', 1, 1, '2025-01-01', NULL, 'Active'),
-('SLAF/SNCO/202', 2, 2, '2025-01-01', NULL, 'Active'),
-('SLAF/AIR/301', 1, 1, '2025-01-01', NULL, 'Active'),
-('SLAF/AIR/302', 1, 1, '2025-01-01', NULL, 'Active'),
-('SLAF/AIR/303', 1, 1, '2025-01-01', NULL, 'Active'),
-('SLAF/AIR/401', 2, 2, '2025-01-01', NULL, 'Active'),
-('SLAF/AIR/402', 2, 2, '2025-01-01', NULL, 'Active');
+('admin', 1, 1, '2025-01-01', NULL, 'Active'),
+('51838', 1, 1, '2025-01-01', NULL, 'Active'),
+('51839', 1, 1, '2025-01-01', NULL, 'Active'),
+('51840', 2, 2, '2025-01-01', NULL, 'Active'),
+('51841', 1, 1, '2025-01-01', NULL, 'Active'),
+('51842', 1, 1, '2025-01-01', NULL, 'Active'),
+('51843', 1, 1, '2025-01-01', NULL, 'Active'),
+('51844', 2, 2, '2025-01-01', NULL, 'Active'),
+('51845', 2, 2, '2025-01-01', NULL, 'Active');

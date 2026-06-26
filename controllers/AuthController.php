@@ -17,11 +17,15 @@ class AuthController {
             // Verify CSRF
             Security::verifyCsrf();
 
-            $serviceNumber = Security::sanitize($_POST['service_number'] ?? '');
+            $serviceNumber = strtoupper(Security::sanitize($_POST['service_number'] ?? ''));
             $password = $_POST['password'] ?? '';
 
             if (empty($serviceNumber) || empty($password)) {
                 throw new Exception("Please enter both Service Number and Password.");
+            }
+
+            if (!Security::validateServiceNumber($serviceNumber)) {
+                throw new Exception("Login username must be a valid Service Number (e.g., SLAF/AIR/301).");
             }
 
             $user = User::authenticate($serviceNumber, $password);

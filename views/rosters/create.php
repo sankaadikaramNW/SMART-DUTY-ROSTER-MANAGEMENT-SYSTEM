@@ -2,20 +2,9 @@
 include __DIR__ . '/../layout/header.php';
 ?>
 <div class="row mb-4 align-items-center">
-    <div class="col-md-6">
+    <div class="col-md-12">
         <h2 class="fw-bold mb-1 gradient-text"><i class="fas fa-calendar-plus"></i> <?= $roster ? 'Edit Roster Draft' : 'Create Smart Roster' ?></h2>
-        <p class="text-secondary">Camp: <strong class="text-light"><?= htmlspecialchars($camp['camp_name']) ?></strong> &bull; Schedule Sentries & Guards</p>
-    </div>
-    <div class="col-md-6 text-md-end">
-        <a href="<?= BASE_URL ?>/rosters" class="btn btn-custom btn-custom-secondary me-2">
-            <i class="fas fa-xmark"></i> Cancel
-        </a>
-        <button type="button" id="checkConflictsBtn" class="btn btn-custom btn-custom-secondary me-2 text-warning border-warning border-opacity-25">
-            <i class="fas fa-circle-exclamation"></i> Verify Schedule Conflicts
-        </button>
-        <button type="button" id="saveRosterBtn" class="btn btn-custom btn-custom-success">
-            <i class="fas fa-floppy-disk"></i> Save Roster Draft
-        </button>
+        <p class="text-secondary">Camp: <strong class="text-dark"><?= htmlspecialchars($camp['camp_name']) ?></strong> &bull; Schedule Sentries & Guards</p>
     </div>
 </div>
 
@@ -48,7 +37,7 @@ include __DIR__ . '/../layout/header.php';
 
     <!-- Conflicts summary panel -->
     <div class="col-12" id="conflictsSummaryPanel" style="display: none;">
-        <div class="alert alert-danger glass-card border-danger text-light p-4 mb-0" role="alert">
+        <div class="alert alert-danger glass-card border-danger text-danger p-4 mb-0" role="alert">
             <h5 class="fw-bold mb-2 text-danger"><i class="fas fa-triangle-exclamation"></i> Schedule Conflicts Detected</h5>
             <p class="small text-secondary mb-3">Please resolve the conflicts marked below before submitting for approval.</p>
             <ul id="conflictsSummaryList" class="mb-0 small text-secondary"></ul>
@@ -128,6 +117,18 @@ include __DIR__ . '/../layout/header.php';
                         <?php endif; ?>
                     </tbody>
                 </table>
+            </div>
+
+            <div class="mt-4 d-flex flex-column-reverse flex-sm-row justify-content-sm-end gap-2 border-top pt-3 border-secondary border-opacity-20">
+                <a href="<?= BASE_URL ?>/rosters" class="btn btn-custom btn-custom-secondary">
+                    <i class="fas fa-xmark"></i> Cancel
+                </a>
+                <button type="button" id="checkConflictsBtn" class="btn btn-custom btn-custom-secondary text-warning border-warning border-opacity-25">
+                    <i class="fas fa-circle-exclamation"></i> Verify Schedule Conflicts
+                </button>
+                <button type="button" id="saveRosterBtn" class="btn btn-custom btn-custom-success">
+                    <i class="fas fa-floppy-disk"></i> Save Roster Draft
+                </button>
             </div>
         </div>
     </div>
@@ -339,7 +340,7 @@ include __DIR__ . '/../layout/header.php';
                                 
                                 // Add to summary
                                 const li = document.createElement('li');
-                                li.className = 'mb-1 text-light';
+                                li.className = 'mb-1 text-secondary';
                                 li.innerHTML = `<span class="badge bg-${conf.level === 'Critical' ? 'danger' : 'warning'} me-2">${conf.level}</span> On ${row.querySelector('.row-date').value}: ${conf.message}`;
                                 conflictsSummaryList.appendChild(li);
                             });

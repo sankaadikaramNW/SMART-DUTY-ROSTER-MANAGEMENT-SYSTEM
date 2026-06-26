@@ -137,7 +137,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Custom Buttons */
 .btn-custom {
-    padding: 10px 24px;
+    padding: 12px 24px; /* Ensured 44px minimum height touch target */
     font-weight: 500;
     border-radius: var(--radius-sm);
     transition: var(--transition-smooth);
@@ -530,7 +530,6 @@ h1, h2, h3, h4, h5, h6 {
     flex: 1;
     padding: 30px;
     position: relative;
-    z-index: 1;
 }
 
 /* Footer layout inside sidebar view */
@@ -569,16 +568,16 @@ h1, h2, h3, h4, h5, h6 {
     background: rgba(255, 255, 255, 0.05);
 }
 
-/* Responsive Sidebar toggling */
+/* Responsive Sidebar offcanvas & Layout overrides */
 @media (max-width: 991.98px) {
-    .sidebar-custom {
-        transform: translateX(-100%);
-    }
-    .sidebar-custom.active {
-        transform: translateX(0);
+    .sidebar-custom.offcanvas-lg {
+        width: 260px !important;
+        background-color: var(--bg-secondary) !important;
+        border-right: 1px solid var(--glass-border) !important;
     }
     .topbar-custom {
         left: 0;
+        padding: 0 15px; /* Compact padding for small screens */
     }
     .main-layout {
         margin-left: 0;
@@ -586,6 +585,14 @@ h1, h2, h3, h4, h5, h6 {
     }
     .mobile-nav-toggle {
         display: block !important;
+    }
+}
+
+/* Mobile modal optimization */
+@media (max-width: 575.98px) {
+    .modal-dialog {
+        max-width: 95% !important;
+        margin: 1.75rem auto !important;
     }
 }
 

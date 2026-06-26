@@ -38,7 +38,7 @@ include __DIR__ . '/../layout/header.php';
                             <td><?= date('F d, Y', strtotime($pos['effective_date'])) ?></td>
                             <td><?= $pos['end_date'] ? date('F d, Y', strtotime($pos['end_date'])) : '<span class="text-muted">Ongoing</span>' ?></td>
                             <td>
-                                <span class="badge rounded-pill bg-<?= $pos['status'] === 'Active' ? 'success' : 'secondary' ?> bg-opacity-25 border border-<?= $pos['status'] === 'Active' ? 'success' : 'secondary' ?> border-opacity-25 text-light px-2">
+                                <span class="badge rounded-pill bg-<?= $pos['status'] === 'Active' ? 'success' : 'secondary' ?> bg-opacity-25 border border-<?= $pos['status'] === 'Active' ? 'success' : 'secondary' ?> border-opacity-25 text-<?= $pos['status'] === 'Active' ? 'success' : 'secondary' ?> px-2">
                                     <?= $pos['status'] ?>
                                 </span>
                             </td>

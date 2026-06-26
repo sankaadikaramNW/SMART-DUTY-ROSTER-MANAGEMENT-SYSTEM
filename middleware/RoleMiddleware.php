@@ -13,8 +13,8 @@ class RoleMiddleware {
         $rolePermissions = [
             'Administrator' => [
                 '/dashboard', '/logout', 
-                '/personnel', '/personnel/view', '/personnel/search', '/personnel/history', '/postings', '/postings/add',
-                '/rosters', '/rosters/view', '/rosters/calendar', '/rosters/calendar-data', '/rosters/timeline',
+                '/personnel', '/personnel/view', '/personnel/search', '/personnel/history', '/personnel/add', '/personnel/edit', '/postings', '/postings/add',
+                '/rosters', '/rosters/create', '/rosters/save', '/rosters/view', '/rosters/calendar', '/rosters/calendar-data', '/rosters/timeline', '/rosters/conflict-check', '/rosters/action',
                 '/camps', '/camps/save', '/shifts', '/shifts/save', '/duty-types', '/duty-types/save', '/users', '/users/save', '/users/status',
                 '/reports', '/reports/generate', '/audit-logs', '/notifications', '/notifications/read'
             ],
@@ -26,7 +26,7 @@ class RoleMiddleware {
             ],
             'SNCO' => [
                 '/dashboard', '/logout',
-                '/personnel', '/personnel/view', '/personnel/search', '/personnel/history', '/postings', '/postings/add',
+                '/personnel', '/personnel/view', '/personnel/search', '/personnel/history', '/personnel/add', '/personnel/edit', '/postings', '/postings/add',
                 '/rosters', '/rosters/create', '/rosters/save', '/rosters/view', '/rosters/calendar', '/rosters/calendar-data', '/rosters/timeline', '/rosters/conflict-check', '/rosters/action',
                 '/reports', '/reports/generate', '/notifications', '/notifications/read'
             ],

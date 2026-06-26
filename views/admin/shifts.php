@@ -41,7 +41,7 @@ include __DIR__ . '/../layout/header.php';
                             <td><?= number_format($s['duration_hours'], 2) ?></td>
                             <td class="small text-secondary"><?= htmlspecialchars($s['description'] ?? 'N/A') ?></td>
                             <td>
-                                <span class="badge rounded-pill bg-<?= $s['status'] === 'Active' ? 'success' : 'secondary' ?> bg-opacity-25 border border-<?= $s['status'] === 'Active' ? 'success' : 'secondary' ?> border-opacity-25 text-light px-2">
+                                <span class="badge rounded-pill bg-<?= $s['status'] === 'Active' ? 'success' : 'secondary' ?> bg-opacity-25 border border-<?= $s['status'] === 'Active' ? 'success' : 'secondary' ?> border-opacity-25 text-<?= $s['status'] === 'Active' ? 'success' : 'secondary' ?> px-2">
                                     <?= $s['status'] ?>
                                 </span>
                             </td>

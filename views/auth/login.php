@@ -21,7 +21,7 @@ include __DIR__ . '/../layout/header.php';
                         <span class="input-group-text bg-transparent border-secondary text-secondary" style="border-right: none;">
                             <i class="fas fa-id-card"></i>
                         </span>
-                        <input type="text" class="form-control form-control-custom" id="service_number" name="service_number" placeholder="SLAF/AIR/301" required style="border-left: none;">
+                        <input type="text" class="form-control form-control-custom" id="service_number" name="service_number" placeholder="51837 or admin" pattern="[Aa][Dd][Mm][Ii][Nn]|\d+" title="Must be a valid Service Number (e.g., 51837 or admin)" required style="border-left: none;">
                     </div>
                 </div>
                 

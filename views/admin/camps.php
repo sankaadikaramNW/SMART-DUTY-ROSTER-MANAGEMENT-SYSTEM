@@ -37,7 +37,7 @@ include __DIR__ . '/../layout/header.php';
                             <td><?= htmlspecialchars($c['camp_name']) ?></td>
                             <td class="small text-secondary"><?= htmlspecialchars($c['address'] ?? 'N/A') ?></td>
                             <td>
-                                <span class="badge rounded-pill bg-<?= $c['status'] === 'Active' ? 'success' : 'secondary' ?> bg-opacity-25 border border-<?= $c['status'] === 'Active' ? 'success' : 'secondary' ?> border-opacity-25 text-light px-2">
+                                <span class="badge rounded-pill bg-<?= $c['status'] === 'Active' ? 'success' : 'secondary' ?> bg-opacity-25 border border-<?= $c['status'] === 'Active' ? 'success' : 'secondary' ?> border-opacity-25 text-<?= $c['status'] === 'Active' ? 'success' : 'secondary' ?> px-2">
                                     <?= $c['status'] ?>
                                 </span>
                             </td>

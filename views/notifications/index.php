@@ -29,14 +29,14 @@ include __DIR__ . '/../layout/header.php';
             <?php else: ?>
                 <div class="notification-list d-flex flex-column gap-3">
                     <?php foreach ($notifications as $note): ?>
-                        <div class="p-3 rounded glass-card bg-opacity-25 d-flex justify-content-between align-items-start position-relative notification-card <?= $note['is_read'] ? 'text-secondary' : 'border-info border-opacity-35 text-light' ?>" style="<?= $note['is_read'] ? '' : 'background: rgba(13, 148, 136, 0.05);' ?>">
+                        <div class="p-3 rounded glass-card bg-opacity-25 d-flex justify-content-between align-items-start position-relative notification-card <?= $note['is_read'] ? 'text-secondary' : 'border-info border-opacity-35 text-dark' ?>" style="<?= $note['is_read'] ? '' : 'background: rgba(13, 148, 136, 0.05);' ?>">
                             
                             <div class="pe-4">
                                 <div class="d-flex align-items-center gap-2 mb-1.5">
                                     <?php if (!$note['is_read']): ?>
                                         <span class="d-inline-block rounded-circle bg-info" style="width: 8px; height: 8px; box-shadow: 0 0 8px #0d9488;"></span>
                                     <?php endif; ?>
-                                    <h6 class="fw-bold mb-0 text-light"><?= htmlspecialchars($note['title']) ?></h6>
+                                    <h6 class="fw-bold mb-0 text-info"><?= htmlspecialchars($note['title']) ?></h6>
                                 </div>
                                 <p class="small mb-1 text-secondary"><?= htmlspecialchars($note['message']) ?></p>
                                 <span class="x-small text-muted" style="font-size:0.75rem;"><i class="fas fa-clock me-1"></i> <?= date('M d, Y H:i', strtotime($note['created_at'])) ?></span>

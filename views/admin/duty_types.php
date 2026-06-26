@@ -35,7 +35,7 @@ include __DIR__ . '/../layout/header.php';
                             <td class="fw-bold text-info"><?= htmlspecialchars($dt['duty_type_name']) ?></td>
                             <td class="small text-secondary"><?= htmlspecialchars($dt['description'] ?? 'N/A') ?></td>
                             <td>
-                                <span class="badge rounded-pill bg-<?= $dt['status'] === 'Active' ? 'success' : 'secondary' ?> bg-opacity-25 border border-<?= $dt['status'] === 'Active' ? 'success' : 'secondary' ?> border-opacity-25 text-light px-2">
+                                <span class="badge rounded-pill bg-<?= $dt['status'] === 'Active' ? 'success' : 'secondary' ?> bg-opacity-25 border border-<?= $dt['status'] === 'Active' ? 'success' : 'secondary' ?> border-opacity-25 text-<?= $dt['status'] === 'Active' ? 'success' : 'secondary' ?> px-2">
                                     <?= $dt['status'] ?>
                                 </span>
                             </td>

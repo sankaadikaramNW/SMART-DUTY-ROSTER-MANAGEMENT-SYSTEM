@@ -46,7 +46,7 @@ include __DIR__ . '/../layout/header.php';
                                 </span>
                             </td>
                             <td>
-                                <span class="badge rounded-pill bg-<?= $u['status'] === 'Active' ? 'success' : 'danger' ?> bg-opacity-25 border border-<?= $u['status'] === 'Active' ? 'success' : 'danger' ?> border-opacity-25 text-light px-2.5">
+                                <span class="badge rounded-pill bg-<?= $u['status'] === 'Active' ? 'success' : 'danger' ?> bg-opacity-25 border border-<?= $u['status'] === 'Active' ? 'success' : 'danger' ?> border-opacity-25 text-<?= $u['status'] === 'Active' ? 'success' : 'danger' ?> px-2.5">
                                     <?= $u['status'] ?>
                                 </span>
                             </td>

@@ -53,13 +53,16 @@ if ($isLoggedIn && $serviceNum) {
     ?>
     <div class="app-container">
         <!-- Sidebar Navigation -->
-        <aside class="sidebar-custom">
-            <div class="sidebar-header">
-                <div class="sidebar-brand-img"><i class="fas fa-shield-halved"></i></div>
-                <div class="sidebar-brand-text">
-                    <div class="sidebar-brand-title">Sri Lanka Air Force</div>
-                    <div class="sidebar-brand-subtitle">SMART ROSTER</div>
+        <aside class="sidebar-custom offcanvas-lg offcanvas-start" id="sidebarMenu" tabindex="-1" aria-labelledby="sidebarMenuLabel">
+            <div class="sidebar-header d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="sidebar-brand-img"><i class="fas fa-shield-halved"></i></div>
+                    <div class="sidebar-brand-text">
+                        <div class="sidebar-brand-title">Sri Lanka Air Force</div>
+                        <div class="sidebar-brand-subtitle">SMART ROSTER</div>
+                    </div>
                 </div>
+                <button type="button" class="btn-close btn-close-white d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close"></button>
             </div>
             <div class="sidebar-menu">
                 <!-- MAIN MENU -->
@@ -143,12 +146,13 @@ if ($isLoggedIn && $serviceNum) {
             <header class="topbar-custom">
                 <div class="d-flex align-items-center">
                     <!-- Mobile Nav Toggle button -->
-                    <button class="topbar-action-btn mobile-nav-toggle d-none me-3" id="sidebarToggle" aria-label="Toggle Sidebar">
+                    <button class="topbar-action-btn mobile-nav-toggle d-lg-none me-3" id="sidebarToggle" aria-label="Toggle Sidebar" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu">
                         <i class="fas fa-bars"></i>
                     </button>
                     <div class="topbar-title-section">
-                        <div class="topbar-title"><?= htmlspecialchars($campName) ?></div>
-                        <div class="topbar-subtitle">Smart Duty Roster Management System</div>
+                        <div class="topbar-title d-none d-md-block"><?= htmlspecialchars($campName) ?></div>
+                        <div class="topbar-subtitle d-none d-md-block">Smart Duty Roster Management System</div>
+                        <div class="topbar-title d-block d-md-none" style="font-size: 0.95rem;">SLAF Smart Roster</div>
                     </div>
                 </div>
                 
@@ -170,8 +174,8 @@ if ($isLoggedIn && $serviceNum) {
                     
                     <!-- User Menu Dropdown -->
                     <div class="dropdown">
-                        <button class="btn btn-custom btn-custom-secondary dropdown-toggle py-1 px-3" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-user-circle"></i> <?= htmlspecialchars($rankName . ' ' . $fullName) ?>
+                        <button class="btn btn-custom btn-custom-secondary dropdown-toggle py-1 px-2 px-md-3" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle"></i> <span class="d-none d-md-inline"><?= htmlspecialchars($rankName . ' ' . $fullName) ?></span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark shadow" aria-labelledby="userMenu">
                             <li><span class="dropdown-item-text text-muted small"><i class="fas fa-id-card"></i> <?= htmlspecialchars($serviceNum) ?> (<?= htmlspecialchars($roleName) ?>)</span></li>
@@ -190,17 +194,17 @@ if ($isLoggedIn && $serviceNum) {
     <?php endif; ?>
         <!-- Render alerts or notifications if set in session flash -->
         <?php if (Session::has('error_message')): ?>
-            <div class="alert alert-danger alert-dismissible fade show glass-card border-danger text-light" role="alert">
+            <div class="alert alert-danger alert-dismissible fade show glass-card border-danger text-danger" role="alert">
                 <i class="fas fa-circle-exclamation me-2 text-danger"></i> <?= htmlspecialchars(Session::get('error_message')) ?>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             <?php Session::remove('error_message'); ?>
         <?php endif; ?>
         
         <?php if (Session::has('success_message')): ?>
-            <div class="alert alert-success alert-dismissible fade show glass-card border-success text-light" role="alert">
+            <div class="alert alert-success alert-dismissible fade show glass-card border-success text-success" role="alert">
                 <i class="fas fa-circle-check me-2 text-success"></i> <?= htmlspecialchars(Session::get('success_message')) ?>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             <?php Session::remove('success_message'); ?>
         <?php endif; ?>

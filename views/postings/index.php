@@ -56,7 +56,7 @@ include __DIR__ . '/../layout/header.php';
                             <td><?= date('M d, Y', strtotime($pos['effective_date'])) ?></td>
                             <td><?= $pos['end_date'] ? date('M d, Y', strtotime($pos['end_date'])) : '<span class="text-muted">Ongoing</span>' ?></td>
                             <td>
-                                <span class="badge rounded-pill bg-<?= $pos['status'] === 'Active' ? 'success' : 'secondary' ?> bg-opacity-25 border border-<?= $pos['status'] === 'Active' ? 'success' : 'secondary' ?> border-opacity-25 text-light px-2.5">
+                                <span class="badge rounded-pill bg-<?= $pos['status'] === 'Active' ? 'success' : 'secondary' ?> bg-opacity-25 border border-<?= $pos['status'] === 'Active' ? 'success' : 'secondary' ?> border-opacity-25 text-<?= $pos['status'] === 'Active' ? 'success' : 'secondary' ?> px-2.5">
                                     <?= $pos['status'] ?>
                                 </span>
                             </td>
@@ -71,7 +71,7 @@ include __DIR__ . '/../layout/header.php';
 <!-- Transfer Posting Modal -->
 <?php if ($roleName === 'SNCO' || $roleName === 'Administrator'): ?>
 <div class="modal fade" id="addPostingModal" tabindex="-1" aria-labelledby="addPostingModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content glass-card bg-dark text-light border-secondary">
             <div class="modal-header border-secondary">
                 <h5 class="modal-title fw-bold" id="addPostingModalLabel"><i class="fas fa-right-left me-2"></i> Register Camp Transfer</h5>
@@ -110,7 +110,7 @@ include __DIR__ . '/../layout/header.php';
                         <input type="date" class="form-control form-control-custom" id="effective_date" name="effective_date" value="<?= date('Y-m-d') ?>" required>
                     </div>
                 </div>
-                <div class="modal-footer border-secondary">
+                <div class="modal-footer border-secondary d-flex flex-column-reverse flex-sm-row justify-content-sm-end gap-2">
                     <button type="button" class="btn btn-custom btn-custom-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-custom btn-custom-primary">Complete Posting Transfer</button>
                 </div>

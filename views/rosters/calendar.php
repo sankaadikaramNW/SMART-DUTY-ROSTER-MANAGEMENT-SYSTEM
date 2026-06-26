@@ -114,7 +114,7 @@ include __DIR__ . '/../layout/header.php';
                         list.forEach(as => {
                             cardContent += `
                                 <div class="p-2.5 bg-dark bg-opacity-25 rounded border border-secondary border-opacity-10">
-                                    <div class="small fw-bold text-light">${as.rank} ${as.full_name}</div>
+                                    <div class="small fw-bold text-dark">${as.rank} ${as.full_name}</div>
                                     <div class="x-small text-secondary font-monospace" style="font-size:0.75rem;">${as.service_number}</div>
                                     <div class="mt-1.5 d-flex justify-content-between align-items-center">
                                         <span class="badge bg-info bg-opacity-15 text-info border border-info border-opacity-10" style="font-size:0.7rem;">${as.duty_type_name}</span>
