@@ -9,12 +9,13 @@ class DashboardController {
     public function index() {
         $db = Database::getInstance()->getConnection();
         
-        $roleName = Session::get('role_name');
-        $serviceNum = Session::get('service_number');
+        $roleName    = Session::get('role_name');
+        $serviceNum  = Session::get('service_number');
+        $campId      = Session::get('camp_id');
         $restrictedCampId = LocationMiddleware::getCampConstraint();
 
         // 1. Get total personnel count
-        $pCountSql = "SELECT COUNT(*) FROM personnel WHERE 1=1";
+        $pCountSql = "SELECT COUNT(*) FROM personnel WHERE status = 'Active'";
         $pParams = [];
         if ($restrictedCampId !== null) {
             $pCountSql .= " AND camp_id = ?";
@@ -46,7 +47,42 @@ class DashboardController {
         $stmt = $db->query("SELECT COUNT(*) FROM shifts WHERE status = 'Active'");
         $totalShifts = (int)$stmt->fetchColumn();
 
-        // 5. Get user's personal upcoming duties (For Airman/All)
+        // 5. TODAY'S DUTY CREW — all personnel assigned to duty today (for this camp)
+        $todayCrewSql = "
+            SELECT a.assignment_id, a.duty_date, a.status AS assignment_status,
+                   p.service_number, p.rank, p.initials, p.full_name,
+                   s.shift_name, s.start_time, s.end_time,
+                   t.duty_type_name,
+                   r.roster_name, r.roster_id,
+                   c.camp_name
+            FROM duty_assignments a
+            JOIN duty_rosters r    ON a.roster_id = r.roster_id
+            JOIN camps c           ON r.camp_id   = c.camp_id
+            JOIN personnel p       ON a.service_number = p.service_number
+            JOIN shifts s          ON a.shift_id  = s.shift_id
+            JOIN duty_types t      ON a.duty_type_id = t.duty_type_id
+            WHERE a.duty_date = CURDATE()
+              AND r.status = 'Published'
+        ";
+        $todayParams = [];
+        if ($restrictedCampId !== null) {
+            $todayCrewSql .= " AND r.camp_id = ?";
+            $todayParams[] = $restrictedCampId;
+        }
+        $todayCrewSql .= " ORDER BY s.start_time ASC, p.rank ASC";
+        $stmt = $db->prepare($todayCrewSql);
+        $stmt->execute($todayParams);
+        $todayCrew = $stmt->fetchAll();
+
+        // Check if the logged-in user is on duty today
+        $myTodayDuty = [];
+        foreach ($todayCrew as $tc) {
+            if ($tc['service_number'] === $serviceNum) {
+                $myTodayDuty[] = $tc;
+            }
+        }
+
+        // 6. Get user's personal upcoming duties (next 5 upcoming, excluding today)
         $upcomingDuties = [];
         if ($serviceNum) {
             $stmt = $db->prepare("
@@ -56,7 +92,7 @@ class DashboardController {
                 JOIN camps c ON r.camp_id = c.camp_id
                 JOIN shifts s ON a.shift_id = s.shift_id
                 JOIN duty_types t ON a.duty_type_id = t.duty_type_id
-                WHERE a.service_number = ? AND a.duty_date >= CURDATE()
+                WHERE a.service_number = ? AND a.duty_date > CURDATE()
                   AND r.status = 'Published'
                 ORDER BY a.duty_date ASC, s.start_time ASC
                 LIMIT 5
@@ -65,7 +101,7 @@ class DashboardController {
             $upcomingDuties = $stmt->fetchAll();
         }
 
-        // 6. Recent duty rosters for list view
+        // 7. Recent duty rosters for list view
         $recentRostersSql = "SELECT r.*, c.camp_name 
                              FROM duty_rosters r 
                              JOIN camps c ON r.camp_id = c.camp_id 
