@@ -56,7 +56,7 @@ if ($isLoggedIn && $serviceNum) {
         <aside class="sidebar-custom offcanvas-lg offcanvas-start" id="sidebarMenu" tabindex="-1" aria-labelledby="sidebarMenuLabel">
             <div class="sidebar-header d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-2">
-                    <div class="sidebar-brand-img"><i class="fas fa-shield-halved"></i></div>
+                    <img src="<?= BASE_URL ?>/views/assets/images/slaf_logo.png" alt="SLAF Logo" style="height: 38px; width: auto; object-fit: contain;">
                     <div class="sidebar-brand-text">
                         <div class="sidebar-brand-title">Sri Lanka Air Force</div>
                         <div class="sidebar-brand-subtitle">SMART ROSTER</div>
@@ -81,7 +81,10 @@ if ($isLoggedIn && $serviceNum) {
                         <i class="fas fa-map-location-dot"></i> Postings
                     </a>
                     <a class="sidebar-link <?= ($route ?? '') === '/rosters' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters">
-                        <i class="fas fa-calendar-days"></i> Rosters
+                        <i class="fas fa-calendar-days"></i> All Rosters
+                    </a>
+                    <a class="sidebar-link <?= ($route ?? '') === '/rosters/approve' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters/approve">
+                        <i class="fas fa-stamp"></i> Duty Approvals
                     </a>
                     
                     <!-- SYSTEM CONFIGURATION -->
@@ -108,7 +111,29 @@ if ($isLoggedIn && $serviceNum) {
                         <i class="fas fa-file-invoice"></i> Reports
                     </a>
 
-                <?php elseif ($roleName === 'OCPROVST' || $roleName === 'SNCO'): ?>
+                <?php elseif ($roleName === 'OCPROVST'): ?>
+                    <!-- ROSTER OPERATIONS -->
+                    <div class="sidebar-group-title">Roster Operations</div>
+                    <a class="sidebar-link <?= ($route ?? '') === '/personnel' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel">
+                        <i class="fas fa-users"></i> Personnel
+                    </a>
+                    <a class="sidebar-link <?= ($route ?? '') === '/postings' ? 'active' : '' ?>" href="<?= BASE_URL ?>/postings">
+                        <i class="fas fa-arrows-spin"></i> Postings
+                    </a>
+                    <a class="sidebar-link <?= ($route ?? '') === '/rosters' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters">
+                        <i class="fas fa-calendar-days"></i> All Rosters
+                    </a>
+                    <a class="sidebar-link <?= ($route ?? '') === '/rosters/approve' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters/approve">
+                        <i class="fas fa-stamp"></i> Duty Approvals
+                    </a>
+                    
+                    <!-- REPORTING -->
+                    <div class="sidebar-group-title">Reporting</div>
+                    <a class="sidebar-link <?= ($route ?? '') === '/reports' ? 'active' : '' ?>" href="<?= BASE_URL ?>/reports">
+                        <i class="fas fa-print"></i> Reports
+                    </a>
+
+                <?php elseif ($roleName === 'SNCO'): ?>
                     <!-- ROSTER OPERATIONS -->
                     <div class="sidebar-group-title">Roster Operations</div>
                     <a class="sidebar-link <?= ($route ?? '') === '/personnel' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel">
@@ -149,6 +174,7 @@ if ($isLoggedIn && $serviceNum) {
                     <button class="topbar-action-btn mobile-nav-toggle d-lg-none me-3" id="sidebarToggle" aria-label="Toggle Sidebar" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu">
                         <i class="fas fa-bars"></i>
                     </button>
+                    <img src="<?= BASE_URL ?>/views/assets/images/slaf_logo.png" alt="SLAF Logo" class="me-3" style="height: 36px; width: auto; object-fit: contain;">
                     <div class="topbar-title-section">
                         <div class="topbar-title d-none d-md-block"><?= htmlspecialchars($campName) ?></div>
                         <div class="topbar-subtitle d-none d-md-block">Smart Duty Roster Management System</div>

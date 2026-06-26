@@ -5,8 +5,8 @@ include __DIR__ . '/../layout/header.php';
     <div class="col-md-5">
         <div class="glass-card p-5 animate-fade-in text-center">
             <div class="mb-4">
-                <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-25 rounded-circle p-3 mb-3 text-primary" style="width: 80px; height: 80px;">
-                    <i class="fas fa-shield-halved fs-1 text-info"></i>
+                <div class="mb-3">
+                    <img src="<?= BASE_URL ?>/views/assets/images/slaf_logo.png" alt="Sri Lanka Air Force Logo" class="animate-fade-in" style="width: 120px; height: auto; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));">
                 </div>
                 <h2 class="fw-bold mb-1 gradient-text">SLAF Smart Duty Roster</h2>
                 <p class="text-secondary">Provost Duty Management Portal</p>

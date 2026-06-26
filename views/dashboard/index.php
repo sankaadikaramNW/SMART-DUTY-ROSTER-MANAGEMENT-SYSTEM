@@ -1,10 +1,13 @@
 <?php
 include __DIR__ . '/../layout/header.php';
 ?>
-<div class="row mb-4">
-    <div class="col-12">
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8 col-12">
         <h1 class="h2 fw-bold gradient-text">Welcome back, <?= htmlspecialchars($rankName . ' ' . $fullName) ?></h1>
-        <p class="text-secondary">Smart Provost Duty Roster dashboard & base overview.</p>
+        <p class="text-secondary mb-0">Smart Provost Duty Roster dashboard & base overview.</p>
+    </div>
+    <div class="col-md-4 col-12 text-md-end d-none d-md-block">
+        <img src="<?= BASE_URL ?>/views/assets/images/slaf_logo.png" alt="SLAF Crest" style="height: 65px; width: auto; opacity: 0.85; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">
     </div>
 </div>
 
@@ -33,14 +36,16 @@ include __DIR__ . '/../layout/header.php';
     
     <?php if ($roleName === 'OCPROVST' || $roleName === 'Administrator'): ?>
     <div class="col-lg-3 col-md-6 col-12">
-        <div class="glass-card stat-card p-4" style="border-bottom-color: var(--accent-indigo);">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="text-secondary text-uppercase small mb-0">Pending Approvals</h6>
-                <i class="fas fa-clock-rotate-left text-warning stat-icon"></i>
+        <a href="<?= BASE_URL ?>/rosters/approve" class="text-decoration-none">
+            <div class="glass-card stat-card p-4" style="border-bottom-color: var(--accent-indigo);">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-secondary text-uppercase small mb-0 text-dark">Pending Approvals</h6>
+                    <i class="fas fa-clock-rotate-left text-warning stat-icon"></i>
+                </div>
+                <h3 class="fw-bold mb-1 text-dark"><?= $pendingApprovals ?></h3>
+                <span class="small text-muted">Awaiting review</span>
             </div>
-            <h3 class="fw-bold mb-1"><?= $pendingApprovals ?></h3>
-            <span class="small text-muted">Awaiting review</span>
-        </div>
+        </a>
     </div>
     <?php else: ?>
     <div class="col-lg-3 col-md-6 col-12">

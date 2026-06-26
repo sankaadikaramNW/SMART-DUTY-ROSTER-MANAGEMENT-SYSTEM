@@ -237,6 +237,33 @@ class RosterController {
         }
     }
 
+    // Render Duty Approval Page
+    public function approveView() {
+        try {
+            $roleName = Session::get('role_name');
+            if ($roleName !== 'OCPROVST' && $roleName !== 'Administrator') {
+                throw new Exception("Unauthorized Access: Only OCPROVST can approve rosters.");
+            }
+
+            // Get all rosters in 'Submitted' status
+            $rosters = Roster::getAll(null, 'Submitted');
+            
+            // For each roster, get assignments
+            $pendingRosters = [];
+            foreach ($rosters as $r) {
+                $assignments = DutyAssignment::getByRosterId($r['roster_id']);
+                $r['assignments'] = $assignments;
+                $pendingRosters[] = $r;
+            }
+
+            $pageTitle = 'Duty Approvals';
+            include __DIR__ . '/../views/rosters/approve.php';
+        } catch (Exception $e) {
+            Session::set('error_message', $e->getMessage());
+            Response::redirect('/dashboard');
+        }
+    }
+
     // Submit Approval Action (Workflow Pipeline)
     public function submitApproval() {
         try {
@@ -253,6 +280,20 @@ class RosterController {
             $roster = Roster::getById($rosterId);
             if (!$roster) {
                 throw new Exception("Roster not found.");
+            }
+
+            $roleName = Session::get('role_name');
+            if ($action === 'Submit') {
+                if ($roleName !== 'SNCO' && $roleName !== 'Administrator') {
+                    throw new Exception("Unauthorized: Only SNCO or Administrator can submit rosters.");
+                }
+            } else {
+                if ($roleName !== 'OCPROVST') {
+                    throw new Exception("Unauthorized: Only OCPROVST can approve, reject, or return rosters.");
+                }
+                if ($roster['status'] !== 'Submitted') {
+                    throw new Exception("Roster is not in pending approval status.");
+                }
             }
 
             $status = 'Draft';

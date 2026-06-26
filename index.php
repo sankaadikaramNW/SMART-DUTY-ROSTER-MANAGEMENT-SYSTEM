@@ -80,6 +80,7 @@ $routes = [
         '/postings' => 'PersonnelController@postingsIndex',
         '/rosters' => 'RosterController@index',
         '/rosters/create' => 'RosterController@createView',
+        '/rosters/approve' => 'RosterController@approveView',
         '/rosters/view' => 'RosterController@viewRoster',
         '/rosters/calendar' => 'RosterController@calendarView',
         '/rosters/calendar-data' => 'RosterController@getCalendarData',

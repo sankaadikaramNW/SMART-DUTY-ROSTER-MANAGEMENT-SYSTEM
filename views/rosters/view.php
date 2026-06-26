@@ -102,7 +102,7 @@ include __DIR__ . '/../layout/header.php';
         <?php if ($roleName === 'OCPROVST' && $roster['status'] === 'Submitted'): ?>
             <div class="glass-card p-4 mb-4" style="border-left: 3px solid var(--accent-indigo);">
                 <h5 class="fw-bold mb-3 text-info"><i class="fas fa-stamp me-2"></i> Workflow Review</h5>
-                <form action="<?= BASE_URL ?>/rosters/action" method="POST">
+                <form action="<?= BASE_URL ?>/rosters/action" method="POST" class="approval-form">
                     <?= Security::csrfField() ?>
                     <input type="hidden" name="roster_id" value="<?= $roster['roster_id'] ?>">
                     
@@ -111,19 +111,88 @@ include __DIR__ . '/../layout/header.php';
                         <textarea class="form-control form-control-custom" id="remarks" name="remarks" rows="3" placeholder="Provide reason if rejecting or returning..."></textarea>
                     </div>
 
-                    <div class="d-flex flex-column-reverse flex-sm-row justify-content-sm-end gap-2 mt-3">
-                        <button type="submit" name="action" value="Reject" class="btn btn-custom btn-custom-danger">
-                            <i class="fas fa-circle-xmark"></i> Reject
+                    <div class="d-grid gap-2 d-sm-flex justify-content-sm-end mt-3">
+                        <button type="submit" name="action" value="Reject" class="btn btn-danger py-2 px-3">
+                            <i class="fas fa-xmark"></i> ✖ Reject
                         </button>
-                        <button type="submit" name="action" value="Return" class="btn btn-custom btn-custom-secondary text-warning border-warning border-opacity-25">
-                            <i class="fas fa-arrow-rotate-left"></i> Return Draft
+                        <button type="submit" name="action" value="Return" class="btn btn-warning py-2 px-3 text-dark fw-medium">
+                            <i class="fas fa-arrow-rotate-left"></i> ↩ Return Draft
                         </button>
-                        <button type="submit" name="action" value="Approve" class="btn btn-custom btn-custom-success">
-                            <i class="fas fa-circle-check"></i> Approve
+                        <button type="submit" name="action" value="Approve" class="btn btn-success py-2 px-3">
+                            <i class="fas fa-check"></i> ✔ Approve
                         </button>
                     </div>
                 </form>
             </div>
+            
+            <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const form = document.querySelector('.approval-form');
+                if (form) {
+                    const remarksInput = form.querySelector('textarea[name="remarks"]');
+                    const btnReject = form.querySelector('button[value="Reject"]');
+                    const btnReturn = form.querySelector('button[value="Return"]');
+                    const btnApprove = form.querySelector('button[value="Approve"]');
+
+                    let selectedAction = '';
+
+                    btnReject?.addEventListener('click', () => { selectedAction = 'Reject'; });
+                    btnReturn?.addEventListener('click', () => { selectedAction = 'Return'; });
+                    btnApprove?.addEventListener('click', () => { selectedAction = 'Approve'; });
+
+                    form.addEventListener('submit', (e) => {
+                        if (selectedAction === 'Approve') {
+                            const confirmApprove = confirm('Approve this duty roster?');
+                            if (!confirmApprove) {
+                                e.preventDefault();
+                            }
+                        } else if (selectedAction === 'Reject') {
+                            let reason = remarksInput.value.trim();
+                            if (!reason) {
+                                reason = prompt('Reject this duty roster?\nReason (Required):');
+                                if (reason === null) {
+                                    e.preventDefault();
+                                    return;
+                                }
+                                reason = reason.trim();
+                                if (!reason) {
+                                    alert('Reason is required to reject the roster.');
+                                    e.preventDefault();
+                                    return;
+                                }
+                                remarksInput.value = reason;
+                            } else {
+                                const confirmReject = confirm('Reject this duty roster?');
+                                if (!confirmReject) {
+                                    e.preventDefault();
+                                }
+                            }
+                        } else if (selectedAction === 'Return') {
+                            let remarks = remarksInput.value.trim();
+                            if (!remarks) {
+                                remarks = prompt('Return this roster to Draft?\nRemarks (Required):');
+                                if (remarks === null) {
+                                    e.preventDefault();
+                                    return;
+                                }
+                                remarks = remarks.trim();
+                                if (!remarks) {
+                                    alert('Remarks are required to return the roster.');
+                                    e.preventDefault();
+                                    return;
+                                }
+                                remarksInput.value = remarks;
+                            } else {
+                                const confirmReturn = confirm('Return this roster to Draft?');
+                                if (!confirmReturn) {
+                                    e.preventDefault();
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+            </script>
         <?php endif; ?>
 
         <!-- Approval Logs history -->

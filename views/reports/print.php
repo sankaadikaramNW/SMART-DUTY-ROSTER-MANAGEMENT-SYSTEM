@@ -60,8 +60,8 @@
 
         <!-- Header -->
         <div class="row report-header align-items-center">
-            <div class="col-md-2 text-center text-md-start">
-                <div class="slaf-crest"><i class="fas fa-shield-halved"></i></div>
+            <div class="col-md-2 text-center text-md-start mb-3 mb-md-0">
+                <img src="<?= BASE_URL ?>/views/assets/images/slaf_logo.png" alt="SLAF Crest" style="height: 80px; width: auto; object-fit: contain;">
             </div>
             <div class="col-md-10 text-center text-md-start">
                 <h3 class="fw-bold mb-1 text-primary">SRI LANKA AIR FORCE</h3>
