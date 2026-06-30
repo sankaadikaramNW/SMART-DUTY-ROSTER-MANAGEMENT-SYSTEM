@@ -190,6 +190,26 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
+.btn-custom-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+.btn-custom-warning:hover {
+    opacity: 0.9;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    color: white;
+}
+
+.btn-custom-orange {
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    color: white;
+}
+.btn-custom-orange:hover {
+    opacity: 0.9;
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+    color: white;
+}
+
 /* Tables */
 .table-custom-container {
     overflow-x: auto;

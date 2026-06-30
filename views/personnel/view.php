@@ -7,17 +7,9 @@ include __DIR__ . '/../layout/header.php';
         <p class="text-secondary">View detailed airman record and posting histories.</p>
     </div>
     <div class="col-md-6 text-md-end">
-        <a href="<?= BASE_URL ?>/personnel" class="btn btn-custom btn-custom-secondary me-2">
+        <a href="<?= BASE_URL ?>/personnel" class="btn btn-custom btn-custom-secondary">
             <i class="fas fa-arrow-left"></i> Back to List
         </a>
-        <?php if ($roleName === 'SNCO' || $roleName === 'Administrator'): ?>
-            <button type="button" class="btn btn-custom btn-custom-secondary me-2" data-bs-toggle="modal" data-bs-target="#editPersonnelModal">
-                <i class="fas fa-user-pen"></i> Edit Profile
-            </button>
-            <button type="button" class="btn btn-custom btn-custom-primary" data-bs-toggle="modal" data-bs-target="#addPostingModal">
-                <i class="fas fa-right-left"></i> Assign Transfer Posting
-            </button>
-        <?php endif; ?>
     </div>
 </div>
 
@@ -69,6 +61,17 @@ include __DIR__ . '/../layout/header.php';
                     </span>
                 </div>
             </div>
+
+            <?php if ($roleName === 'SNCO' || $roleName === 'Administrator'): ?>
+                <div class="border-top pt-4 mt-4 d-grid gap-2">
+                    <button type="button" class="btn btn-custom btn-custom-secondary w-100" data-bs-toggle="modal" data-bs-target="#editPersonnelModal">
+                        <i class="fas fa-user-pen"></i> Edit Profile
+                    </button>
+                    <button type="button" class="btn btn-custom btn-custom-primary w-100" data-bs-toggle="modal" data-bs-target="#addPostingModal">
+                        <i class="fas fa-right-left"></i> Assign Transfer Posting
+                    </button>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -110,133 +113,137 @@ include __DIR__ . '/../layout/header.php';
 <?php if ($roleName === 'SNCO' || $roleName === 'Administrator'): ?>
 <div class="modal fade" id="editPersonnelModal" tabindex="-1" aria-labelledby="editPersonnelModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content glass-card bg-dark text-light border-secondary">
+        <form action="<?= BASE_URL ?>/personnel/edit" method="POST" class="modal-content glass-card bg-dark text-light border-secondary">
+            <?= Security::csrfField() ?>
+            <!-- Service number is read-only but submitted in post -->
+            <input type="hidden" name="service_number" value="<?= htmlspecialchars($person['service_number']) ?>">
+            
             <div class="modal-header border-secondary">
                 <h5 class="modal-title fw-bold" id="editPersonnelModalLabel"><i class="fas fa-user-pen me-2"></i> Edit Personnel Profile</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="<?= BASE_URL ?>/personnel/edit" method="POST">
-                <?= Security::csrfField() ?>
-                <!-- Service number is read-only but submitted in post -->
-                <input type="hidden" name="service_number" value="<?= htmlspecialchars($person['service_number']) ?>">
-                
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label text-secondary small">Service Number</label>
-                            <input type="text" class="form-control form-control-custom bg-opacity-10 text-muted" value="<?= htmlspecialchars($person['service_number']) ?>" readonly disabled>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="rank_id" class="form-label text-secondary small">Rank</label>
-                            <select class="form-select form-control-custom" id="rank_id" name="rank_id" required>
-                                <?php foreach ($ranks as $rk): ?>
-                                    <option value="<?= $rk['rank_id'] ?>" <?= (int)$person['rank_id'] === (int)$rk['rank_id'] ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($rk['rank_name']) ?> (<?= htmlspecialchars($rk['rank_short_name']) ?>)
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="initials" class="form-label text-secondary small">Initials</label>
-                            <input type="text" class="form-control form-control-custom" id="initials" name="initials" value="<?= htmlspecialchars($person['initials']) ?>" required>
-                        </div>
-                        <div class="col-md-8">
-                            <label for="full_name" class="form-label text-secondary small">Full Name</label>
-                            <input type="text" class="form-control form-control-custom" id="full_name" name="full_name" value="<?= htmlspecialchars($person['full_name']) ?>" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="trade" class="form-label text-secondary small">Trade / Specialty</label>
-                            <input type="text" class="form-control form-control-custom" id="trade" name="trade" value="<?= htmlspecialchars($person['trade']) ?>" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="squadron" class="form-label text-secondary small">Squadron</label>
-                            <input type="text" class="form-control form-control-custom" id="squadron" name="squadron" value="<?= htmlspecialchars($person['squadron']) ?>" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="camp_id" class="form-label text-secondary small">Assigned Camp / Base</label>
-                            <select class="form-select form-control-custom" id="camp_id" name="camp_id" required>
-                                <?php foreach ($camps as $c): ?>
-                                    <?php 
-                                    // SNCO constraint
-                                    $restrictedCampId = LocationMiddleware::getCampConstraint();
-                                    if ($restrictedCampId !== null && (int)$c['camp_id'] !== $restrictedCampId) {
-                                        continue;
-                                    }
-                                    ?>
-                                    <option value="<?= $c['camp_id'] ?>" <?= (int)$person['camp_id'] === (int)$c['camp_id'] ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($c['camp_name']) ?> (<?= htmlspecialchars($c['camp_code']) ?>)
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="status" class="form-label text-secondary small">Personnel Status</label>
-                            <select class="form-select form-control-custom" id="status" name="status" required>
-                                <option value="Active" <?= $person['status'] === 'Active' ? 'selected' : '' ?>>Active</option>
-                                <option value="Leave" <?= $person['status'] === 'Leave' ? 'selected' : '' ?>>On Leave</option>
-                                <option value="Temporary Duty" <?= $person['status'] === 'Temporary Duty' ? 'selected' : '' ?>>Temporary Duty (TDY)</option>
-                                <option value="Inactive" <?= $person['status'] === 'Inactive' ? 'selected' : '' ?>>Inactive</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="email" class="form-label text-secondary small">Email Address</label>
-                            <input type="email" class="form-control form-control-custom" id="email" name="email" value="<?= htmlspecialchars($person['email']) ?>" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="contact_number" class="form-label text-secondary small">Contact Number</label>
-                            <input type="text" class="form-control form-control-custom" id="contact_number" name="contact_number" value="<?= htmlspecialchars($person['contact_number'] ?? '') ?>">
-                        </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small">Service Number</label>
+                        <input type="text" class="form-control form-control-custom bg-opacity-10 text-muted" value="<?= htmlspecialchars($person['service_number']) ?>" readonly disabled>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="rank_id" class="form-label text-secondary small">Rank</label>
+                        <select class="form-select form-control-custom" id="rank_id" name="rank_id" required>
+                            <?php foreach ($ranks as $rk): ?>
+                                <option value="<?= $rk['rank_id'] ?>" <?= (int)$person['rank_id'] === (int)$rk['rank_id'] ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($rk['rank_name']) ?> (<?= htmlspecialchars($rk['rank_short_name']) ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="initials" class="form-label text-secondary small">Initials</label>
+                        <input type="text" class="form-control form-control-custom" id="initials" name="initials" value="<?= htmlspecialchars($person['initials']) ?>" required>
+                    </div>
+                    <div class="col-md-8">
+                        <label for="full_name" class="form-label text-secondary small">Full Name</label>
+                        <input type="text" class="form-control form-control-custom" id="full_name" name="full_name" value="<?= htmlspecialchars($person['full_name']) ?>" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="trade" class="form-label text-secondary small">Trade / Specialty</label>
+                        <input type="text" class="form-control form-control-custom" id="trade" name="trade" value="<?= htmlspecialchars($person['trade']) ?>" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="squadron" class="form-label text-secondary small">Squadron</label>
+                        <input type="text" class="form-control form-control-custom" id="squadron" name="squadron" value="<?= htmlspecialchars($person['squadron']) ?>" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="camp_id" class="form-label text-secondary small">Assigned Camp / Base</label>
+                        <select class="form-select form-control-custom" id="camp_id" name="camp_id" required>
+                            <?php foreach ($camps as $c): ?>
+                                <?php 
+                                // SNCO constraint
+                                $restrictedCampId = LocationMiddleware::getCampConstraint();
+                                if ($restrictedCampId !== null && (int)$c['camp_id'] !== $restrictedCampId) {
+                                    continue;
+                                }
+                                ?>
+                                <option value="<?= $c['camp_id'] ?>" <?= (int)$person['camp_id'] === (int)$c['camp_id'] ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($c['camp_name']) ?> (<?= htmlspecialchars($c['camp_code']) ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="status" class="form-label text-secondary small">Personnel Status</label>
+                        <select class="form-select form-control-custom" id="status" name="status" required>
+                            <option value="Active" <?= $person['status'] === 'Active' ? 'selected' : '' ?>>Active</option>
+                            <option value="Leave" <?= $person['status'] === 'Leave' ? 'selected' : '' ?>>On Leave</option>
+                            <option value="Temporary Duty" <?= $person['status'] === 'Temporary Duty' ? 'selected' : '' ?>>Temporary Duty (TDY)</option>
+                            <option value="Inactive" <?= $person['status'] === 'Inactive' ? 'selected' : '' ?>>Inactive</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="email" class="form-label text-secondary small">Email Address</label>
+                        <input type="email" class="form-control form-control-custom" id="email" name="email" value="<?= htmlspecialchars($person['email']) ?>" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="contact_number" class="form-label text-secondary small">Contact Number</label>
+                        <input type="text" class="form-control form-control-custom" id="contact_number" name="contact_number" value="<?= htmlspecialchars($person['contact_number'] ?? '') ?>">
                     </div>
                 </div>
-                <div class="modal-footer border-secondary d-flex flex-column-reverse flex-sm-row justify-content-sm-end gap-2">
-                    <button type="button" class="btn btn-custom btn-custom-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-custom btn-custom-primary">Save Changes</button>
-                </div>
-            </form>
-        </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <?php
+                $submitLabel = "Save Changes";
+                $submitIcon = "fas fa-floppy-disk";
+                $cancelIcon = "fas fa-xmark";
+                include __DIR__ . '/../components/form-buttons.php';
+                ?>
+            </div>
+        </form>
     </div>
 </div>
 
 <!-- Assign Transfer Posting Modal -->
 <div class="modal fade" id="addPostingModal" tabindex="-1" aria-labelledby="addPostingModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable">
-        <div class="modal-content glass-card bg-dark text-light border-secondary">
+        <form action="<?= BASE_URL ?>/postings/add" method="POST" class="modal-content glass-card bg-dark text-light border-secondary">
+            <?= Security::csrfField() ?>
+            <input type="hidden" name="service_number" value="<?= htmlspecialchars($person['service_number']) ?>">
+            <input type="hidden" name="from_camp_id" value="<?= htmlspecialchars($person['camp_id']) ?>">
+            
             <div class="modal-header border-secondary">
                 <h5 class="modal-title fw-bold" id="addPostingModalLabel"><i class="fas fa-right-left me-2"></i> Register Camp Transfer</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="<?= BASE_URL ?>/postings/add" method="POST">
-                <?= Security::csrfField() ?>
-                <input type="hidden" name="service_number" value="<?= htmlspecialchars($person['service_number']) ?>">
-                <input type="hidden" name="from_camp_id" value="<?= htmlspecialchars($person['camp_id']) ?>">
-                
-                <div class="modal-body">
-                    <p class="text-secondary small">Move personnel active station from <strong><?= htmlspecialchars($person['camp_name']) ?></strong> to another base.</p>
-                    <div class="mb-3">
-                        <label class="form-label text-secondary small">Origin Camp</label>
-                        <input type="text" class="form-control form-control-custom bg-opacity-10 text-muted" value="<?= htmlspecialchars($person['camp_name']) ?>" disabled readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label for="to_camp_id" class="form-label text-secondary small">Destination Camp</label>
-                        <select class="form-select form-control-custom" id="to_camp_id" name="to_camp_id" required>
-                            <option value="" disabled selected>Select Destination</option>
-                            <?php foreach ($camps as $c): ?>
-                                <?php if ((int)$c['camp_id'] === (int)$person['camp_id']) continue; ?>
-                                <option value="<?= $c['camp_id'] ?>"><?= htmlspecialchars($c['camp_name']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="effective_date" class="form-label text-secondary small">Transfer Effective Date</label>
-                        <input type="date" class="form-control form-control-custom" id="effective_date" name="effective_date" value="<?= date('Y-m-d') ?>" required>
-                    </div>
+            <div class="modal-body">
+                <p class="text-secondary small">Move personnel active station from <strong><?= htmlspecialchars($person['camp_name']) ?></strong> to another base.</p>
+                <div class="mb-3">
+                    <label class="form-label text-secondary small">Origin Camp</label>
+                    <input type="text" class="form-control form-control-custom bg-opacity-10 text-muted" value="<?= htmlspecialchars($person['camp_name']) ?>" disabled readonly>
                 </div>
-                <div class="modal-footer border-secondary d-flex flex-column-reverse flex-sm-row justify-content-sm-end gap-2">
-                    <button type="button" class="btn btn-custom btn-custom-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-custom btn-custom-primary">Complete Posting Transfer</button>
+                <div class="mb-3">
+                    <label for="to_camp_id" class="form-label text-secondary small">Destination Camp</label>
+                    <select class="form-select form-control-custom" id="to_camp_id" name="to_camp_id" required>
+                        <option value="" disabled selected>Select Destination</option>
+                        <?php foreach ($camps as $c): ?>
+                            <?php if ((int)$c['camp_id'] === (int)$person['camp_id']) continue; ?>
+                            <option value="<?= $c['camp_id'] ?>"><?= htmlspecialchars($c['camp_name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
-            </form>
-        </div>
+                <div class="mb-3">
+                    <label for="effective_date" class="form-label text-secondary small">Transfer Effective Date</label>
+                    <input type="date" class="form-control form-control-custom" id="effective_date" name="effective_date" value="<?= date('Y-m-d') ?>" required>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <?php
+                $submitLabel = "Complete Posting Transfer";
+                $submitIcon = "fas fa-right-left";
+                $cancelIcon = "fas fa-xmark";
+                include __DIR__ . '/../components/form-buttons.php';
+                ?>
+            </div>
+        </form>
     </div>
 </div>
 <?php endif; ?>

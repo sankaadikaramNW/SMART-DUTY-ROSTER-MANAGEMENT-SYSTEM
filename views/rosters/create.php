@@ -46,11 +46,12 @@ include __DIR__ . '/../layout/header.php';
 
     <!-- Scheduling grid -->
     <div class="col-12">
-        <div class="glass-card p-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0"><i class="fas fa-list text-success me-2"></i> Watch Assignments Grid</h5>
+        <div class="glass-card mb-4">
+            <div class="card-header border-bottom border-secondary border-opacity-10 bg-transparent py-3 px-4 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-list text-success me-2"></i> Watch Assignments Grid</h5>
                 <button type="button" id="addRowBtn" class="btn btn-sm btn-custom btn-custom-secondary"><i class="fas fa-plus"></i> Add Entry Row</button>
             </div>
+            <div class="card-body p-4">
 
             <div class="table-custom-container">
                 <table class="table-custom text-center align-middle" id="assignmentsTable">
@@ -149,12 +150,13 @@ include __DIR__ . '/../layout/header.php';
                     </tbody>
                 </table>
             </div>
-
-            <div class="mt-4 d-flex flex-column-reverse flex-sm-row justify-content-sm-end gap-2 border-top pt-3 border-secondary border-opacity-20">
+            </div>
+            </div>
+            <div class="card-footer border-top border-secondary border-opacity-20 bg-transparent py-3 px-4 d-flex flex-column-reverse flex-sm-row justify-content-sm-end gap-2">
                 <a href="<?= BASE_URL ?>/rosters" class="btn btn-custom btn-custom-secondary">
                     <i class="fas fa-xmark"></i> Cancel
                 </a>
-                <button type="button" id="checkConflictsBtn" class="btn btn-custom btn-custom-secondary text-warning border-warning border-opacity-25">
+                <button type="button" id="checkConflictsBtn" class="btn btn-custom btn-custom-warning">
                     <i class="fas fa-circle-exclamation"></i> Verify Schedule Conflicts
                 </button>
                 <button type="button" id="saveRosterBtn" class="btn btn-custom btn-custom-success">

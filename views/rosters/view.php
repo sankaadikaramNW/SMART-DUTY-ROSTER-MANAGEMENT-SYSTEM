@@ -10,23 +10,9 @@ include __DIR__ . '/../layout/header.php';
         <a href="<?= BASE_URL ?>/rosters" class="btn btn-custom btn-custom-secondary me-2">
             <i class="fas fa-arrow-left"></i> Back to Lists
         </a>
-        <button type="button" class="btn btn-custom btn-custom-secondary me-2" onclick="window.print();">
+        <button type="button" class="btn btn-custom btn-custom-secondary" onclick="window.print();">
             <i class="fas fa-print"></i> Print Roster
         </button>
-        <?php if (($roleName === 'SNCO' || $roleName === 'Administrator') && ($roster['status'] === 'Draft' || $roster['status'] === 'Rejected')): ?>
-            <a href="<?= BASE_URL ?>/rosters/create?id=<?= $roster['roster_id'] ?>" class="btn btn-custom btn-custom-secondary me-2 text-warning border-warning border-opacity-25">
-                <i class="fas fa-pen-to-square"></i> Edit Draft
-            </a>
-            
-            <form action="<?= BASE_URL ?>/rosters/action" method="POST" class="d-inline">
-                <?= Security::csrfField() ?>
-                <input type="hidden" name="roster_id" value="<?= $roster['roster_id'] ?>">
-                <input type="hidden" name="action" value="Submit">
-                <button type="submit" class="btn btn-custom btn-custom-primary">
-                    <i class="fas fa-paper-plane"></i> Submit to OCPROVST
-                </button>
-            </form>
-        <?php endif; ?>
     </div>
 </div>
 
@@ -133,55 +119,84 @@ include __DIR__ . '/../layout/header.php';
                 <span class="text-secondary small">Creation Date:</span>
                 <span class="text-dark small"><?= date('F d, Y', strtotime($roster['created_at'])) ?></span>
             </div>
+            <?php if (($roleName === 'SNCO' || $roleName === 'Administrator') && ($roster['status'] === 'Draft' || $roster['status'] === 'Rejected')): ?>
+                <div class="border-top pt-3 mt-3 d-grid gap-2">
+                    <a href="<?= BASE_URL ?>/rosters/create?id=<?= $roster['roster_id'] ?>" class="btn btn-custom btn-custom-warning justify-content-center">
+                        <i class="fas fa-pen-to-square"></i> Edit Roster Draft
+                    </a>
+                    <form action="<?= BASE_URL ?>/rosters/action" method="POST" class="d-grid w-100">
+                        <?= Security::csrfField() ?>
+                        <input type="hidden" name="roster_id" value="<?= $roster['roster_id'] ?>">
+                        <input type="hidden" name="action" value="Submit">
+                        <button type="submit" class="btn btn-custom btn-custom-primary justify-content-center w-100">
+                            <i class="fas fa-paper-plane"></i> Submit to OCPROVST
+                        </button>
+                    </form>
+                </div>
+            <?php endif; ?>
         </div>
 
-        <!-- OCPROVST Approval workflow action panel -->
+        <!-- OCPROVST Decision Panel -->
         <?php if ($roleName === 'OCPROVST' && $roster['status'] === 'Submitted'): ?>
+            <div class="glass-card p-4 mb-4 border border-warning border-opacity-25 animate-fade-in">
+                <h5 class="fw-bold mb-3 text-warning"><i class="fas fa-clipboard-check me-2"></i> Roster Decision</h5>
+                <form action="<?= BASE_URL ?>/rosters/action" method="POST" id="rosterApprovalForm">
+                    <?= Security::csrfField() ?>
+                    <input type="hidden" name="roster_id" value="<?= $roster['roster_id'] ?>">
+                    <div class="mb-3">
+                        <label for="remarks" class="form-label text-secondary small">Supervisor Remarks / Feedback</label>
+                        <textarea class="form-control form-control-custom" id="remarks" name="remarks" rows="3" placeholder="Provide feedback or instructions here..."></textarea>
+                    </div>
+                    <div class="d-flex flex-column gap-2">
+                        <button type="submit" name="action" value="Approve" class="btn btn-custom btn-custom-success w-100 justify-content-center">
+                            <i class="fas fa-circle-check"></i> Approve & Publish
+                        </button>
+                        <button type="submit" name="action" value="Return" class="btn btn-custom btn-custom-warning w-100 justify-content-center">
+                            <i class="fas fa-rotate-left"></i> Return to Draft
+                        </button>
+                        <button type="submit" name="action" value="Reject" class="btn btn-custom btn-custom-danger w-100 justify-content-center">
+                            <i class="fas fa-circle-xmark"></i> Reject & Archive
+                        </button>
+                    </div>
+                </form>
+            </div>
             <!-- Reject Modal for individual assignment actions -->
             <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content border-0 shadow-lg">
-                        <div class="modal-header bg-danger text-white border-0">
-                            <h5 class="modal-title fw-bold" id="rejectModalLabel">
-                                <i class="fas fa-xmark-circle me-2"></i> Reject Duty Assignment
+                    <form action="<?= BASE_URL ?>/rosters/assignment-action" method="POST" id="rejectForm" class="modal-content glass-card bg-dark text-light border-secondary">
+                        <?= Security::csrfField() ?>
+                        <input type="hidden" name="assignment_id" id="rejectAssignmentId" value="">
+                        <input type="hidden" name="roster_id" id="rejectRosterId" value="">
+                        <input type="hidden" name="status" value="Rejected">
+                        <div class="modal-header border-secondary bg-danger bg-opacity-25">
+                            <h5 class="modal-title fw-bold text-white" id="rejectModalLabel">
+                                <i class="fas fa-xmark-circle me-2 text-danger"></i> Reject Duty Assignment
                             </h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <form action="<?= BASE_URL ?>/rosters/assignment-action" method="POST" id="rejectForm">
-                            <?= Security::csrfField() ?>
-                            <input type="hidden" name="assignment_id" id="rejectAssignmentId" value="">
-                            <input type="hidden" name="roster_id" id="rejectRosterId" value="">
-                            <input type="hidden" name="status" value="Rejected">
-                            <div class="modal-body p-4">
-                                <div class="mb-3">
-                                    <p class="text-secondary mb-1">Rejecting assignment for:</p>
-                                    <p class="fw-bold text-dark" id="rejectPersonName"></p>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="rejectReasonInput" class="form-label fw-medium text-dark">
-                                        Reason for Rejection <span class="text-danger">*</span>
-                                    </label>
-                                    <textarea
-                                        class="form-control"
-                                        id="rejectReasonInput"
-                                        name="supervisor_remarks"
-                                        rows="3"
-                                        placeholder="Provide a clear reason for rejection..."
-                                        required
-                                        minlength="3"></textarea>
-                                    <div class="form-text text-muted">This reason will be visible to the SNCO.</div>
-                                </div>
+                        <div class="modal-body p-4">
+                            <div class="mb-3">
+                                <p class="text-secondary mb-1">Rejecting assignment for:</p>
+                                <p class="fw-bold text-light" id="rejectPersonName"></p>
                             </div>
-                            <div class="modal-footer border-0 pt-0 d-flex flex-column-reverse flex-sm-row justify-content-sm-end gap-2">
-                                <button type="button" class="btn btn-custom btn-custom-secondary" data-bs-dismiss="modal">
-                                    <i class="fas fa-times me-1"></i> Cancel
-                                </button>
-                                <button type="submit" class="btn btn-custom btn-custom-danger" id="confirmRejectBtn">
-                                    <i class="fas fa-xmark me-1"></i> Confirm Rejection
-                                </button>
+                            <div class="mb-3">
+                                <label for="rejectReasonInput" class="form-label text-secondary small">
+                                    Reason for Rejection <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control form-control-custom" name="supervisor_remarks" id="rejectReasonInput" rows="3" required placeholder="Describe the reason for rejecting this watch duty assignment..."></textarea>
                             </div>
-                        </form>
-                    </div>
+                        </div>
+                        <div class="modal-footer border-secondary">
+                            <?php
+                            $submitLabel = "Confirm Rejection";
+                            $submitClass = "btn-custom-danger";
+                            $submitId = "confirmRejectBtn";
+                            $submitIcon = "fas fa-circle-xmark";
+                            $cancelIcon = "fas fa-xmark";
+                            include __DIR__ . '/../components/form-buttons.php';
+                            ?>
+                        </div>
+                    </form>
                 </div>
             </div>
             <script>
