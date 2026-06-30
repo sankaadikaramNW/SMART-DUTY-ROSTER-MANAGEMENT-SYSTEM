@@ -37,24 +37,6 @@
                 }, index * 80);
             });
 
-            // Mobile sidebar toggle trigger
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            const sidebar = document.querySelector('.sidebar-custom');
-            if (sidebarToggle && sidebar) {
-                sidebarToggle.addEventListener('click', () => {
-                    sidebar.classList.toggle('active');
-                });
-            }
-            
-            // Close sidebar on tapping outside on mobile
-            document.addEventListener('click', (e) => {
-                if (window.innerWidth < 992 && sidebar && sidebar.classList.contains('active')) {
-                    if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
-                        sidebar.classList.remove('active');
-                    }
-                }
-            });
-
             // Theme toggle (Visual indicator)
             const themeToggle = document.getElementById('themeToggle');
             if (themeToggle) {

@@ -63,13 +63,13 @@ include __DIR__ . '/../layout/header.php';
 <!-- Rank Modal -->
 <div class="modal fade" id="rankModal" tabindex="-1" aria-labelledby="rankModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <form action="<?= BASE_URL ?>/ranks/save" method="POST" class="modal-content glass-card bg-dark text-light border-secondary">
+        <form action="<?= BASE_URL ?>/ranks/save" method="POST" class="modal-content glass-card">
             <?= Security::csrfField() ?>
             <input type="hidden" id="rank_id" name="rank_id">
             
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title fw-bold" id="rankModalLabel">Configure Rank</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold text-dark" id="rankModalLabel">Configure Rank</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
@@ -96,7 +96,7 @@ include __DIR__ . '/../layout/header.php';
                     </select>
                 </div>
             </div>
-            <div class="modal-footer border-secondary">
+            <div class="modal-footer">
                 <?php
                 $submitLabel = "Save Rank";
                 $submitIcon = "fas fa-floppy-disk";

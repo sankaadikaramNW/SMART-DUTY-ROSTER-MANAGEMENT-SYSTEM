@@ -61,13 +61,13 @@ include __DIR__ . '/../layout/header.php';
 <!-- Camp Modal -->
 <div class="modal fade" id="campModal" tabindex="-1" aria-labelledby="campModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <form action="<?= BASE_URL ?>/camps/save" method="POST" class="modal-content glass-card bg-dark text-light border-secondary">
+        <form action="<?= BASE_URL ?>/camps/save" method="POST" class="modal-content glass-card">
             <?= Security::csrfField() ?>
             <input type="hidden" id="camp_id" name="camp_id">
             
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title fw-bold" id="campModalLabel">Configure Camp</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold text-dark" id="campModalLabel">Configure Camp</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
@@ -90,7 +90,7 @@ include __DIR__ . '/../layout/header.php';
                     </select>
                 </div>
             </div>
-            <div class="modal-footer border-secondary">
+            <div class="modal-footer">
                 <?php
                 $submitLabel = "Save Camp";
                 $submitIcon = "fas fa-floppy-disk";

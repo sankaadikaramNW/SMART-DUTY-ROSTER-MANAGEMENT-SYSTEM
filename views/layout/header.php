@@ -67,7 +67,7 @@ if ($isLoggedIn && $serviceNum) {
     <div class="app-container">
         <!-- Sidebar Navigation -->
         <aside class="sidebar-custom offcanvas-lg offcanvas-start" id="sidebarMenu" tabindex="-1" aria-labelledby="sidebarMenuLabel">
-            <div class="sidebar-header d-flex align-items-center justify-content-between">
+            <div class="sidebar-header offcanvas-header d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-2">
                     <img src="<?= BASE_URL ?>/views/assets/images/slaf_logo.png" alt="SLAF Logo" style="height: 38px; width: auto; object-fit: contain;">
                     <div class="sidebar-brand-text">
@@ -77,107 +77,109 @@ if ($isLoggedIn && $serviceNum) {
                 </div>
                 <button type="button" class="btn-close btn-close-white d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close"></button>
             </div>
-            <div class="sidebar-menu">
-                <!-- MAIN MENU -->
-                <div class="sidebar-group-title">Main Menu</div>
-                <a class="sidebar-link <?= ($route ?? '') === '/dashboard' ? 'active' : '' ?>" href="<?= BASE_URL ?>/dashboard">
-                    <i class="fas fa-chart-line"></i> Dashboard
-                </a>
-                
-                <?php if ($roleName === 'Administrator'): ?>
-                    <!-- ROSTER OPERATIONS -->
-                    <div class="sidebar-group-title">Roster Operations</div>
-                    <a class="sidebar-link <?= ($route ?? '') === '/personnel' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel">
-                        <i class="fas fa-users-gear"></i> Personnel
-                    </a>
-                    <a class="sidebar-link <?= ($route ?? '') === '/postings' ? 'active' : '' ?>" href="<?= BASE_URL ?>/postings">
-                        <i class="fas fa-map-location-dot"></i> Postings
-                    </a>
-                    <a class="sidebar-link <?= ($route ?? '') === '/rosters' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters">
-                        <i class="fas fa-calendar-days"></i> All Rosters
-                    </a>
-                    <a class="sidebar-link <?= ($route ?? '') === '/rosters/approve' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters/approve">
-                        <i class="fas fa-stamp"></i> Duty Approvals
+            <div class="offcanvas-body d-flex flex-column p-0 flex-grow-1">
+                <div class="sidebar-menu">
+                    <!-- MAIN MENU -->
+                    <div class="sidebar-group-title">Main Menu</div>
+                    <a class="sidebar-link <?= ($route ?? '') === '/dashboard' ? 'active' : '' ?>" href="<?= BASE_URL ?>/dashboard">
+                        <i class="fas fa-chart-line"></i> Dashboard
                     </a>
                     
-                    <!-- SYSTEM CONFIGURATION -->
-                    <div class="sidebar-group-title">System Settings</div>
-                    <a class="sidebar-link <?= ($route ?? '') === '/camps' ? 'active' : '' ?>" href="<?= BASE_URL ?>/camps">
-                        <i class="fas fa-campground"></i> Camps
-                    </a>
-                    <a class="sidebar-link <?= ($route ?? '') === '/shifts' ? 'active' : '' ?>" href="<?= BASE_URL ?>/shifts">
-                        <i class="fas fa-clock"></i> Shifts
-                    </a>
-                    <a class="sidebar-link <?= ($route ?? '') === '/duty-types' ? 'active' : '' ?>" href="<?= BASE_URL ?>/duty-types">
-                        <i class="fas fa-shield"></i> Duty Types
-                    </a>
-                    <a class="sidebar-link <?= ($route ?? '') === '/ranks' ? 'active' : '' ?>" href="<?= BASE_URL ?>/ranks">
-                        <i class="fas fa-list-ol"></i> Ranks
-                    </a>
-                    <a class="sidebar-link <?= ($route ?? '') === '/users' ? 'active' : '' ?>" href="<?= BASE_URL ?>/users">
-                        <i class="fas fa-user-shield"></i> User Accounts
-                    </a>
-                    <a class="sidebar-link <?= ($route ?? '') === '/audit-logs' ? 'active' : '' ?>" href="<?= BASE_URL ?>/audit-logs">
-                        <i class="fas fa-receipt"></i> Audit Logs
-                    </a>
-                    
-                    <!-- REPORTING -->
-                    <div class="sidebar-group-title">Reporting</div>
-                    <a class="sidebar-link <?= ($route ?? '') === '/reports' ? 'active' : '' ?>" href="<?= BASE_URL ?>/reports">
-                        <i class="fas fa-file-invoice"></i> Reports
-                    </a>
+                    <?php if ($roleName === 'Administrator'): ?>
+                        <!-- ROSTER OPERATIONS -->
+                        <div class="sidebar-group-title">Roster Operations</div>
+                        <a class="sidebar-link <?= ($route ?? '') === '/personnel' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel">
+                            <i class="fas fa-users-gear"></i> Personnel
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/postings' ? 'active' : '' ?>" href="<?= BASE_URL ?>/postings">
+                            <i class="fas fa-map-location-dot"></i> Postings
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/rosters' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters">
+                            <i class="fas fa-calendar-days"></i> All Rosters
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/rosters/approve' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters/approve">
+                            <i class="fas fa-stamp"></i> Duty Approvals
+                        </a>
+                        
+                        <!-- SYSTEM CONFIGURATION -->
+                        <div class="sidebar-group-title">System Settings</div>
+                        <a class="sidebar-link <?= ($route ?? '') === '/camps' ? 'active' : '' ?>" href="<?= BASE_URL ?>/camps">
+                            <i class="fas fa-campground"></i> Camps
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/shifts' ? 'active' : '' ?>" href="<?= BASE_URL ?>/shifts">
+                            <i class="fas fa-clock"></i> Shifts
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/duty-types' ? 'active' : '' ?>" href="<?= BASE_URL ?>/duty-types">
+                            <i class="fas fa-shield"></i> Duty Types
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/ranks' ? 'active' : '' ?>" href="<?= BASE_URL ?>/ranks">
+                            <i class="fas fa-list-ol"></i> Ranks
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/users' ? 'active' : '' ?>" href="<?= BASE_URL ?>/users">
+                            <i class="fas fa-user-shield"></i> User Accounts
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/audit-logs' ? 'active' : '' ?>" href="<?= BASE_URL ?>/audit-logs">
+                            <i class="fas fa-receipt"></i> Audit Logs
+                        </a>
+                        
+                        <!-- REPORTING -->
+                        <div class="sidebar-group-title">Reporting</div>
+                        <a class="sidebar-link <?= ($route ?? '') === '/reports' ? 'active' : '' ?>" href="<?= BASE_URL ?>/reports">
+                            <i class="fas fa-file-invoice"></i> Reports
+                        </a>
 
-                <?php elseif ($roleName === 'OCPROVST'): ?>
-                    <!-- ROSTER OPERATIONS -->
-                    <div class="sidebar-group-title">Roster Operations</div>
-                    <a class="sidebar-link <?= ($route ?? '') === '/personnel' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel">
-                        <i class="fas fa-users"></i> Personnel
-                    </a>
-                    <a class="sidebar-link <?= ($route ?? '') === '/postings' ? 'active' : '' ?>" href="<?= BASE_URL ?>/postings">
-                        <i class="fas fa-arrows-spin"></i> Postings
-                    </a>
-                    <a class="sidebar-link <?= ($route ?? '') === '/rosters' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters">
-                        <i class="fas fa-calendar-days"></i> All Rosters
-                    </a>
-                    <a class="sidebar-link <?= ($route ?? '') === '/rosters/approve' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters/approve">
-                        <i class="fas fa-stamp"></i> Duty Approvals
-                    </a>
-                    
-                    <!-- REPORTING -->
-                    <div class="sidebar-group-title">Reporting</div>
-                    <a class="sidebar-link <?= ($route ?? '') === '/reports' ? 'active' : '' ?>" href="<?= BASE_URL ?>/reports">
-                        <i class="fas fa-print"></i> Reports
-                    </a>
+                    <?php elseif ($roleName === 'OCPROVST'): ?>
+                        <!-- ROSTER OPERATIONS -->
+                        <div class="sidebar-group-title">Roster Operations</div>
+                        <a class="sidebar-link <?= ($route ?? '') === '/personnel' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel">
+                            <i class="fas fa-users"></i> Personnel
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/postings' ? 'active' : '' ?>" href="<?= BASE_URL ?>/postings">
+                            <i class="fas fa-arrows-spin"></i> Postings
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/rosters' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters">
+                            <i class="fas fa-calendar-days"></i> All Rosters
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/rosters/approve' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters/approve">
+                            <i class="fas fa-stamp"></i> Duty Approvals
+                        </a>
+                        
+                        <!-- REPORTING -->
+                        <div class="sidebar-group-title">Reporting</div>
+                        <a class="sidebar-link <?= ($route ?? '') === '/reports' ? 'active' : '' ?>" href="<?= BASE_URL ?>/reports">
+                            <i class="fas fa-print"></i> Reports
+                        </a>
 
-                <?php elseif ($roleName === 'SNCO'): ?>
-                    <!-- ROSTER OPERATIONS -->
-                    <div class="sidebar-group-title">Roster Operations</div>
-                    <a class="sidebar-link <?= ($route ?? '') === '/personnel' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel">
-                        <i class="fas fa-users"></i> Personnel
-                    </a>
-                    <a class="sidebar-link <?= ($route ?? '') === '/postings' ? 'active' : '' ?>" href="<?= BASE_URL ?>/postings">
-                        <i class="fas fa-arrows-spin"></i> Postings
-                    </a>
-                    <a class="sidebar-link <?= ($route ?? '') === '/rosters' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters">
-                        <i class="fas fa-calendar-days"></i> Rosters
-                    </a>
-                    
-                    <!-- REPORTING -->
-                    <div class="sidebar-group-title">Reporting</div>
-                    <a class="sidebar-link <?= ($route ?? '') === '/reports' ? 'active' : '' ?>" href="<?= BASE_URL ?>/reports">
-                        <i class="fas fa-print"></i> Reports
-                    </a>
+                    <?php elseif ($roleName === 'SNCO'): ?>
+                        <!-- ROSTER OPERATIONS -->
+                        <div class="sidebar-group-title">Roster Operations</div>
+                        <a class="sidebar-link <?= ($route ?? '') === '/personnel' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel">
+                            <i class="fas fa-users"></i> Personnel
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/postings' ? 'active' : '' ?>" href="<?= BASE_URL ?>/postings">
+                            <i class="fas fa-arrows-spin"></i> Postings
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/rosters' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters">
+                            <i class="fas fa-calendar-days"></i> Rosters
+                        </a>
+                        
+                        <!-- REPORTING -->
+                        <div class="sidebar-group-title">Reporting</div>
+                        <a class="sidebar-link <?= ($route ?? '') === '/reports' ? 'active' : '' ?>" href="<?= BASE_URL ?>/reports">
+                            <i class="fas fa-print"></i> Reports
+                        </a>
 
-                <?php elseif ($roleName === 'Airman'): ?>
-                    <!-- SERVICE MEMBER -->
-                    <div class="sidebar-group-title">My Schedule</div>
-                    <a class="sidebar-link <?= ($route ?? '') === '/rosters' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters">
-                        <i class="fas fa-calendar-days"></i> Duty Schedule
-                    </a>
-                <?php endif; ?>
-            </div>
-            <div class="sidebar-footer">
-                <i class="fas fa-shield"></i> SLAF SMART ROSTER - v1.0
+                    <?php elseif ($roleName === 'Airman'): ?>
+                        <!-- SERVICE MEMBER -->
+                        <div class="sidebar-group-title">My Schedule</div>
+                        <a class="sidebar-link <?= ($route ?? '') === '/rosters' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters">
+                            <i class="fas fa-calendar-days"></i> Duty Schedule
+                        </a>
+                    <?php endif; ?>
+                </div>
+                <div class="sidebar-footer">
+                    <i class="fas fa-shield"></i> SLAF SMART ROSTER - v1.0
+                </div>
             </div>
         </aside>
 

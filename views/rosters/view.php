@@ -163,21 +163,21 @@ include __DIR__ . '/../layout/header.php';
             <!-- Reject Modal for individual assignment actions -->
             <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
-                    <form action="<?= BASE_URL ?>/rosters/assignment-action" method="POST" id="rejectForm" class="modal-content glass-card bg-dark text-light border-secondary">
+                    <form action="<?= BASE_URL ?>/rosters/assignment-action" method="POST" id="rejectForm" class="modal-content glass-card">
                         <?= Security::csrfField() ?>
                         <input type="hidden" name="assignment_id" id="rejectAssignmentId" value="">
                         <input type="hidden" name="roster_id" id="rejectRosterId" value="">
                         <input type="hidden" name="status" value="Rejected">
-                        <div class="modal-header border-secondary bg-danger bg-opacity-25">
-                            <h5 class="modal-title fw-bold text-white" id="rejectModalLabel">
-                                <i class="fas fa-xmark-circle me-2 text-danger"></i> Reject Duty Assignment
+                        <div class="modal-header bg-danger bg-opacity-10">
+                            <h5 class="modal-title fw-bold text-danger" id="rejectModalLabel">
+                                <i class="fas fa-xmark-circle me-2"></i> Reject Duty Assignment
                             </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body p-4">
                             <div class="mb-3">
                                 <p class="text-secondary mb-1">Rejecting assignment for:</p>
-                                <p class="fw-bold text-light" id="rejectPersonName"></p>
+                                <p class="fw-bold text-dark" id="rejectPersonName"></p>
                             </div>
                             <div class="mb-3">
                                 <label for="rejectReasonInput" class="form-label text-secondary small">
@@ -186,7 +186,7 @@ include __DIR__ . '/../layout/header.php';
                                 <textarea class="form-control form-control-custom" name="supervisor_remarks" id="rejectReasonInput" rows="3" required placeholder="Describe the reason for rejecting this watch duty assignment..."></textarea>
                             </div>
                         </div>
-                        <div class="modal-footer border-secondary">
+                        <div class="modal-footer">
                             <?php
                             $submitLabel = "Confirm Rejection";
                             $submitClass = "btn-custom-danger";

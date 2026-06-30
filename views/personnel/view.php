@@ -113,14 +113,14 @@ include __DIR__ . '/../layout/header.php';
 <?php if ($roleName === 'SNCO' || $roleName === 'Administrator'): ?>
 <div class="modal fade" id="editPersonnelModal" tabindex="-1" aria-labelledby="editPersonnelModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <form action="<?= BASE_URL ?>/personnel/edit" method="POST" class="modal-content glass-card bg-dark text-light border-secondary">
+        <form action="<?= BASE_URL ?>/personnel/edit" method="POST" class="modal-content glass-card">
             <?= Security::csrfField() ?>
             <!-- Service number is read-only but submitted in post -->
             <input type="hidden" name="service_number" value="<?= htmlspecialchars($person['service_number']) ?>">
             
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title fw-bold" id="editPersonnelModalLabel"><i class="fas fa-user-pen me-2"></i> Edit Personnel Profile</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold text-dark" id="editPersonnelModalLabel"><i class="fas fa-user-pen me-2"></i> Edit Personnel Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="row g-3">
@@ -190,7 +190,7 @@ include __DIR__ . '/../layout/header.php';
                     </div>
                 </div>
             </div>
-            <div class="modal-footer border-secondary">
+            <div class="modal-footer">
                 <?php
                 $submitLabel = "Save Changes";
                 $submitIcon = "fas fa-floppy-disk";
@@ -205,14 +205,14 @@ include __DIR__ . '/../layout/header.php';
 <!-- Assign Transfer Posting Modal -->
 <div class="modal fade" id="addPostingModal" tabindex="-1" aria-labelledby="addPostingModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable">
-        <form action="<?= BASE_URL ?>/postings/add" method="POST" class="modal-content glass-card bg-dark text-light border-secondary">
+        <form action="<?= BASE_URL ?>/postings/add" method="POST" class="modal-content glass-card">
             <?= Security::csrfField() ?>
             <input type="hidden" name="service_number" value="<?= htmlspecialchars($person['service_number']) ?>">
             <input type="hidden" name="from_camp_id" value="<?= htmlspecialchars($person['camp_id']) ?>">
             
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title fw-bold" id="addPostingModalLabel"><i class="fas fa-right-left me-2"></i> Register Camp Transfer</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold text-dark" id="addPostingModalLabel"><i class="fas fa-right-left me-2"></i> Register Camp Transfer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <p class="text-secondary small">Move personnel active station from <strong><?= htmlspecialchars($person['camp_name']) ?></strong> to another base.</p>
@@ -235,7 +235,7 @@ include __DIR__ . '/../layout/header.php';
                     <input type="date" class="form-control form-control-custom" id="effective_date" name="effective_date" value="<?= date('Y-m-d') ?>" required>
                 </div>
             </div>
-            <div class="modal-footer border-secondary">
+            <div class="modal-footer">
                 <?php
                 $submitLabel = "Complete Posting Transfer";
                 $submitIcon = "fas fa-right-left";

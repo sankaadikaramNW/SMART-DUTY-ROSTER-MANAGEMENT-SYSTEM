@@ -404,12 +404,17 @@ h1, h2, h3, h4, h5, h6 {
     border-right: 1px solid var(--glass-border);
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1000;
     transition: var(--transition-smooth);
+}
+
+@media (min-width: 992px) {
+    .sidebar-custom {
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+    }
 }
 
 .sidebar-header {

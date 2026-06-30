@@ -75,18 +75,18 @@ include __DIR__ . '/../layout/header.php';
 <?php if ($roleName === 'SNCO' || $roleName === 'Administrator'): ?>
 <div class="modal fade" id="addPostingModal" tabindex="-1" aria-labelledby="addPostingModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable">
-        <form action="<?= BASE_URL ?>/postings/add" method="POST" class="modal-content glass-card bg-dark text-light border-secondary">
+        <form action="<?= BASE_URL ?>/postings/add" method="POST" class="modal-content glass-card">
             <?= Security::csrfField() ?>
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title fw-bold" id="addPostingModalLabel"><i class="fas fa-right-left me-2"></i> Register Camp Transfer</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold text-dark" id="addPostingModalLabel"><i class="fas fa-right-left me-2"></i> Register Camp Transfer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <!-- Search airmen dynamic input -->
                 <div class="mb-3">
                     <label for="personnel_search" class="form-label text-secondary small">Search Personnel</label>
                     <input type="text" class="form-control form-control-custom" id="personnel_search" placeholder="Type name or service number..." autocomplete="off">
-                    <div id="searchResults" class="list-group mt-2 border border-secondary bg-dark text-light shadow position-absolute w-75 z-3" style="display:none; max-height: 200px; overflow-y: auto;"></div>
+                    <div id="searchResults" class="list-group mt-2 border border-light-subtle bg-white shadow position-absolute w-75 z-3" style="display:none; max-height: 200px; overflow-y: auto;"></div>
                     <!-- Hidden fields to hold selections -->
                     <input type="hidden" id="service_number_val" name="service_number" required>
                     <input type="hidden" id="from_camp_id_val" name="from_camp_id" required>
@@ -112,7 +112,7 @@ include __DIR__ . '/../layout/header.php';
                     <input type="date" class="form-control form-control-custom" id="effective_date" name="effective_date" value="<?= date('Y-m-d') ?>" required>
                 </div>
             </div>
-            <div class="modal-footer border-secondary">
+            <div class="modal-footer">
                 <?php
                 $submitLabel = "Complete Posting Transfer";
                 $submitIcon = "fas fa-right-left";

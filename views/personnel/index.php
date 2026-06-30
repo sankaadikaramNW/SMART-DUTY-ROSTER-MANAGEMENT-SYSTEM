@@ -86,11 +86,11 @@ include __DIR__ . '/../layout/header.php';
 <?php if ($roleName === 'SNCO' || $roleName === 'Administrator'): ?>
 <div class="modal fade" id="addPersonnelModal" tabindex="-1" aria-labelledby="addPersonnelModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <form action="<?= BASE_URL ?>/personnel/add" method="POST" class="modal-content glass-card bg-dark text-light border-secondary">
+        <form action="<?= BASE_URL ?>/personnel/add" method="POST" class="modal-content glass-card">
             <?= Security::csrfField() ?>
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title fw-bold" id="addPersonnelModalLabel"><i class="fas fa-user-plus me-2"></i> Register New Personnel Profile</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold text-dark" id="addPersonnelModalLabel"><i class="fas fa-user-plus me-2"></i> Register New Personnel Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="row g-3">
@@ -158,7 +158,7 @@ include __DIR__ . '/../layout/header.php';
                     </div>
                 </div>
             </div>
-            <div class="modal-footer border-secondary">
+            <div class="modal-footer">
                 <?php
                 $submitLabel = "Register Profile";
                 $submitIcon = "fas fa-floppy-disk";

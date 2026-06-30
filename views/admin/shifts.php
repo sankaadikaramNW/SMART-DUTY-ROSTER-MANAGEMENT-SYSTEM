@@ -65,13 +65,13 @@ include __DIR__ . '/../layout/header.php';
 <!-- Shift Modal -->
 <div class="modal fade" id="shiftModal" tabindex="-1" aria-labelledby="shiftModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <form action="<?= BASE_URL ?>/shifts/save" method="POST" class="modal-content glass-card bg-dark text-light border-secondary">
+        <form action="<?= BASE_URL ?>/shifts/save" method="POST" class="modal-content glass-card">
             <?= Security::csrfField() ?>
             <input type="hidden" id="shift_id" name="shift_id">
             
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title fw-bold" id="shiftModalLabel">Configure Shift</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold text-dark" id="shiftModalLabel">Configure Shift</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
@@ -104,7 +104,7 @@ include __DIR__ . '/../layout/header.php';
                     </select>
                 </div>
             </div>
-            <div class="modal-footer border-secondary">
+            <div class="modal-footer">
                 <?php
                 $submitLabel = "Save Shift";
                 $submitIcon = "fas fa-floppy-disk";

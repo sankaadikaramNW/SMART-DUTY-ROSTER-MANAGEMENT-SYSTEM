@@ -80,13 +80,13 @@ include __DIR__ . '/../layout/header.php';
 <!-- User Modal -->
 <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <form action="<?= BASE_URL ?>/users/save" method="POST" class="modal-content glass-card bg-dark text-light border-secondary">
+        <form action="<?= BASE_URL ?>/users/save" method="POST" class="modal-content glass-card">
             <?= Security::csrfField() ?>
             <input type="hidden" id="user_id" name="user_id">
             
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title fw-bold" id="userModalLabel">Configure User Account</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold text-dark" id="userModalLabel">Configure User Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             
             <div class="modal-body">
@@ -123,7 +123,7 @@ include __DIR__ . '/../layout/header.php';
                     </select>
                 </div>
             </div>
-            <div class="modal-footer border-secondary">
+            <div class="modal-footer">
                 <?php
                 $submitLabel = "Save User";
                 $submitIcon = "fas fa-floppy-disk";

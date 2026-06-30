@@ -59,13 +59,13 @@ include __DIR__ . '/../layout/header.php';
 <!-- Duty Type Modal -->
 <div class="modal fade" id="dutyTypeModal" tabindex="-1" aria-labelledby="dutyTypeModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <form action="<?= BASE_URL ?>/duty-types/save" method="POST" class="modal-content glass-card bg-dark text-light border-secondary">
+        <form action="<?= BASE_URL ?>/duty-types/save" method="POST" class="modal-content glass-card">
             <?= Security::csrfField() ?>
             <input type="hidden" id="duty_type_id" name="duty_type_id">
             
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title fw-bold" id="dutyTypeModalLabel">Configure Duty Type</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold text-dark" id="dutyTypeModalLabel">Configure Duty Type</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
@@ -84,7 +84,7 @@ include __DIR__ . '/../layout/header.php';
                     </select>
                 </div>
             </div>
-            <div class="modal-footer border-secondary">
+            <div class="modal-footer">
                 <?php
                 $submitLabel = "Save Duty Type";
                 $submitIcon = "fas fa-floppy-disk";
