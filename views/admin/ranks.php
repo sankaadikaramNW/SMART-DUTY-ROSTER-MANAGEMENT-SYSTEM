@@ -45,7 +45,7 @@ include __DIR__ . '/../layout/header.php';
                             </td>
                             <td>
                                 <button type="button" class="btn btn-sm btn-custom btn-custom-secondary py-1 px-2" 
-                                        onclick='openRankModal(<?= json_encode($rk) ?>);'>
+                                        onclick="openRankModal(<?= htmlspecialchars(json_encode($rk), ENT_QUOTES, 'UTF-8') ?>);">
                                     <i class="fas fa-pen-to-square"></i> Edit
                                 </button>
                             </td>
@@ -94,7 +94,7 @@ include __DIR__ . '/../layout/header.php';
                         </select>
                     </div>
                 </div>
-                <div class="modal-footer border-secondary">
+                <div class="modal-footer border-secondary d-flex flex-column-reverse flex-sm-row justify-content-sm-end gap-2">
                     <button type="button" class="btn btn-custom btn-custom-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-custom btn-custom-primary">Save Rank</button>
                 </div>

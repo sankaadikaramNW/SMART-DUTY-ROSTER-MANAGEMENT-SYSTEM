@@ -172,11 +172,11 @@ include __DIR__ . '/../layout/header.php';
                                     <div class="form-text text-muted">This reason will be visible to the SNCO.</div>
                                 </div>
                             </div>
-                            <div class="modal-footer border-0 pt-0">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <div class="modal-footer border-0 pt-0 d-flex flex-column-reverse flex-sm-row justify-content-sm-end gap-2">
+                                <button type="button" class="btn btn-custom btn-custom-secondary" data-bs-dismiss="modal">
                                     <i class="fas fa-times me-1"></i> Cancel
                                 </button>
-                                <button type="submit" class="btn btn-danger" id="confirmRejectBtn">
+                                <button type="submit" class="btn btn-custom btn-custom-danger" id="confirmRejectBtn">
                                     <i class="fas fa-xmark me-1"></i> Confirm Rejection
                                 </button>
                             </div>

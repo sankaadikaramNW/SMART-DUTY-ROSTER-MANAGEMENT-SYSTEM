@@ -28,11 +28,25 @@ CREATE TABLE IF NOT EXISTS `roles` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
+-- Table `ranks`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `ranks` (
+  `rank_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `rank_code` VARCHAR(50) UNIQUE NOT NULL,
+  `rank_name` VARCHAR(100) NOT NULL,
+  `rank_short_name` VARCHAR(20) NOT NULL,
+  `display_order` INT DEFAULT 0,
+  `status` ENUM('Active', 'Inactive') DEFAULT 'Active',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
 -- Table `personnel`
 -- --------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `personnel` (
   `service_number` VARCHAR(30) PRIMARY KEY,
-  `rank` VARCHAR(50) NOT NULL,
+  `rank_id` INT NOT NULL,
   `initials` VARCHAR(50) NOT NULL,
   `full_name` VARCHAR(255) NOT NULL,
   `trade` VARCHAR(100) NOT NULL,
@@ -44,8 +58,10 @@ CREATE TABLE IF NOT EXISTS `personnel` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (`camp_id`) REFERENCES `camps` (`camp_id`) ON UPDATE CASCADE,
+  FOREIGN KEY (`rank_id`) REFERENCES `ranks` (`rank_id`) ON UPDATE CASCADE,
   INDEX idx_personnel_camp (`camp_id`),
-  INDEX idx_personnel_status (`status`)
+  INDEX idx_personnel_status (`status`),
+  INDEX idx_personnel_rank (`rank_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -246,23 +262,31 @@ INSERT INTO `duty_types` (`duty_type_id`, `duty_type_name`, `description`, `stat
 (5, 'Operations Room Duty', 'Communication and radar watch', 'Active'),
 (6, 'VIP Security Duty', 'Security escort and safety detail', 'Active');
 
+-- Seed Ranks
+INSERT INTO `ranks` (`rank_id`, `rank_code`, `rank_name`, `rank_short_name`, `display_order`, `status`) VALUES
+(1, 'WO', 'Warrant Officer', 'WO', 1, 'Active'),
+(2, 'SQNLDR', 'Squadron Leader', 'Sqn Ldr', 2, 'Active'),
+(3, 'F_SGT', 'Flight Sergeant', 'F/Sgt', 3, 'Active'),
+(4, 'CPL', 'Corporal', 'Cpl', 4, 'Active'),
+(5, 'LAC', 'Leading Aircraftman', 'LAC', 5, 'Active');
+
 -- Seed Personnel (Admin, OCPROVST, SNCO, and Airmen for different bases)
-INSERT INTO `personnel` (`service_number`, `rank`, `initials`, `full_name`, `trade`, `squadron`, `camp_id`, `contact_number`, `email`, `status`) VALUES
+INSERT INTO `personnel` (`service_number`, `rank_id`, `initials`, `full_name`, `trade`, `squadron`, `camp_id`, `contact_number`, `email`, `status`) VALUES
 -- Administrator
-('admin', 'Warrant Officer', 'A.B.', 'John Smith', 'Admin General', 'Admin HQ', 1, '+94711111111', 'admin@slaf.lk', 'Active'),
+('admin', 1, 'A.B.', 'John Smith', 'Admin General', 'Admin HQ', 1, '+94711111111', 'admin@slaf.lk', 'Active'),
 -- OCPROVST
-('51838', 'Squadron Leader', 'K.L.', 'Kamal Perera', 'Provost Officer', 'Provost Squadron', 1, '+94722222222', 'provost@slaf.lk', 'Active'),
+('51838', 2, 'K.L.', 'Kamal Perera', 'Provost Officer', 'Provost Squadron', 1, '+94722222222', 'provost@slaf.lk', 'Active'),
 -- SNCO for Ekala
-('51839', 'Flight Sergeant', 'M.R.', 'Rohan Fernando', 'Operations', 'No 3 Air Defence', 1, '+94733333333', 'snco.ekala@slaf.lk', 'Active'),
+('51839', 3, 'M.R.', 'Rohan Fernando', 'Operations', 'No 3 Air Defence', 1, '+94733333333', 'snco.ekala@slaf.lk', 'Active'),
 -- SNCO for Ratmalana
-('51840', 'Flight Sergeant', 'A.P.', 'Anura Priyantha', 'Operations', 'No 2 Squadron', 2, '+94733333334', 'snco.ratmalana@slaf.lk', 'Active'),
+('51840', 3, 'A.P.', 'Anura Priyantha', 'Operations', 'No 2 Squadron', 2, '+94733333334', 'snco.ratmalana@slaf.lk', 'Active'),
 -- Airmen in Ekala (Camp 1)
-('51841', 'Corporal', 'S.T.', 'Saman Thilakarathne', 'Provost Guard', 'Provost Squadron', 1, '+94744444441', 'saman@slaf.lk', 'Active'),
-('51842', 'LAC', 'D.M.', 'Dinesh Madushanka', 'Operations', 'No 3 Air Defence', 1, '+94744444442', 'dinesh@slaf.lk', 'Active'),
-('51843', 'LAC', 'W.S.', 'Wasanta Silva', 'Operations', 'No 3 Air Defence', 1, '+94744444443', 'wasanta@slaf.lk', 'Active'),
+('51841', 4, 'S.T.', 'Saman Thilakarathne', 'Provost Guard', 'Provost Squadron', 1, '+94744444441', 'saman@slaf.lk', 'Active'),
+('51842', 5, 'D.M.', 'Dinesh Madushanka', 'Operations', 'No 3 Air Defence', 1, '+94744444442', 'dinesh@slaf.lk', 'Active'),
+('51843', 5, 'W.S.', 'Wasanta Silva', 'Operations', 'No 3 Air Defence', 1, '+94744444443', 'wasanta@slaf.lk', 'Active'),
 -- Airmen in Ratmalana (Camp 2)
-('51844', 'LAC', 'G.H.', 'Gayan Harsha', 'Aviation Tech', 'No 2 Squadron', 2, '+94755555551', 'gayan@slaf.lk', 'Active'),
-('51845', 'LAC', 'N.J.', 'Nipuna Jayasinghe', 'Provost Guard', 'No 2 Squadron', 2, '+94755555552', 'nipuna@slaf.lk', 'Active');
+('51844', 5, 'G.H.', 'Gayan Harsha', 'Aviation Tech', 'No 2 Squadron', 2, '+94755555551', 'gayan@slaf.lk', 'Active'),
+('51845', 5, 'N.J.', 'Nipuna Jayasinghe', 'Provost Guard', 'No 2 Squadron', 2, '+94755555552', 'nipuna@slaf.lk', 'Active');
 
 -- Seed Users (Passwords are all hashed using standard BCRYPT of 'Password@123')
 INSERT INTO `users` (`user_id`, `service_number`, `password_hash`, `role_id`, `status`) VALUES
