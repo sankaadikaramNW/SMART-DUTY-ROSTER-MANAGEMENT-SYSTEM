@@ -9,7 +9,7 @@ class DutyAssignment {
     public static function getByRosterId($rosterId) {
         $db = Database::getInstance()->getConnection();
         $stmt = $db->prepare("
-            SELECT a.*, rk.rank_name AS rank, p.initials, p.full_name, p.trade, p.squadron, p.status AS personnel_status, c.camp_name,
+            SELECT a.*, rk.rank_name AS rank, rk.rank_short_name, p.initials, p.full_name, p.trade, p.squadron, p.status AS personnel_status, c.camp_name,
                    s.shift_name, s.start_time, s.end_time, t.duty_type_name,
                    pos.effective_date AS posting_effective_date,
                    pos_from.camp_name AS posting_from_camp_name
@@ -33,6 +33,18 @@ class DutyAssignment {
         $db = Database::getInstance()->getConnection();
         $db->beginTransaction();
         try {
+            // Fetch roster camp ID to validate personnel location compliance
+            $stmtRoster = $db->prepare("SELECT camp_id FROM duty_rosters WHERE roster_id = :roster_id");
+            $stmtRoster->execute([':roster_id' => $rosterId]);
+            $rosterCamp = $stmtRoster->fetch();
+            if (!$rosterCamp) {
+                throw new Exception("Roster not found.");
+            }
+            $rosterCampId = (int)$rosterCamp['camp_id'];
+
+            // Prepare personnel camp verification statement
+            $stmtPersonnel = $db->prepare("SELECT camp_id FROM personnel WHERE service_number = :service_number");
+
             // Delete existing assignments for the roster
             $stmt = $db->prepare("DELETE FROM duty_assignments WHERE roster_id = :roster_id");
             $stmt->execute([':roster_id' => $rosterId]);
@@ -45,6 +57,13 @@ class DutyAssignment {
                     (:roster_id, :duty_date, :duty_type_id, :shift_id, :service_number, :priority_level, :remarks, :conflict_level, :justification, :supervisor_remarks)
                 ");
                 foreach ($assignments as $a) {
+                    // Backend validation: verify personnel belongs to the roster's camp
+                    $stmtPersonnel->execute([':service_number' => $a['service_number']]);
+                    $pData = $stmtPersonnel->fetch();
+                    if (!$pData || (int)$pData['camp_id'] !== $rosterCampId) {
+                        throw new Exception("Security Error: Personnel " . $a['service_number'] . " does not belong to this camp/base and cannot be assigned to this roster.");
+                    }
+
                     $stmt->execute([
                         ':roster_id' => $rosterId,
                         ':duty_date' => $a['duty_date'],

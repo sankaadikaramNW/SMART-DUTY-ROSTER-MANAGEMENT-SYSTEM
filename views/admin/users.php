@@ -38,10 +38,10 @@ include __DIR__ . '/../layout/header.php';
                             <tr>
                                 <td class="fw-bold"><?= htmlspecialchars($u['service_number']) ?></td>
                                 <td>
-                                    <span class="text-info font-monospace small"><?= htmlspecialchars($u['rank']) ?></span> 
+                                    <span class="text-info font-monospace small"><?= htmlspecialchars($u['rank'] ?? 'No Rank') ?></span> 
                                     <?= htmlspecialchars($u['full_name']) ?>
                                 </td>
-                                <td><?= htmlspecialchars($u['camp_name']) ?></td>
+                                <td><?= htmlspecialchars($u['camp_name'] ?? 'No Location') ?></td>
                                 <td>
                                     <span class="badge bg-primary bg-opacity-25 text-info border border-primary border-opacity-25 px-2.5 py-1 small rounded">
                                         <?= htmlspecialchars($u['role_name']) ?>
@@ -91,13 +91,16 @@ include __DIR__ . '/../layout/header.php';
             
             <div class="modal-body">
                 <div class="mb-3">
-                    <label for="service_number" class="form-label text-secondary small">Link to Personnel Profile</label>
-                    <select class="form-select form-control-custom" id="service_number" name="service_number" required>
-                        <option value="" disabled selected>Select Personnel</option>
-                        <?php foreach ($personnel as $p): ?>
-                            <option value="<?= $p['service_number'] ?>"><?= htmlspecialchars($p['service_number']) ?> - <?= htmlspecialchars($p['rank'] . ' ' . $p['full_name']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                    <label class="form-label text-secondary small fw-bold">Link to Personnel Profile</label>
+                    <!-- Search input shown when creating new user -->
+                    <div id="personnel_search_wrapper">
+                        <input type="text" class="form-control form-control-custom" id="personnel_search" placeholder="Type service number or name to search..." autocomplete="off">
+                        <div id="searchResults" class="list-group mt-2 border border-light-subtle bg-white shadow position-absolute w-75 z-3" style="display:none; max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+                    <!-- Display input shown when editing existing user -->
+                    <input type="text" class="form-control form-control-custom bg-light text-muted d-none" id="personnel_display" readonly>
+                    <!-- Hidden field to hold selected service number -->
+                    <input type="hidden" id="service_number_val" name="service_number" required>
                 </div>
                 
                 <div class="mb-3">
@@ -139,20 +142,75 @@ include __DIR__ . '/../layout/header.php';
     let modal;
     document.addEventListener('DOMContentLoaded', () => {
         modal = new bootstrap.Modal(document.getElementById('userModal'));
+
+        const searchInput = document.getElementById('personnel_search');
+        const resultsDiv = document.getElementById('searchResults');
+        const hiddenService = document.getElementById('service_number_val');
+
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.trim();
+            if (query.length < 2) {
+                resultsDiv.innerHTML = '';
+                resultsDiv.style.display = 'none';
+                return;
+            }
+
+            fetch(`${BASE_URL}/personnel/search?q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    resultsDiv.innerHTML = '';
+                    if (data.length > 0) {
+                        data.forEach(item => {
+                            const btn = document.createElement('button');
+                            btn.type = 'button';
+                            btn.className = 'list-group-item list-group-item-action list-group-item-dark text-light border-secondary small py-2';
+                            btn.innerHTML = `<strong>${item.service_number}</strong> - ${item.rank} ${item.full_name} (${item.camp_name})`;
+                            btn.addEventListener('click', () => {
+                                searchInput.value = `${item.rank} ${item.full_name} (${item.service_number})`;
+                                hiddenService.value = item.service_number;
+                                resultsDiv.innerHTML = '';
+                                resultsDiv.style.display = 'none';
+                            });
+                            resultsDiv.appendChild(btn);
+                        });
+                        resultsDiv.style.display = 'block';
+                    } else {
+                        resultsDiv.innerHTML = '<div class="list-group-item list-group-item-dark text-muted border-secondary small py-2">No matches found</div>';
+                        resultsDiv.style.display = 'block';
+                    }
+                })
+                .catch(err => console.error('Error searching personnel:', err));
+        });
+
+        // Hide results when clicking outside
+        document.addEventListener('click', (e) => {
+            if (e.target !== searchInput && e.target !== resultsDiv) {
+                resultsDiv.style.display = 'none';
+            }
+        });
     });
 
     function openUserModal(data = null) {
         document.getElementById('user_id').value = data ? data.user_id : '';
         
-        const serviceSelect = document.getElementById('service_number');
-        serviceSelect.value = data ? data.service_number : '';
+        const searchWrapper = document.getElementById('personnel_search_wrapper');
+        const displayInput = document.getElementById('personnel_display');
+        const hiddenService = document.getElementById('service_number_val');
+        const searchInput = document.getElementById('personnel_search');
+
         if (data) {
-            // Service number is locked when editing to avoid database integrity issues
-            serviceSelect.setAttribute('readonly', 'readonly');
-            // We also make sure the user can change it if they want by having a hidden field or disable select, but let's keep select editable or locked.
-            // Under normal updates, locking is preferred. Let's make it disabled and submit a hidden field or let select execute.
+            searchWrapper.classList.add('d-none');
+            displayInput.classList.remove('d-none');
+            displayInput.value = `${data.service_number} - ${data.rank} ${data.full_name}`;
+            hiddenService.value = data.service_number;
+            searchInput.removeAttribute('required');
         } else {
-            serviceSelect.removeAttribute('readonly');
+            searchWrapper.classList.remove('d-none');
+            displayInput.classList.add('d-none');
+            displayInput.value = '';
+            searchInput.value = '';
+            hiddenService.value = '';
+            searchInput.setAttribute('required', 'required');
         }
 
         document.getElementById('password').value = '';

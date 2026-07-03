@@ -1,168 +1,142 @@
 <?php
 include __DIR__ . '/../layout/header.php';
 ?>
-<div class="row mb-4 align-items-center">
-    <div class="col-md-12">
-        <h2 class="fw-bold mb-1 gradient-text"><i class="fas fa-calendar-plus"></i> <?= $roster ? 'Edit Roster Draft' : 'Create Smart Roster' ?></h2>
-        <p class="text-secondary">Camp: <strong class="text-dark"><?= htmlspecialchars($camp['camp_name']) ?></strong> &bull; Schedule Sentries & Guards</p>
+<div class="container-custom">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-12">
+            <h2 class="fw-bold mb-1 gradient-text"><i class="fas fa-calendar-plus"></i> <?= $roster ? 'Edit Roster Draft' : 'Create Smart Roster' ?></h2>
+            <p class="text-secondary mb-0">Camp: <strong class="text-dark"><?= htmlspecialchars($camp['camp_name']) ?></strong> &bull; Schedule Sentries & Guards</p>
+        </div>
     </div>
-</div>
 
-<div class="row g-4">
-    <!-- Roster Metadata Card -->
-    <div class="col-12">
-        <div class="glass-card p-4">
-            <h5 class="fw-bold mb-3"><i class="fas fa-info-circle text-info me-2"></i> Roster Metadata</h5>
+    <!-- Single Bootstrap Card layout -->
+    <div class="glass-card mb-4 animate-fade-in">
+        <div class="card-header border-bottom border-secondary border-opacity-10 bg-transparent py-3 px-4">
+            <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-list-check text-primary me-2"></i> Roster Details & Watch Assignments</h5>
+        </div>
+        
+        <div class="card-body p-4">
             <form id="rosterForm">
                 <input type="hidden" id="roster_id" value="<?= $roster ? $roster['roster_id'] : '' ?>">
                 <input type="hidden" id="camp_id" value="<?= $camp['camp_id'] ?>">
                 
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label for="roster_name" class="form-label text-secondary small">Roster Name / Identifier</label>
+                <!-- Metadata Fields in a single horizontal row -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6 col-lg-4">
+                        <label for="roster_name" class="form-label text-secondary small fw-bold">Roster Name / Identifier</label>
                         <input type="text" class="form-control form-control-custom" id="roster_name" value="<?= $roster ? htmlspecialchars($roster['roster_name']) : 'Guard Duty Schedule ' . date('M Y') ?>" required placeholder="e.g. Guard Duty June 2026">
                     </div>
-                    <div class="col-md-3">
-                        <label for="start_date" class="form-label text-secondary small">Start Date</label>
+                    <div class="col-md-3 col-lg-4">
+                        <label for="start_date" class="form-label text-secondary small fw-bold">Start Date</label>
                         <input type="date" class="form-control form-control-custom" id="start_date" value="<?= $roster ? htmlspecialchars($roster['start_date']) : date('Y-m-d') ?>" required>
                     </div>
-                    <div class="col-md-3">
-                        <label for="end_date" class="form-label text-secondary small">End Date</label>
+                    <div class="col-md-3 col-lg-4">
+                        <label for="end_date" class="form-label text-secondary small fw-bold">End Date</label>
                         <input type="date" class="form-control form-control-custom" id="end_date" value="<?= $roster ? htmlspecialchars($roster['end_date']) : date('Y-m-d', strtotime('+7 days')) ?>" required>
                     </div>
                 </div>
-            </form>
-        </div>
-    </div>
 
-    <!-- Conflicts summary panel -->
-    <div class="col-12" id="conflictsSummaryPanel" style="display: none;">
-        <div class="alert alert-danger glass-card border-danger text-danger p-4 mb-0" role="alert">
-            <h5 class="fw-bold mb-2 text-danger"><i class="fas fa-triangle-exclamation"></i> Schedule Conflicts Detected</h5>
-            <p class="small text-secondary mb-3">Please resolve the conflicts marked below before submitting for approval.</p>
-            <ul id="conflictsSummaryList" class="mb-0 small text-secondary"></ul>
-        </div>
-    </div>
+                <hr class="border-secondary border-opacity-10 my-4">
 
-    <!-- Scheduling grid -->
-    <div class="col-12">
-        <div class="glass-card mb-4">
-            <div class="card-header border-bottom border-secondary border-opacity-10 bg-transparent py-3 px-4 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-list text-success me-2"></i> Watch Assignments Grid</h5>
-                <button type="button" id="addRowBtn" class="btn btn-sm btn-custom btn-custom-secondary"><i class="fas fa-plus"></i> Add Entry Row</button>
-            </div>
-            <div class="card-body p-4">
+                <!-- Conflicts Alert Panel -->
+                <div id="conflictsSummaryPanel" style="display: none;" class="mb-4">
+                    <div class="alert alert-danger border-danger text-danger p-3 mb-0 rounded" role="alert" style="background: rgba(239, 68, 68, 0.05);">
+                        <h6 class="fw-bold mb-2 text-danger"><i class="fas fa-triangle-exclamation"></i> Schedule Conflicts Found!</h6>
+                        <ul id="conflictsSummaryList" class="mb-0 ps-3 small text-danger" style="max-height: 150px; overflow-y: auto;"></ul>
+                    </div>
+                </div>
 
-            <div class="table-custom-container">
-                <table class="table-custom text-center align-middle" id="assignmentsTable">
-                    <thead>
-                        <tr>
-                            <th style="width: 15%;">Date</th>
-                            <th style="width: 15%;">Shift Rotation</th>
-                            <th style="width: 20%;">Duty Type</th>
-                            <th style="width: 25%;">Assigned Personnel</th>
-                            <th style="width: 10%;">Priority</th>
-                            <th style="width: 10%;">Remarks</th>
-                            <th style="width: 5%;"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="assignmentsTbody">
-                        <?php if (empty($assignments)): ?>
-                            <!-- Will insert empty row dynamically if new -->
-                        <?php else: ?>
-                            <?php foreach ($assignments as $index => $as): ?>
-                                <tr class="assignment-row" data-index="<?= $index ?>">
-                                    <td>
-                                        <input type="date" class="form-control form-control-custom row-date" value="<?= htmlspecialchars($as['duty_date']) ?>" required>
-                                    </td>
-                                    <td>
-                                        <select class="form-select form-control-custom row-shift" required>
-                                            <?php foreach ($shifts as $s): ?>
-                                                <option value="<?= $s['shift_id'] ?>" <?= (int)$as['shift_id'] === (int)$s['shift_id'] ? 'selected' : '' ?>><?= htmlspecialchars($s['shift_name']) ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <select class="form-select form-control-custom row-duty-type" required>
-                                            <?php foreach ($dutyTypes as $dt): ?>
-                                                <option value="<?= $dt['duty_type_id'] ?>" <?= (int)$as['duty_type_id'] === (int)$dt['duty_type_id'] ? 'selected' : '' ?>><?= htmlspecialchars($dt['duty_type_name']) ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <div class="position-relative personnel-search-wrapper">
-                                            <div class="input-group input-group-sm">
-                                                <span class="input-group-text bg-transparent border-secondary text-secondary"><i class="fas fa-search"></i></span>
-                                                <input type="text" class="form-control form-control-custom row-personnel-search-input" placeholder="Type Service Number..." autocomplete="off" value="<?= $as ? htmlspecialchars($as['rank'] . ' ' . $as['full_name'] . ' (' . $as['service_number'] . ')') : '' ?>" required>
-                                                <input type="hidden" class="row-personnel" value="<?= htmlspecialchars($as['service_number']) ?>">
-                                                <button type="button" class="btn btn-outline-secondary clear-search-btn" style="display: <?= $as ? 'block' : 'none' ?>;"><i class="fas fa-xmark"></i></button>
-                                            </div>
-                                            
-                                            <!-- Autocomplete suggestions dropdown -->
-                                            <div class="autocomplete-suggestions dropdown-menu w-100 bg-dark text-light border-secondary" style="display: none; max-height: 200px; overflow-y: auto; z-index: 1050; position: absolute;"></div>
-                                            
-                                            <!-- Loading spinner -->
-                                            <div class="search-spinner position-absolute end-0 top-0 mt-2 me-5 text-info" style="display: none; z-index: 1060;">
-                                                <i class="fas fa-spinner fa-spin"></i>
-                                            </div>
+                <!-- Table Grid Header Actions -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold text-dark mb-0"><i class="fas fa-calendar-days text-success me-2"></i> Watch Assignments</h6>
+                    <button type="button" id="addRowBtn" class="btn btn-sm btn-custom btn-custom-secondary"><i class="fas fa-plus"></i> Add Entry Row</button>
+                </div>
 
-                                            <!-- Selected Personnel Detailed Card -->
-                                            <div class="card personnel-card border-secondary bg-dark text-light mt-2 p-2 shadow-sm" style="display: <?= $as ? 'block' : 'none' ?>; text-align: left; font-size: 0.8rem;">
-                                                <div class="card-body p-1">
-                                                    <div class="d-flex align-items-center justify-content-between">
-                                                        <h6 class="card-title mb-1 fw-bold text-info" style="font-size: 0.85rem;"><span class="card-rank-name"><?= $as ? htmlspecialchars($as['rank']) : '' ?></span> <span class="card-full-name"><?= $as ? htmlspecialchars($as['full_name']) : '' ?></span></h6>
-                                                        <?php
-                                                        $pStatus = $as['personnel_status'] ?? 'Active';
-                                                        $statusClass = 'bg-success';
-                                                        if ($pStatus === 'Leave') $statusClass = 'bg-warning';
-                                                        elseif ($pStatus === 'Temporary Duty') $statusClass = 'bg-info';
-                                                        ?>
-                                                        <span class="badge card-status <?= $statusClass ?> bg-opacity-25 border border-<?= substr($statusClass, 3) ?> border-opacity-25 text-<?= substr($statusClass, 3) === 'warning' ? 'warning' : (substr($statusClass, 3) === 'success' ? 'success' : 'info') ?> small rounded-pill px-2"><?= htmlspecialchars($pStatus) ?></span>
-                                                    </div>
-                                                    <div class="row g-1 small text-secondary mt-1">
-                                                        <div class="col-6"><strong>SN:</strong> <span class="card-service-number"><?= $as ? htmlspecialchars($as['service_number']) : '' ?></span></div>
-                                                        <div class="col-6"><strong>Trade:</strong> <span class="card-trade"><?= $as ? htmlspecialchars($as['trade'] ?? '') : '' ?></span></div>
-                                                        <div class="col-6"><strong>Squadron:</strong> <span class="card-squadron"><?= $as ? htmlspecialchars($as['squadron'] ?? '') : '' ?></span></div>
-                                                        <div class="col-6"><strong>Camp:</strong> <span class="card-camp"><?= $as ? htmlspecialchars($as['camp_name'] ?? '') : '' ?></span></div>
-                                                        <div class="col-12"><strong>Posting:</strong> <span class="card-posting"><?= $as ? htmlspecialchars($as['posting_from_camp_name'] ? "Moved from {$as['posting_from_camp_name']} effective {$as['posting_effective_date']}" : 'Active Posting') : 'Active Posting' ?></span></div>
-                                                    </div>
+                <!-- Assignments Table -->
+                <div class="table-custom-container mb-4">
+                    <table class="table-custom align-middle" id="assignmentsTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 10%;">Date</th>
+                                <th style="width: 12%;">Shift Rotation</th>
+                                <th style="width: 16%;">Duty Type</th>
+                                <th style="width: 44%;">Assigned Personnel</th>
+                                <th style="width: 14%;">Remarks</th>
+                                <th style="width: 4%;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="assignmentsTbody">
+                            <?php if (empty($assignments)): ?>
+                                <!-- Empty rows will be added dynamically -->
+                            <?php else: ?>
+                                <?php foreach ($assignments as $index => $as): ?>
+                                    <tr class="assignment-row" data-index="<?= $index ?>">
+                                        <td>
+                                            <input type="date" class="form-control form-control-custom row-date" value="<?= htmlspecialchars($as['duty_date']) ?>" required>
+                                        </td>
+                                        <td>
+                                            <select class="form-select form-control-custom row-shift" required>
+                                                <?php foreach ($shifts as $s): ?>
+                                                    <option value="<?= $s['shift_id'] ?>" <?= (int)$as['shift_id'] === (int)$s['shift_id'] ? 'selected' : '' ?>><?= htmlspecialchars($s['shift_name']) ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select class="form-select form-control-custom row-duty-type" required>
+                                                <?php foreach ($dutyTypes as $dt): ?>
+                                                    <option value="<?= $dt['duty_type_id'] ?>" <?= (int)$as['duty_type_id'] === (int)$dt['duty_type_id'] ? 'selected' : '' ?>><?= htmlspecialchars($dt['duty_type_name']) ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <div class="position-relative personnel-search-wrapper">
+                                                <div class="input-group input-group-sm">
+                                                    <span class="input-group-text bg-transparent border-secondary text-secondary"><i class="fas fa-search"></i></span>
+                                                    <input type="text" class="form-control form-control-custom row-personnel-search-input" placeholder="Type Service Number or Name..." autocomplete="off" value="<?= $as ? htmlspecialchars($as['service_number'] . ' - ' . ($as['rank_short_name'] ?? $as['rank']) . ' ' . $as['initials'] . ' ' . (array_reverse(explode(' ', trim($as['full_name'])))[0]) ) : '' ?>" required>
+                                                    <input type="hidden" class="row-personnel" value="<?= htmlspecialchars($as['service_number']) ?>">
+                                                    <button type="button" class="btn btn-outline-secondary clear-search-btn" style="display: <?= $as ? 'block' : 'none' ?>;"><i class="fas fa-xmark"></i></button>
+                                                </div>
+                                                
+                                                <!-- Autocomplete suggestions dropdown -->
+                                                <div class="autocomplete-suggestions dropdown-menu w-100 bg-white text-dark border-light shadow-lg" style="display: none; max-height: 200px; overflow-y: auto; z-index: 1050; position: absolute;"></div>
+                                                
+                                                <!-- Loading spinner -->
+                                                <div class="search-spinner position-absolute end-0 top-0 mt-2 me-5 text-info" style="display: none; z-index: 1060;">
+                                                    <i class="fas fa-spinner fa-spin"></i>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="row-conflict-info mt-1 small" style="display:none;"></div>
-                                    </td>
-                                    <td>
-                                        <select class="form-select form-control-custom row-priority">
-                                            <option value="Low" <?= $as['priority_level'] === 'Low' ? 'selected' : '' ?>>Low</option>
-                                            <option value="Medium" <?= $as['priority_level'] === 'Medium' ? 'selected' : '' ?>>Medium</option>
-                                            <option value="High" <?= $as['priority_level'] === 'High' ? 'selected' : '' ?>>High</option>
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <input type="text" class="form-control form-control-custom row-remarks" value="<?= htmlspecialchars($as['remarks'] ?? '') ?>" placeholder="Notes...">
-                                    </td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-custom btn-custom-danger remove-row-btn"><i class="fas fa-trash-can"></i></button>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-            </div>
-            </div>
-            <div class="card-footer border-top border-secondary border-opacity-20 bg-transparent py-3 px-4 d-flex flex-column-reverse flex-sm-row justify-content-sm-end gap-2">
-                <a href="<?= BASE_URL ?>/rosters" class="btn btn-custom btn-custom-secondary">
-                    <i class="fas fa-xmark"></i> Cancel
-                </a>
-                <button type="button" id="checkConflictsBtn" class="btn btn-custom btn-custom-warning">
-                    <i class="fas fa-circle-exclamation"></i> Verify Schedule Conflicts
-                </button>
-                <button type="button" id="saveRosterBtn" class="btn btn-custom btn-custom-success">
-                    <i class="fas fa-floppy-disk"></i> Save Roster Draft
-                </button>
-            </div>
+                                            <div class="row-conflict-info mt-1 small" style="display:none;"></div>
+                                        </td>
+                                        <td>
+                                            <textarea class="form-control form-control-custom row-remarks" rows="1" placeholder="Notes..."><?= htmlspecialchars($as['remarks'] ?? '') ?></textarea>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-custom btn-custom-danger remove-row-btn"><i class="fas fa-trash-can"></i></button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <hr class="border-secondary border-opacity-10 my-4">
+
+                <!-- Form Bottom Actions Row -->
+                <div class="row align-items-center">
+                    <div class="col-12 d-flex justify-content-end gap-2 flex-wrap">
+                        <a href="<?= BASE_URL ?>/rosters" class="btn btn-custom btn-custom-secondary px-4 py-2.5">
+                            <i class="fas fa-xmark me-2"></i> Cancel
+                        </a>
+                        <button type="button" id="checkConflictsBtn" class="btn btn-custom btn-custom-warning px-4 py-2.5">
+                            <i class="fas fa-circle-exclamation me-2"></i> Verify Schedule Conflicts
+                        </button>
+                        <button type="button" id="saveRosterBtn" class="btn btn-custom btn-custom-success px-4 py-2.5">
+                            <i class="fas fa-floppy-disk me-2"></i> Save Roster Draft
+                        </button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -220,43 +194,19 @@ include __DIR__ . '/../layout/header.php';
                     <div class="position-relative personnel-search-wrapper">
                         <div class="input-group input-group-sm">
                             <span class="input-group-text bg-transparent border-secondary text-secondary"><i class="fas fa-search"></i></span>
-                            <input type="text" class="form-control form-control-custom row-personnel-search-input" placeholder="Type Service Number..." autocomplete="off" required>
+                            <input type="text" class="form-control form-control-custom row-personnel-search-input" placeholder="Type Service Number or Name..." autocomplete="off" required>
                             <input type="hidden" class="row-personnel" value="">
                             <button type="button" class="btn btn-outline-secondary clear-search-btn" style="display: none;"><i class="fas fa-xmark"></i></button>
                         </div>
-                        <div class="autocomplete-suggestions dropdown-menu w-100 bg-dark text-light border-secondary" style="display: none; max-height: 200px; overflow-y: auto; z-index: 1050; position: absolute;"></div>
+                        <div class="autocomplete-suggestions dropdown-menu w-100 bg-white text-dark border-light shadow-lg" style="display: none; max-height: 200px; overflow-y: auto; z-index: 1050; position: absolute;"></div>
                         
                         <div class="search-spinner position-absolute end-0 top-0 mt-2 me-5 text-info" style="display: none; z-index: 1060;">
                             <i class="fas fa-spinner fa-spin"></i>
                         </div>
-
-                        <div class="card personnel-card border-secondary bg-dark text-light mt-2 p-2 shadow-sm" style="display: none; text-align: left; font-size: 0.8rem;">
-                            <div class="card-body p-1">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <h6 class="card-title mb-1 fw-bold text-info" style="font-size: 0.85rem;"><span class="card-rank-name"></span> <span class="card-full-name"></span></h6>
-                                    <span class="badge card-status bg-success bg-opacity-25 border border-success border-opacity-25 text-success small rounded-pill px-2">Active</span>
-                                </div>
-                                <div class="row g-1 small text-secondary mt-1">
-                                    <div class="col-6"><strong>SN:</strong> <span class="card-service-number"></span></div>
-                                    <div class="col-6"><strong>Trade:</strong> <span class="card-trade"></span></div>
-                                    <div class="col-6"><strong>Squadron:</strong> <span class="card-squadron"></span></div>
-                                    <div class="col-6"><strong>Camp:</strong> <span class="card-camp"></span></div>
-                                    <div class="col-12"><strong>Posting:</strong> <span class="card-posting"></span></div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                     <div class="row-conflict-info mt-1 small" style="display:none;"></div>
-                </td>
                 <td>
-                    <select class="form-select form-control-custom row-priority">
-                        <option value="Low" selected>Low</option>
-                        <option value="Medium">Medium</option>
-                        <option value="High">High</option>
-                    </select>
-                </td>
-                <td>
-                    <input type="text" class="form-control form-control-custom row-remarks" placeholder="Notes...">
+                    <textarea class="form-control form-control-custom row-remarks" rows="1" placeholder="Notes..."></textarea>
                 </td>
                 <td>
                     <button type="button" class="btn btn-sm btn-custom btn-custom-danger remove-row-btn"><i class="fas fa-trash-can"></i></button>
@@ -305,7 +255,6 @@ include __DIR__ . '/../layout/header.php';
                 const shiftId = row.querySelector('.row-shift').value;
                 const dutyTypeId = row.querySelector('.row-duty-type').value;
                 const serviceNumber = row.querySelector('.row-personnel').value;
-                const priorityLevel = row.querySelector('.row-priority').value;
                 const remarks = row.querySelector('.row-remarks').value;
 
                 if (date && serviceNumber) {
@@ -314,7 +263,7 @@ include __DIR__ . '/../layout/header.php';
                         shift_id: parseInt(shiftId),
                         duty_type_id: parseInt(dutyTypeId),
                         service_number: serviceNumber,
-                        priority_level: priorityLevel,
+                        priority_level: 'Low',
                         remarks: remarks
                     });
                 }
@@ -365,7 +314,7 @@ include __DIR__ . '/../layout/header.php';
             .then(res => res.json())
             .then(data => {
                 checkConflictsBtn.disabled = false;
-                checkConflictsBtn.innerHTML = '<i class="fas fa-circle-exclamation"></i> Verify Schedule Conflicts';
+                checkConflictsBtn.innerHTML = '<i class="fas fa-circle-exclamation me-2"></i> Verify Schedule Conflicts';
 
                 if (data.success) {
                     const conflicts = data.conflicts;
@@ -395,7 +344,7 @@ include __DIR__ . '/../layout/header.php';
                                 
                                 // Add to summary
                                 const li = document.createElement('li');
-                                li.className = 'mb-1 text-secondary';
+                                li.className = 'mb-1 text-danger';
                                 li.innerHTML = `<span class="badge bg-${conf.level === 'Critical' ? 'danger' : 'warning'} me-2">${conf.level}</span> On ${row.querySelector('.row-date').value}: ${conf.message}`;
                                 conflictsSummaryList.appendChild(li);
                             });
@@ -411,7 +360,7 @@ include __DIR__ . '/../layout/header.php';
             })
             .catch(err => {
                 checkConflictsBtn.disabled = false;
-                checkConflictsBtn.innerHTML = '<i class="fas fa-circle-exclamation"></i> Verify Schedule Conflicts';
+                checkConflictsBtn.innerHTML = '<i class="fas fa-circle-exclamation me-2"></i> Verify Schedule Conflicts';
                 console.error("Conflict checking request error:", err);
             });
         });
@@ -452,7 +401,7 @@ include __DIR__ . '/../layout/header.php';
             .then(res => res.json())
             .then(data => {
                 saveRosterBtn.disabled = false;
-                saveRosterBtn.innerHTML = '<i class="fas fa-floppy-disk"></i> Save Roster Draft';
+                saveRosterBtn.innerHTML = '<i class="fas fa-floppy-disk me-2"></i> Save Roster Draft';
 
                 if (data.success) {
                     alert(data.message);
@@ -463,7 +412,7 @@ include __DIR__ . '/../layout/header.php';
             })
             .catch(err => {
                 saveRosterBtn.disabled = false;
-                saveRosterBtn.innerHTML = '<i class="fas fa-floppy-disk"></i> Save Roster Draft';
+                saveRosterBtn.innerHTML = '<i class="fas fa-floppy-disk me-2"></i> Save Roster Draft';
                 console.error("Save roster request error:", err);
             });
         });
@@ -477,7 +426,6 @@ include __DIR__ . '/../layout/header.php';
             const hidden = wrapper.querySelector('.row-personnel');
             const suggestions = wrapper.querySelector('.autocomplete-suggestions');
             const spinner = wrapper.querySelector('.search-spinner');
-            const card = wrapper.querySelector('.personnel-card');
             const clearBtn = wrapper.querySelector('.clear-search-btn');
 
             let debounceTimer;
@@ -503,7 +451,6 @@ include __DIR__ . '/../layout/header.php';
                             
                             if (data && data.length > 0) {
                                 data.forEach(item => {
-                                    // Highlight matched text
                                     const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
                                     const highlightedSN = item.service_number.replace(regex, '<mark class="p-0 bg-warning text-dark">$1</mark>');
                                     
@@ -511,7 +458,6 @@ include __DIR__ . '/../layout/header.php';
                                     const rankShort = item.rank_short_name || '';
                                     const initials = item.initials || '';
                                     
-                                    // Extract last name for list display matching example: 123456 CPL S. Perera
                                     const nameParts = item.full_name.trim().split(' ');
                                     const lastName = nameParts[nameParts.length - 1];
                                     const formattedName = `${rankShort} ${initials} ${lastName}`;
@@ -520,7 +466,7 @@ include __DIR__ . '/../layout/header.php';
 
                                     const btn = document.createElement('button');
                                     btn.type = 'button';
-                                    btn.className = 'list-group-item list-group-item-action list-group-item-dark text-light border-secondary small py-2 text-start';
+                                    btn.className = 'list-group-item list-group-item-action bg-white text-dark border-light-subtle small py-2 text-start';
                                     btn.innerHTML = `
                                         <strong>${highlightedSN}</strong> ${highlightedName}<br>
                                         <span class="text-secondary small">Trade: ${highlightedTrade}</span><br>
@@ -528,41 +474,11 @@ include __DIR__ . '/../layout/header.php';
                                     `;
 
                                     btn.addEventListener('click', () => {
-                                        // Set input value
-                                        input.value = `${rankName} ${item.full_name} (${item.service_number})`;
+                                        // Set input value to rank, name, and service number
+                                        input.value = `${item.service_number} - ${rankShort} ${initials} ${lastName}`;
                                         hidden.value = item.service_number;
                                         clearBtn.style.display = 'block';
 
-                                        // Update card details
-                                        card.querySelector('.card-rank-name').textContent = rankName;
-                                        card.querySelector('.card-full-name').textContent = item.full_name;
-                                        card.querySelector('.card-service-number').textContent = item.service_number;
-                                        card.querySelector('.card-trade').textContent = item.trade;
-                                        card.querySelector('.card-squadron').textContent = item.squadron;
-                                        card.querySelector('.card-camp').textContent = item.camp_name;
-                                        
-                                        // Setup posting info
-                                        let postingText = 'Active Posting';
-                                        if (item.posting_from_camp_name) {
-                                            postingText = `Moved from ${item.posting_from_camp_name} effective ${item.posting_effective_date}`;
-                                        }
-                                        card.querySelector('.card-posting').textContent = postingText;
-
-                                        // Status badge
-                                        const statusBadge = card.querySelector('.card-status');
-                                        statusBadge.textContent = item.status;
-                                        
-                                        // Remove previous classes
-                                        statusBadge.className = 'badge card-status small rounded-pill px-2';
-                                        if (item.status === 'Active') {
-                                            statusBadge.classList.add('bg-success', 'bg-opacity-25', 'border', 'border-success', 'text-success');
-                                        } else if (item.status === 'Leave') {
-                                            statusBadge.classList.add('bg-warning', 'bg-opacity-25', 'border', 'border-warning', 'text-warning');
-                                        } else {
-                                            statusBadge.classList.add('bg-info', 'bg-opacity-25', 'border', 'border-info', 'text-info');
-                                        }
-
-                                        card.style.display = 'block';
                                         suggestions.innerHTML = '';
                                         suggestions.style.display = 'none';
                                         
@@ -595,7 +511,6 @@ include __DIR__ . '/../layout/header.php';
                 input.value = '';
                 hidden.value = '';
                 clearBtn.style.display = 'none';
-                card.style.display = 'none';
                 suggestions.innerHTML = '';
                 suggestions.style.display = 'none';
                 

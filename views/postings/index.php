@@ -11,7 +11,7 @@ include __DIR__ . '/../layout/header.php';
 <div class="glass-card mb-4">
     <div class="card-header border-bottom border-secondary border-opacity-10 bg-transparent py-3 px-4 d-flex justify-content-between align-items-center">
         <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-list text-info me-2"></i> Station Transfer History</h5>
-        <?php if ($roleName === 'SNCO' || $roleName === 'Administrator'): ?>
+        <?php if ($roleName === 'SNCO' || $roleName === 'Warrant Officer IC' || $roleName === 'Administrator'): ?>
             <button type="button" class="btn btn-sm btn-custom btn-custom-primary py-2" data-bs-toggle="modal" data-bs-target="#addPostingModal">
                 <i class="fas fa-right-left"></i> Create Station Transfer
             </button>
@@ -72,7 +72,7 @@ include __DIR__ . '/../layout/header.php';
 </div>
 
 <!-- Add Posting Modal -->
-<?php if ($roleName === 'SNCO' || $roleName === 'Administrator'): ?>
+<?php if ($roleName === 'SNCO' || $roleName === 'Warrant Officer IC' || $roleName === 'Administrator'): ?>
 <div class="modal fade" id="addPostingModal" tabindex="-1" aria-labelledby="addPostingModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable">
         <form action="<?= BASE_URL ?>/postings/add" method="POST" class="modal-content glass-card">

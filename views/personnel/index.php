@@ -11,7 +11,7 @@ include __DIR__ . '/../layout/header.php';
 <div class="glass-card mb-4">
     <div class="card-header border-bottom border-secondary border-opacity-10 bg-transparent py-3 px-4 d-flex justify-content-between align-items-center">
         <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-list text-info me-2"></i> Personnel List</h5>
-        <?php if ($roleName === 'SNCO' || $roleName === 'Administrator'): ?>
+        <?php if ($roleName === 'SNCO' || $roleName === 'Warrant Officer IC' || $roleName === 'Administrator'): ?>
             <button type="button" class="btn btn-sm btn-custom btn-custom-primary py-2" data-bs-toggle="modal" data-bs-target="#addPersonnelModal">
                 <i class="fas fa-user-plus"></i> Add New Personnel
             </button>
@@ -50,12 +50,12 @@ include __DIR__ . '/../layout/header.php';
                             <tr class="personnel-row">
                                 <td class="fw-bold search-cell-service"><?= htmlspecialchars($p['service_number']) ?></td>
                                 <td class="search-cell-name">
-                                    <span class="text-info fw-medium"><?= htmlspecialchars($p['rank']) ?></span> 
+                                    <span class="text-info fw-medium"><?= htmlspecialchars($p['rank'] ?? 'No Rank') ?></span> 
                                     <?= htmlspecialchars($p['initials'] . ' ' . $p['full_name']) ?>
                                 </td>
                                 <td class="search-cell-trade"><?= htmlspecialchars($p['trade']) ?></td>
                                 <td><?= htmlspecialchars($p['squadron']) ?></td>
-                                <td><?= htmlspecialchars($p['camp_name']) ?></td>
+                                <td><?= htmlspecialchars($p['camp_name'] ?? 'No Location') ?></td>
                                 <td>
                                     <?php
                                     $status = $p['status'];
@@ -83,7 +83,7 @@ include __DIR__ . '/../layout/header.php';
 </div>
 
 <!-- Add Personnel Modal -->
-<?php if ($roleName === 'SNCO' || $roleName === 'Administrator'): ?>
+<?php if ($roleName === 'SNCO' || $roleName === 'Warrant Officer IC' || $roleName === 'Administrator'): ?>
 <div class="modal fade" id="addPersonnelModal" tabindex="-1" aria-labelledby="addPersonnelModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <form action="<?= BASE_URL ?>/personnel/add" method="POST" class="modal-content glass-card">
@@ -210,12 +210,12 @@ include __DIR__ . '/../layout/header.php';
                             tr.innerHTML = `
                                 <td class="fw-bold search-cell-service">${escapeHtml(p.service_number)}</td>
                                 <td class="search-cell-name">
-                                    <span class="text-info fw-medium">${escapeHtml(p.rank)}</span> 
+                                    <span class="text-info fw-medium">${escapeHtml(p.rank || 'No Rank')}</span> 
                                     ${escapeHtml(p.initials + ' ' + p.full_name)}
                                 </td>
                                 <td class="search-cell-trade">${escapeHtml(p.trade)}</td>
                                 <td>${escapeHtml(p.squadron)}</td>
-                                <td>${escapeHtml(p.camp_name)}</td>
+                                <td>${escapeHtml(p.camp_name || 'No Location')}</td>
                                 <td>
                                     <span class="badge ${badgeClass} bg-opacity-25 border ${borderBadgeClass} border-opacity-25 ${textBadgeClass} px-2 py-1 small rounded-pill">
                                         ${escapeHtml(p.status)}
@@ -240,6 +240,49 @@ include __DIR__ . '/../layout/header.php';
                 .catch(err => {
                     console.error('Error searching personnel:', err);
                 });
+            // Dynamic rank/location requirement for Admin
+            const serviceNumberInput = document.getElementById('service_number');
+            const rankSelect = document.getElementById('rank_id');
+            const campSelect = document.getElementById('camp_id');
+
+            if (serviceNumberInput && rankSelect && campSelect) {
+                const handleServiceNumberChange = () => {
+                    if (serviceNumberInput.value.trim().toLowerCase() === 'admin') {
+                        // Remove required attributes
+                        rankSelect.removeAttribute('required');
+                        campSelect.removeAttribute('required');
+                        
+                        // Add No Rank option if not exists
+                        if (!document.getElementById('no_rank_opt')) {
+                            const opt = document.createElement('option');
+                            opt.id = 'no_rank_opt';
+                            opt.value = '';
+                            opt.textContent = 'No Rank';
+                            rankSelect.insertBefore(opt, rankSelect.firstChild);
+                        }
+                        
+                        // Add No Location option if not exists
+                        if (!document.getElementById('no_camp_opt')) {
+                            const opt = document.createElement('option');
+                            opt.id = 'no_camp_opt';
+                            opt.value = '';
+                            opt.textContent = 'No Location';
+                            campSelect.insertBefore(opt, campSelect.firstChild);
+                        }
+                    } else {
+                        // Re-add required attributes
+                        rankSelect.setAttribute('required', 'required');
+                        campSelect.setAttribute('required', 'required');
+                        
+                        // Remove No Rank / No Location options if they exist
+                        const noRankOpt = document.getElementById('no_rank_opt');
+                        if (noRankOpt) noRankOpt.remove();
+                        const noCampOpt = document.getElementById('no_camp_opt');
+                        if (noCampOpt) noCampOpt.remove();
+                    }
+                };
+                serviceNumberInput.addEventListener('input', handleServiceNumberChange);
+            }
         });
 
         function escapeHtml(string) {

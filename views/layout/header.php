@@ -24,21 +24,22 @@ if ($isLoggedIn && $serviceNum) {
     try {
         $profile = User::getProfileInfo(Session::get('user_id'));
         if ($profile) {
-            $initials = $profile['initials'];
-            $fName = $profile['full_name'];
-            $rankShort = $profile['rank_short_name'];
+            $initials = $profile['initials'] ?? '';
+            $fName = $profile['full_name'] ?? '';
+            $rankShort = $profile['rank_short_name'] ?? '';
             
             // Format "Rank Initials Name" (e.g. CPL S. Perera)
             $nameParts = explode(' ', trim($fName));
             $lastName = end($nameParts);
-            $profileName = ($rankShort ?: $rankName) . ' ' . $initials . ' ' . $lastName;
-            $profileCampName = $profile['camp_name'];
+            $rankPrefix = ($rankShort ?: ($rankName ?? ''));
+            $profileName = ($rankPrefix ? $rankPrefix . ' ' : '') . $initials . ' ' . $lastName;
+            $profileCampName = $profile['camp_name'] ?: 'No Location';
         } else {
-            $profileName = $rankName . ' ' . $fullName;
+            $profileName = ($rankName ? $rankName . ' ' : '') . $fullName;
             $profileCampName = 'SLAF Base';
         }
     } catch (Exception $e) {
-        $profileName = $rankName . ' ' . $fullName;
+        $profileName = ($rankName ? $rankName . ' ' : '') . $fullName;
         $profileCampName = 'SLAF Base';
     }
 }
@@ -91,8 +92,8 @@ if ($isLoggedIn && $serviceNum) {
                         <a class="sidebar-link <?= ($route ?? '') === '/personnel' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel">
                             <i class="fas fa-users-gear"></i> Personnel
                         </a>
-                        <a class="sidebar-link <?= ($route ?? '') === '/postings' ? 'active' : '' ?>" href="<?= BASE_URL ?>/postings">
-                            <i class="fas fa-map-location-dot"></i> Postings
+                        <a class="sidebar-link <?= in_array(($route ?? ''), ['/postings', '/transfers', '/transfers/view']) ? 'active' : '' ?>" href="<?= BASE_URL ?>/transfers">
+                            <i class="fas fa-right-left"></i> Transfers
                         </a>
                         <a class="sidebar-link <?= ($route ?? '') === '/rosters' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters">
                             <i class="fas fa-calendar-days"></i> All Rosters
@@ -134,14 +135,39 @@ if ($isLoggedIn && $serviceNum) {
                         <a class="sidebar-link <?= ($route ?? '') === '/personnel' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel">
                             <i class="fas fa-users"></i> Personnel
                         </a>
-                        <a class="sidebar-link <?= ($route ?? '') === '/postings' ? 'active' : '' ?>" href="<?= BASE_URL ?>/postings">
-                            <i class="fas fa-arrows-spin"></i> Postings
+                        <a class="sidebar-link <?= in_array(($route ?? ''), ['/postings', '/transfers', '/transfers/view']) ? 'active' : '' ?>" href="<?= BASE_URL ?>/transfers">
+                            <i class="fas fa-right-left"></i> Transfers
                         </a>
                         <a class="sidebar-link <?= ($route ?? '') === '/rosters' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters">
                             <i class="fas fa-calendar-days"></i> All Rosters
                         </a>
                         <a class="sidebar-link <?= ($route ?? '') === '/rosters/approve' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters/approve">
                             <i class="fas fa-stamp"></i> Duty Approvals
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/users' ? 'active' : '' ?>" href="<?= BASE_URL ?>/users">
+                            <i class="fas fa-user-shield"></i> User Accounts
+                        </a>
+                        
+                        <!-- REPORTING -->
+                        <div class="sidebar-group-title">Reporting</div>
+                        <a class="sidebar-link <?= ($route ?? '') === '/reports' ? 'active' : '' ?>" href="<?= BASE_URL ?>/reports">
+                            <i class="fas fa-print"></i> Reports
+                        </a>
+
+                    <?php elseif ($roleName === 'Warrant Officer IC'): ?>
+                        <!-- ROSTER OPERATIONS -->
+                        <div class="sidebar-group-title">Roster Operations</div>
+                        <a class="sidebar-link <?= ($route ?? '') === '/personnel' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel">
+                            <i class="fas fa-users"></i> Personnel
+                        </a>
+                        <a class="sidebar-link <?= in_array(($route ?? ''), ['/postings', '/transfers', '/transfers/view']) ? 'active' : '' ?>" href="<?= BASE_URL ?>/transfers">
+                            <i class="fas fa-right-left"></i> Transfers
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/rosters' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters">
+                            <i class="fas fa-calendar-days"></i> Rosters
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/users' ? 'active' : '' ?>" href="<?= BASE_URL ?>/users">
+                            <i class="fas fa-user-shield"></i> User Accounts
                         </a>
                         
                         <!-- REPORTING -->
@@ -156,8 +182,8 @@ if ($isLoggedIn && $serviceNum) {
                         <a class="sidebar-link <?= ($route ?? '') === '/personnel' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel">
                             <i class="fas fa-users"></i> Personnel
                         </a>
-                        <a class="sidebar-link <?= ($route ?? '') === '/postings' ? 'active' : '' ?>" href="<?= BASE_URL ?>/postings">
-                            <i class="fas fa-arrows-spin"></i> Postings
+                        <a class="sidebar-link <?= in_array(($route ?? ''), ['/postings', '/transfers', '/transfers/view']) ? 'active' : '' ?>" href="<?= BASE_URL ?>/transfers">
+                            <i class="fas fa-right-left"></i> Transfers
                         </a>
                         <a class="sidebar-link <?= ($route ?? '') === '/rosters' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters">
                             <i class="fas fa-calendar-days"></i> Rosters
@@ -221,12 +247,12 @@ if ($isLoggedIn && $serviceNum) {
                         <button class="btn btn-custom btn-custom-secondary dropdown-toggle py-1 px-2 px-md-3 d-inline-flex align-items-center gap-2" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-user-circle fs-5"></i> 
                             <span class="d-none d-md-inline text-start" style="line-height: 1.1; font-size: 0.825rem;">
-                                <span class="d-block fw-semibold" style="color: #0f172a;"><?= htmlspecialchars($profileName) ?></span>
-                                <span class="d-block text-muted" style="font-size: 0.7rem; font-weight: normal;"><?= htmlspecialchars($profileCampName) ?></span>
+                                <span class="d-block fw-semibold" style="color: #0f172a;"><?= htmlspecialchars($profileName ?? '') ?></span>
+                                <span class="d-block text-muted" style="font-size: 0.7rem; font-weight: normal;"><?= htmlspecialchars($profileCampName ?? '') ?></span>
                             </span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark shadow" aria-labelledby="userMenu">
-                            <li><span class="dropdown-item-text text-muted small"><i class="fas fa-id-card"></i> <?= htmlspecialchars($serviceNum) ?> (<?= htmlspecialchars($roleName) ?>)</span></li>
+                            <li><span class="dropdown-item-text text-muted small"><i class="fas fa-id-card"></i> <?= htmlspecialchars($serviceNum ?? '') ?> (<?= htmlspecialchars($roleName ?? '') ?>)</span></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="<?= BASE_URL ?>/logout"><i class="fas fa-right-from-bracket"></i> Logout</a></li>
                         </ul>

@@ -18,8 +18,8 @@ class RosterController {
     public function createView() {
         try {
             $roleName = Session::get('role_name');
-            if ($roleName !== 'SNCO' && $roleName !== 'Administrator') {
-                throw new Exception("Unauthorized Access: Only SNCO or Administrator can build/edit rosters.");
+            if ($roleName !== 'SNCO' && $roleName !== 'Warrant Officer IC' && $roleName !== 'Administrator') {
+                throw new Exception("Unauthorized Access: Only SNCO, Warrant Officer IC, or Administrator can build/edit rosters.");
             }
 
             $rosterId = isset($_GET['id']) ? (int)$_GET['id'] : null;
@@ -284,8 +284,8 @@ class RosterController {
 
             $roleName = Session::get('role_name');
             if ($action === 'Submit') {
-                if ($roleName !== 'SNCO' && $roleName !== 'Administrator') {
-                    throw new Exception("Unauthorized: Only SNCO or Administrator can submit rosters.");
+                if ($roleName !== 'SNCO' && $roleName !== 'Warrant Officer IC' && $roleName !== 'Administrator') {
+                    throw new Exception("Unauthorized: Only SNCO, Warrant Officer IC, or Administrator can submit rosters.");
                 }
             } else {
                 if ($roleName !== 'OCPROVST') {

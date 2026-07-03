@@ -39,7 +39,9 @@ class AdminController {
 
     // List User Accounts
     public function usersIndex() {
-        $users = User::getAll();
+        $restrictedCampId = LocationMiddleware::getCampConstraint();
+        
+        $users = User::getAll($restrictedCampId);
         $roles = Role::getAll();
         
         // Also fetch active personnel so admin can choose which personnel to link to a user account
@@ -187,6 +189,9 @@ class AdminController {
                 throw new Exception("Service number and role are required.");
             }
 
+            // Enforce location restrictions
+            LocationMiddleware::validatePersonnel($serviceNumber);
+
             if (!$userId && empty($password)) {
                 throw new Exception("Password is required for new accounts.");
             }
@@ -212,6 +217,14 @@ class AdminController {
             if (!$userId || empty($status)) {
                 throw new Exception("User ID and status are required.");
             }
+
+            $user = User::getById($userId);
+            if (!$user) {
+                throw new Exception("User account not found.");
+            }
+
+            // Enforce location restrictions
+            LocationMiddleware::validatePersonnel($user['service_number']);
 
             User::setStatus($userId, $status);
 

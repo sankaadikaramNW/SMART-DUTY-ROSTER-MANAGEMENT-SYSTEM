@@ -117,6 +117,14 @@ class DashboardController {
         $stmt->execute($rrParams);
         $recentRosters = $stmt->fetchAll();
 
+        // 8. Fetch Posting Transfer workflow metrics
+        $transferStats = [];
+        if ($roleName === 'Administrator') {
+            $transferStats = Transfer::getDashboardStats(null);
+        } elseif ($roleName === 'SNCO' || $roleName === 'OCPROVST' || $roleName === 'Warrant Officer IC') {
+            $transferStats = Transfer::getDashboardStats($campId);
+        }
+
         // Render dashboard view
         $pageTitle = 'Dashboard';
         include __DIR__ . '/../views/dashboard/index.php';

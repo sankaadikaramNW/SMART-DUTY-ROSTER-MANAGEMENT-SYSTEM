@@ -22,7 +22,7 @@ include __DIR__ . '/../layout/header.php';
                     <i class="fas fa-user-shield fs-1"></i>
                 </div>
                 <h4 class="fw-bold mb-1 text-dark"><?= htmlspecialchars($person['initials'] . ' ' . $person['full_name']) ?></h4>
-                <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-25 px-3 py-1 rounded-pill mb-2"><?= htmlspecialchars($person['rank']) ?></span>
+                <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-25 px-3 py-1 rounded-pill mb-2"><?= htmlspecialchars($person['rank'] ?? 'No Rank') ?></span>
                 <div class="text-secondary small fw-bold"><i class="fas fa-hashtag"></i> SERVICE NO: <?= htmlspecialchars($person['service_number']) ?></div>
             </div>
             
@@ -37,7 +37,7 @@ include __DIR__ . '/../layout/header.php';
                 </div>
                 <div class="d-flex justify-content-between mb-3">
                     <span class="text-secondary small">Active Camp / Base:</span>
-                    <span class="fw-medium text-info"><i class="fas fa-campground"></i> <?= htmlspecialchars($person['camp_name']) ?></span>
+                    <span class="fw-medium text-info"><i class="fas fa-campground"></i> <?= htmlspecialchars($person['camp_name'] ?? 'No Location') ?></span>
                 </div>
                 <div class="d-flex justify-content-between mb-3">
                     <span class="text-secondary small">Email:</span>
@@ -62,7 +62,7 @@ include __DIR__ . '/../layout/header.php';
                 </div>
             </div>
 
-            <?php if ($roleName === 'SNCO' || $roleName === 'Administrator'): ?>
+            <?php if ($roleName === 'SNCO' || $roleName === 'Warrant Officer IC' || $roleName === 'Administrator'): ?>
                 <div class="border-top pt-4 mt-4 d-grid gap-2">
                     <button type="button" class="btn btn-custom btn-custom-secondary w-100" data-bs-toggle="modal" data-bs-target="#editPersonnelModal">
                         <i class="fas fa-user-pen"></i> Edit Profile
@@ -110,7 +110,7 @@ include __DIR__ . '/../layout/header.php';
 </div>
 
 <!-- Edit Personnel Modal -->
-<?php if ($roleName === 'SNCO' || $roleName === 'Administrator'): ?>
+<?php if ($roleName === 'SNCO' || $roleName === 'Warrant Officer IC' || $roleName === 'Administrator'): ?>
 <div class="modal fade" id="editPersonnelModal" tabindex="-1" aria-labelledby="editPersonnelModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <form action="<?= BASE_URL ?>/personnel/edit" method="POST" class="modal-content glass-card">
@@ -130,7 +130,10 @@ include __DIR__ . '/../layout/header.php';
                     </div>
                     <div class="col-md-6">
                         <label for="rank_id" class="form-label text-secondary small">Rank</label>
-                        <select class="form-select form-control-custom" id="rank_id" name="rank_id" required>
+                        <select class="form-select form-control-custom" id="rank_id" name="rank_id" <?= strtolower($person['service_number']) === 'admin' ? '' : 'required' ?>>
+                            <?php if (strtolower($person['service_number']) === 'admin'): ?>
+                                <option value="" <?= empty($person['rank_id']) ? 'selected' : '' ?>>No Rank</option>
+                            <?php endif; ?>
                             <?php foreach ($ranks as $rk): ?>
                                 <option value="<?= $rk['rank_id'] ?>" <?= (int)$person['rank_id'] === (int)$rk['rank_id'] ? 'selected' : '' ?>>
                                     <?= htmlspecialchars($rk['rank_name']) ?> (<?= htmlspecialchars($rk['rank_short_name']) ?>)
@@ -156,7 +159,10 @@ include __DIR__ . '/../layout/header.php';
                     </div>
                     <div class="col-md-6">
                         <label for="camp_id" class="form-label text-secondary small">Assigned Camp / Base</label>
-                        <select class="form-select form-control-custom" id="camp_id" name="camp_id" required>
+                        <select class="form-select form-control-custom" id="camp_id" name="camp_id" <?= strtolower($person['service_number']) === 'admin' ? '' : 'required' ?>>
+                            <?php if (strtolower($person['service_number']) === 'admin'): ?>
+                                <option value="" <?= empty($person['camp_id']) ? 'selected' : '' ?>>No Location</option>
+                            <?php endif; ?>
                             <?php foreach ($camps as $c): ?>
                                 <?php 
                                 // SNCO constraint

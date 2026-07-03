@@ -119,7 +119,7 @@ include __DIR__ . '/../layout/header.php';
                 <span class="text-secondary small">Creation Date:</span>
                 <span class="text-dark small"><?= date('F d, Y', strtotime($roster['created_at'])) ?></span>
             </div>
-            <?php if (($roleName === 'SNCO' || $roleName === 'Administrator') && ($roster['status'] === 'Draft' || $roster['status'] === 'Rejected')): ?>
+            <?php if (($roleName === 'SNCO' || $roleName === 'Warrant Officer IC' || $roleName === 'Administrator') && ($roster['status'] === 'Draft' || $roster['status'] === 'Rejected')): ?>
                 <div class="border-top pt-3 mt-3 d-grid gap-2">
                     <a href="<?= BASE_URL ?>/rosters/create?id=<?= $roster['roster_id'] ?>" class="btn btn-custom btn-custom-warning justify-content-center">
                         <i class="fas fa-pen-to-square"></i> Edit Roster Draft

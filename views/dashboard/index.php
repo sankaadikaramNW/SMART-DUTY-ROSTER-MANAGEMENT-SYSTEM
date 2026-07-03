@@ -48,7 +48,7 @@ $today = date('l, d F Y');
 
     <!-- Tile 1: Personnel -->
     <div class="col-lg-3 col-md-6 col-12">
-        <?php $canViewPersonnel = in_array($roleName, ['Administrator', 'OCPROVST', 'SNCO']); ?>
+        <?php $canViewPersonnel = in_array($roleName, ['Administrator', 'OCPROVST', 'SNCO', 'Warrant Officer IC']); ?>
         <a href="<?= $canViewPersonnel ? BASE_URL . '/personnel' : '#' ?>" class="text-decoration-none d-block h-100 <?= !$canViewPersonnel ? 'pe-none' : '' ?>">
             <div class="glass-card stat-card p-4 h-100 stat-tile-link <?= $canViewPersonnel ? 'stat-tile-hover' : '' ?>">
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -96,7 +96,7 @@ $today = date('l, d F Y');
             </div>
         </a>
     </div>
-    <?php elseif ($roleName === 'SNCO'): ?>
+    <?php elseif ($roleName === 'SNCO' || $roleName === 'Warrant Officer IC'): ?>
     <div class="col-lg-3 col-md-6 col-12">
         <a href="<?= BASE_URL ?>/rosters/create" class="text-decoration-none d-block h-100">
             <div class="glass-card stat-card p-4 h-100 stat-tile-link stat-tile-hover" style="border-bottom-color: var(--accent-teal);">
@@ -141,6 +141,97 @@ $today = date('l, d F Y');
         </a>
     </div>
 </div>
+
+<!-- ===== PERSONNEL POSTING TRANSFERS OVERVIEW ===== -->
+<?php if ($roleName === 'SNCO' || $roleName === 'OCPROVST' || $roleName === 'Warrant Officer IC'): ?>
+<div class="row g-4 mb-4 animate-fade-in">
+    <div class="col-md-6 col-12">
+        <div class="glass-card p-4 h-100" style="border-left: 4px solid var(--accent-indigo);">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="fas fa-arrow-right-from-bracket text-warning me-2"></i> Outgoing Station Transfers
+                </h5>
+                <a href="<?= BASE_URL ?>/transfers" class="btn btn-sm btn-custom btn-custom-secondary py-1 px-2.5">
+                    Manage Outgoing
+                </a>
+            </div>
+            <div class="row text-center mt-3">
+                <div class="col-4 border-end border-secondary border-opacity-10">
+                    <h3 class="fw-bold text-dark mb-0"><?= $transferStats['outgoing']['total'] ?></h3>
+                    <span class="text-secondary small">Total Outgoing</span>
+                </div>
+                <div class="col-4 border-end border-secondary border-opacity-10">
+                    <h3 class="fw-bold text-warning mb-0"><?= $transferStats['outgoing']['pending'] ?></h3>
+                    <span class="text-secondary small">Pending Origin</span>
+                </div>
+                <div class="col-4">
+                    <h3 class="fw-bold text-success mb-0"><?= $transferStats['outgoing']['completed'] ?></h3>
+                    <span class="text-secondary small">Completed</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-12">
+        <div class="glass-card p-4 h-100" style="border-left: 4px solid #10b981;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="fas fa-arrow-right-to-bracket text-success me-2"></i> Incoming Station Transfers
+                </h5>
+                <a href="<?= BASE_URL ?>/transfers" class="btn btn-sm btn-custom btn-custom-secondary py-1 px-2.5">
+                    Review Incoming
+                </a>
+            </div>
+            <div class="row text-center mt-3">
+                <div class="col-4 border-end border-secondary border-opacity-10">
+                    <h3 class="fw-bold text-dark mb-0"><?= $transferStats['incoming']['total'] ?></h3>
+                    <span class="text-secondary small">Total Incoming</span>
+                </div>
+                <div class="col-4 border-end border-secondary border-opacity-10">
+                    <h3 class="fw-bold text-info mb-0"><?= $transferStats['incoming']['pending'] ?></h3>
+                    <span class="text-secondary small">Pending Incoming</span>
+                </div>
+                <div class="col-4">
+                    <h3 class="fw-bold text-success mb-0"><?= $transferStats['incoming']['completed'] ?></h3>
+                    <span class="text-secondary small">Completed</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php elseif ($roleName === 'Administrator'): ?>
+<div class="row g-4 mb-4 animate-fade-in">
+    <div class="col-12">
+        <div class="glass-card p-4" style="border-left: 4px solid var(--accent-indigo);">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="fas fa-right-left text-primary me-2"></i> Personnel Station Transfers Overview
+                </h5>
+                <a href="<?= BASE_URL ?>/transfers" class="btn btn-sm btn-custom btn-custom-secondary">
+                    View All Transfers
+                </a>
+            </div>
+            <div class="row text-center mt-3 g-2">
+                <div class="col-md-3 col-6 border-end border-secondary border-opacity-10">
+                    <h3 class="fw-bold text-dark mb-0"><?= $transferStats['total'] ?></h3>
+                    <span class="text-secondary small">Total Transfers</span>
+                </div>
+                <div class="col-md-3 col-6 border-end border-secondary border-opacity-10">
+                    <h3 class="fw-bold text-warning mb-0"><?= $transferStats['pending'] ?></h3>
+                    <span class="text-secondary small">Pending Actions</span>
+                </div>
+                <div class="col-md-3 col-6 border-end border-secondary border-opacity-10">
+                    <h3 class="fw-bold text-success mb-0"><?= $transferStats['completed'] ?></h3>
+                    <span class="text-secondary small">Completed Transfers</span>
+                </div>
+                <div class="col-md-3 col-6">
+                    <h3 class="fw-bold text-danger mb-0"><?= $transferStats['rejected'] ?></h3>
+                    <span class="text-secondary small">Rejected / Cancelled</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
 <!-- ===== TODAY'S DUTY CREW (full panel) ===== -->
 <?php if ($roleName !== 'Airman' && !empty($todayCrew)): ?>
@@ -333,7 +424,7 @@ $today = date('l, d F Y');
         <div class="glass-card p-4 mb-4">
             <h5 class="fw-bold mb-3"><i class="fas fa-compass text-primary me-2"></i> Quick Actions</h5>
             <div class="d-grid gap-2">
-                <?php if ($roleName === 'SNCO' || $roleName === 'Administrator'): ?>
+                <?php if ($roleName === 'SNCO' || $roleName === 'Warrant Officer IC' || $roleName === 'Administrator'): ?>
                 <a href="<?= BASE_URL ?>/rosters/create" class="btn btn-custom btn-custom-primary justify-content-center py-3">
                     <i class="fas fa-calendar-plus"></i> Create New Roster Draft
                 </a>
@@ -360,17 +451,18 @@ $today = date('l, d F Y');
                     <i class="fas fa-timeline"></i> Timeline View
                 </a>
 
-                <?php if ($roleName === 'SNCO' || $roleName === 'Administrator'): ?>
+                <?php if ($roleName === 'SNCO' || $roleName === 'Warrant Officer IC' || $roleName === 'Administrator'): ?>
                 <a href="<?= BASE_URL ?>/reports" class="btn btn-custom btn-custom-secondary justify-content-center py-2">
                     <i class="fas fa-file-chart-column"></i> Generate Reports
                 </a>
                 <?php endif; ?>
 
-                <?php if ($roleName === 'Administrator'): ?>
-                <hr class="my-1 border-secondary border-opacity-25">
+                <?php if ($roleName === 'Administrator' || $roleName === 'Warrant Officer IC' || $roleName === 'OCPROVST'): ?>
                 <a href="<?= BASE_URL ?>/users" class="btn btn-custom btn-custom-secondary justify-content-center py-2">
                     <i class="fas fa-users-gear"></i> Manage Users
                 </a>
+                <?php endif; ?>
+                <?php if ($roleName === 'Administrator'): ?>
                 <a href="<?= BASE_URL ?>/camps" class="btn btn-custom btn-custom-secondary justify-content-center py-2">
                     <i class="fas fa-campground"></i> Manage Camps
                 </a>

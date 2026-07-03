@@ -17,7 +17,7 @@ class Personnel {
 
         $sql = "SELECT p.*, c.camp_name, r.rank_name AS rank, r.rank_short_name 
                 FROM personnel p 
-                JOIN camps c ON p.camp_id = c.camp_id 
+                LEFT JOIN camps c ON p.camp_id = c.camp_id 
                 LEFT JOIN ranks r ON p.rank_id = r.rank_id
                 WHERE 1=1";
         
@@ -47,7 +47,7 @@ class Personnel {
         $stmt = $db->prepare("
             SELECT p.*, c.camp_name, r.rank_name AS rank, r.rank_short_name 
             FROM personnel p 
-            JOIN camps c ON p.camp_id = c.camp_id 
+            LEFT JOIN camps c ON p.camp_id = c.camp_id 
             LEFT JOIN ranks r ON p.rank_id = r.rank_id
             WHERE p.service_number = :service_number
         ");
@@ -60,7 +60,9 @@ class Personnel {
         $db = Database::getInstance()->getConnection();
         
         // Validate SNCO location compliance
-        LocationMiddleware::validateCamp($campId);
+        if ($campId !== null) {
+            LocationMiddleware::validateCamp($campId);
+        }
         if ($isUpdate) {
             LocationMiddleware::validatePersonnel($serviceNumber);
         }
@@ -100,8 +102,8 @@ class Personnel {
                 ':service_number' => $serviceNumber
             ]);
             
-            // Detect camp posting movement and track automatically
-            if ($prevData && (int)$prevData['camp_id'] !== (int)$campId) {
+            // Detect camp posting movement and track automatically (except for admin)
+            if (strtolower($serviceNumber) !== 'admin' && $prevData && (int)$prevData['camp_id'] !== (int)$campId) {
                 Posting::addPostingRecord($serviceNumber, $prevData['camp_id'], $campId, date('Y-m-d'));
             }
             
@@ -124,8 +126,10 @@ class Personnel {
                 ':status' => $status
             ]);
             
-            // Add initial active posting log
-            Posting::addPostingRecord($serviceNumber, $campId, $campId, date('Y-m-d'));
+            // Add initial active posting log (except for admin)
+            if (strtolower($serviceNumber) !== 'admin') {
+                Posting::addPostingRecord($serviceNumber, $campId, $campId, date('Y-m-d'));
+            }
             
             Logger::audit('Personnel Management', 'Create Personnel: ' . $serviceNumber, null, $newData);
         }
@@ -140,7 +144,7 @@ class Personnel {
                        pos.effective_date AS posting_effective_date,
                        pos_from.camp_name AS posting_from_camp_name
                 FROM personnel p 
-                JOIN camps c ON p.camp_id = c.camp_id 
+                LEFT JOIN camps c ON p.camp_id = c.camp_id 
                 LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
                 LEFT JOIN postings pos ON p.service_number = pos.service_number AND pos.status = 'Active'
                 LEFT JOIN camps pos_from ON pos.from_camp_id = pos_from.camp_id

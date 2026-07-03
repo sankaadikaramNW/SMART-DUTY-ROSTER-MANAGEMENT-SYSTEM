@@ -26,18 +26,28 @@ class User {
     }
 
     // Get list of all accounts for Admin review
-    public static function getAll() {
+    public static function getAll($campId = null) {
         $db = Database::getInstance()->getConnection();
-        $stmt = $db->prepare("
+        
+        $sql = "
             SELECT u.*, r.role_name, p.full_name, rk.rank_name AS rank, p.camp_id, c.camp_name 
             FROM users u
             JOIN roles r ON u.role_id = r.role_id
             JOIN personnel p ON u.service_number = p.service_number
             LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
-            JOIN camps c ON p.camp_id = c.camp_id
-            ORDER BY u.user_id ASC
-        ");
-        $stmt->execute();
+            LEFT JOIN camps c ON p.camp_id = c.camp_id
+        ";
+        
+        $params = [];
+        if ($campId !== null) {
+            $sql .= " WHERE p.camp_id = :camp_id";
+            $params[':camp_id'] = $campId;
+        }
+        
+        $sql .= " ORDER BY u.user_id ASC";
+        
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 

@@ -81,11 +81,7 @@ class PersonnelController {
 
     // List postings records
     public function postingsIndex() {
-        $postings = Posting::getHistory();
-        $camps = Camp::getAll(true);
-
-        $pageTitle = 'Postings History';
-        include __DIR__ . '/../views/postings/index.php';
+        Response::redirect('/transfers');
     }
 
     // Add new personnel profile
@@ -94,17 +90,18 @@ class PersonnelController {
             Security::verifyCsrf();
 
             $serviceNumber = strtoupper(Security::sanitize($_POST['service_number'] ?? ''));
-            $rankId = (int)($_POST['rank_id'] ?? 0);
+            $isAdmin = (strtolower($serviceNumber) === 'admin');
+            $rankId = !empty($_POST['rank_id']) ? (int)$_POST['rank_id'] : null;
             $initials = Security::sanitize($_POST['initials'] ?? '');
             $fullName = Security::sanitize($_POST['full_name'] ?? '');
             $trade = Security::sanitize($_POST['trade'] ?? '');
             $squadron = Security::sanitize($_POST['squadron'] ?? '');
-            $campId = (int)($_POST['camp_id'] ?? 0);
+            $campId = !empty($_POST['camp_id']) ? (int)$_POST['camp_id'] : null;
             $contactNumber = Security::sanitize($_POST['contact_number'] ?? null);
             $email = Security::sanitize($_POST['email'] ?? '');
             $status = Security::sanitize($_POST['status'] ?? 'Active');
 
-            if (empty($serviceNumber) || !$rankId || empty($fullName) || empty($campId) || empty($email)) {
+            if (empty($serviceNumber) || (!$isAdmin && !$rankId) || empty($fullName) || (!$isAdmin && !$campId) || empty($email)) {
                 throw new Exception("Missing required fields.");
             }
 
@@ -128,17 +125,18 @@ class PersonnelController {
             Security::verifyCsrf();
 
             $serviceNumber = Security::sanitize($_POST['service_number'] ?? '');
-            $rankId = (int)($_POST['rank_id'] ?? 0);
+            $isAdmin = (strtolower($serviceNumber) === 'admin');
+            $rankId = !empty($_POST['rank_id']) ? (int)$_POST['rank_id'] : null;
             $initials = Security::sanitize($_POST['initials'] ?? '');
             $fullName = Security::sanitize($_POST['full_name'] ?? '');
             $trade = Security::sanitize($_POST['trade'] ?? '');
             $squadron = Security::sanitize($_POST['squadron'] ?? '');
-            $campId = (int)($_POST['camp_id'] ?? 0);
+            $campId = !empty($_POST['camp_id']) ? (int)$_POST['camp_id'] : null;
             $contactNumber = Security::sanitize($_POST['contact_number'] ?? null);
             $email = Security::sanitize($_POST['email'] ?? '');
             $status = Security::sanitize($_POST['status'] ?? 'Active');
 
-            if (empty($serviceNumber) || !$rankId || empty($fullName) || empty($campId) || empty($email)) {
+            if (empty($serviceNumber) || (!$isAdmin && !$rankId) || empty($fullName) || (!$isAdmin && !$campId) || empty($email)) {
                 throw new Exception("Missing required fields.");
             }
 

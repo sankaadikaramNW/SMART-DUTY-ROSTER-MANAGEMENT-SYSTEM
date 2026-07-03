@@ -18,7 +18,7 @@ include __DIR__ . '/../layout/header.php';
             <a href="<?= BASE_URL ?>/rosters/timeline" class="btn btn-sm btn-custom btn-custom-secondary py-2">
                 <i class="fas fa-timeline"></i> Timeline
             </a>
-            <?php if ($roleName === 'SNCO' || $roleName === 'Administrator'): ?>
+            <?php if ($roleName === 'SNCO' || $roleName === 'Warrant Officer IC' || $roleName === 'Administrator'): ?>
                 <a href="<?= BASE_URL ?>/rosters/create" class="btn btn-sm btn-custom btn-custom-primary py-2">
                     <i class="fas fa-calendar-plus"></i> Create Roster
                 </a>
@@ -103,7 +103,7 @@ include __DIR__ . '/../layout/header.php';
                                         <i class="fas fa-eye"></i> View
                                     </a>
                                     
-                                    <?php if (($roleName === 'SNCO' || $roleName === 'Administrator') && ($r['status'] === 'Draft' || $r['status'] === 'Rejected')): ?>
+                                    <?php if (($roleName === 'SNCO' || $roleName === 'Warrant Officer IC' || $roleName === 'Administrator') && ($r['status'] === 'Draft' || $r['status'] === 'Rejected')): ?>
                                         <a href="<?= BASE_URL ?>/rosters/create?id=<?= $r['roster_id'] ?>" class="btn btn-sm btn-custom btn-custom-secondary py-1 px-2 me-1 text-warning border-warning border-opacity-25">
                                             <i class="fas fa-pen-to-square"></i> Edit
                                         </a>

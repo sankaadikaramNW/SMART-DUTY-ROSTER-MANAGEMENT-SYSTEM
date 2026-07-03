@@ -244,7 +244,8 @@ INSERT INTO `roles` (`role_id`, `role_name`, `description`) VALUES
 (1, 'Administrator', 'Full system configurations, security audits, and base settings management.'),
 (2, 'OCPROVST', 'Officer Commanding Provost - Approves, rejects or returns rosters.'),
 (3, 'SNCO', 'Senior Non-Commissioned Officer - Schedules and drafts duty rosters for assigned camp.'),
-(4, 'Airman', 'Normal service personnel who view assigned duties and notifications.');
+(4, 'Airman', 'Normal service personnel who view assigned duties and notifications.'),
+(5, 'Warrant Officer IC', 'Warrant Officer In-Charge - Schedules duty rosters, manages personnel, and administers user accounts.');
 
 -- Seed Shifts
 INSERT INTO `shifts` (`shift_id`, `shift_name`, `start_time`, `end_time`, `duration_hours`, `description`, `status`) VALUES
@@ -264,50 +265,111 @@ INSERT INTO `duty_types` (`duty_type_id`, `duty_type_name`, `description`, `stat
 
 -- Seed Ranks
 INSERT INTO `ranks` (`rank_id`, `rank_code`, `rank_name`, `rank_short_name`, `display_order`, `status`) VALUES
-(1, 'WO', 'Warrant Officer', 'WO', 1, 'Active'),
-(2, 'SQNLDR', 'Squadron Leader', 'Sqn Ldr', 2, 'Active'),
-(3, 'F_SGT', 'Flight Sergeant', 'F/Sgt', 3, 'Active'),
-(4, 'CPL', 'Corporal', 'Cpl', 4, 'Active'),
-(5, 'LAC', 'Leading Aircraftman', 'LAC', 5, 'Active');
+(1, 'GP_CAPT', 'Group Captain', 'Gp Capt', 1, 'Active'),
+(2, 'WG_CDR', 'Wing Commander', 'Wg Cdr', 2, 'Active'),
+(3, 'SQNLDR', 'Squadron Leader', 'Sqn Ldr', 3, 'Active'),
+(4, 'FLT_LT', 'Flight Lieutenant', 'Flt Lt', 4, 'Active'),
+(5, 'FG_OFF', 'Flying Officer', 'Fg Off', 5, 'Active'),
+(6, 'PLT_OFF', 'Pilot Officer', 'Plt Off', 6, 'Active'),
+(7, 'MWO', 'Master Warrant Officer', 'MWO', 7, 'Active'),
+(8, 'WO', 'Warrant Officer', 'WO', 8, 'Active'),
+(9, 'F_SGT', 'Flight Sergeant', 'F/Sgt', 9, 'Active'),
+(10, 'SGT', 'Sergeant', 'Sgt', 10, 'Active'),
+(11, 'CPL', 'Corporal', 'Cpl', 11, 'Active'),
+(12, 'LAC', 'Leading Aircraftman', 'LAC', 12, 'Active'),
+(13, 'AC', 'Aircraftman', 'AC', 13, 'Active');
 
 -- Seed Personnel (Admin, OCPROVST, SNCO, and Airmen for different bases)
 INSERT INTO `personnel` (`service_number`, `rank_id`, `initials`, `full_name`, `trade`, `squadron`, `camp_id`, `contact_number`, `email`, `status`) VALUES
 -- Administrator
-('admin', 1, 'A.B.', 'John Smith', 'Admin General', 'Admin HQ', 1, '+94711111111', 'admin@slaf.lk', 'Active'),
--- OCPROVST
-('51838', 2, 'K.L.', 'Kamal Perera', 'Provost Officer', 'Provost Squadron', 1, '+94722222222', 'provost@slaf.lk', 'Active'),
+('admin', 8, 'A.B.', 'John Smith', 'Admin General', 'Admin HQ', 1, '+94711111111', 'admin@slaf.lk', 'Active'),
+-- OCPROVST Katunayake
+('51838', 3, 'K.L.', 'Sathruwan', 'Provost Officer', 'Provost Squadron', 3, '+94722222222', 'provost@slaf.lk', 'Active'),
 -- SNCO for Ekala
-('51839', 3, 'M.R.', 'Rohan Fernando', 'Operations', 'No 3 Air Defence', 1, '+94733333333', 'snco.ekala@slaf.lk', 'Active'),
+('51839', 9, 'M.R.', 'Rohan Fernando', 'Operations', 'No 3 Air Defence', 1, '+94733333333', 'snco.ekala@slaf.lk', 'Active'),
 -- SNCO for Ratmalana
-('51840', 3, 'A.P.', 'Anura Priyantha', 'Operations', 'No 2 Squadron', 2, '+94733333334', 'snco.ratmalana@slaf.lk', 'Active'),
--- Airmen in Ekala (Camp 1)
-('51841', 4, 'S.T.', 'Saman Thilakarathne', 'Provost Guard', 'Provost Squadron', 1, '+94744444441', 'saman@slaf.lk', 'Active'),
-('51842', 5, 'D.M.', 'Dinesh Madushanka', 'Operations', 'No 3 Air Defence', 1, '+94744444442', 'dinesh@slaf.lk', 'Active'),
-('51843', 5, 'W.S.', 'Wasanta Silva', 'Operations', 'No 3 Air Defence', 1, '+94744444443', 'wasanta@slaf.lk', 'Active'),
--- Airmen in Ratmalana (Camp 2)
-('51844', 5, 'G.H.', 'Gayan Harsha', 'Aviation Tech', 'No 2 Squadron', 2, '+94755555551', 'gayan@slaf.lk', 'Active'),
-('51845', 5, 'N.J.', 'Nipuna Jayasinghe', 'Provost Guard', 'No 2 Squadron', 2, '+94755555552', 'nipuna@slaf.lk', 'Active');
+('51840', 9, 'A.P.', 'Anura Priyantha', 'Operations', 'No 2 Squadron', 2, '+94733333334', 'snco.ratmalana@slaf.lk', 'Active'),
+-- Test Personnel (LAC Adikaram) in Ratmalana (Camp 2)
+('51837', 12, 'S.', 'Adikaram', 'Provost Guard', 'No 2 Squadron', 2, '+94755555553', 'adikaram@slaf.lk', 'Active'),
+-- OCPROVST for Ekala
+('51846', 3, 'K.L.', 'Ekala OCPROVST', 'Provost Officer', 'Provost Squadron', 1, '+94722222223', 'ocprovost.ekala@slaf.lk', 'Active'),
+-- OCPROVST for Ratmalana
+('51847', 3, 'A.P.', 'Ratmalana OCPROVST', 'Provost Officer', 'No 2 Squadron', 2, '+94722222224', 'ocprovost.ratmalana@slaf.lk', 'Active');
 
 -- Seed Users (Passwords are all hashed using standard BCRYPT of 'Password@123')
-INSERT INTO `users` (`user_id`, `service_number`, `password_hash`, `role_id`, `status`) VALUES
-(1, 'admin', '$2y$12$XjMX//wiQfAohrhfp/MZBei3DNtmRyAifbplnAIj.NvNsK93prPPO', 1, 'Active'),
-(2, '51838', '$2y$12$XjMX//wiQfAohrhfp/MZBei3DNtmRyAifbplnAIj.NvNsK93prPPO', 2, 'Active'),
-(3, '51839', '$2y$12$XjMX//wiQfAohrhfp/MZBei3DNtmRyAifbplnAIj.NvNsK93prPPO', 3, 'Active'),
-(4, '51840', '$2y$12$XjMX//wiQfAohrhfp/MZBei3DNtmRyAifbplnAIj.NvNsK93prPPO', 3, 'Active'),
-(5, '51841', '$2y$12$XjMX//wiQfAohrhfp/MZBei3DNtmRyAifbplnAIj.NvNsK93prPPO', 4, 'Active'),
-(6, '51842', '$2y$12$XjMX//wiQfAohrhfp/MZBei3DNtmRyAifbplnAIj.NvNsK93prPPO', 4, 'Active'),
-(7, '51843', '$2y$12$XjMX//wiQfAohrhfp/MZBei3DNtmRyAifbplnAIj.NvNsK93prPPO', 4, 'Active'),
-(8, '51844', '$2y$12$XjMX//wiQfAohrhfp/MZBei3DNtmRyAifbplnAIj.NvNsK93prPPO', 4, 'Active'),
-(9, '51845', '$2y$12$XjMX//wiQfAohrhfp/MZBei3DNtmRyAifbplnAIj.NvNsK93prPPO', 4, 'Active');
+INSERT INTO `users` (`service_number`, `password_hash`, `role_id`, `status`) VALUES
+('admin', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 1, 'Active'),
+('51838', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 2, 'Active'),
+('51839', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 3, 'Active'),
+('51840', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 3, 'Active'),
+('51837', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 4, 'Active'),
+('51846', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 2, 'Active'),
+('51847', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 2, 'Active');
 
 -- Seed initial active postings
 INSERT INTO `postings` (`service_number`, `from_camp_id`, `to_camp_id`, `effective_date`, `end_date`, `status`) VALUES
 ('admin', 1, 1, '2025-01-01', NULL, 'Active'),
-('51838', 1, 1, '2025-01-01', NULL, 'Active'),
+('51838', 3, 3, '2025-01-01', NULL, 'Active'),
 ('51839', 1, 1, '2025-01-01', NULL, 'Active'),
 ('51840', 2, 2, '2025-01-01', NULL, 'Active'),
-('51841', 1, 1, '2025-01-01', NULL, 'Active'),
-('51842', 1, 1, '2025-01-01', NULL, 'Active'),
-('51843', 1, 1, '2025-01-01', NULL, 'Active'),
-('51844', 2, 2, '2025-01-01', NULL, 'Active'),
-('51845', 2, 2, '2025-01-01', NULL, 'Active');
+('51837', 2, 2, '2025-01-01', NULL, 'Active'),
+('51846', 1, 1, '2025-01-01', NULL, 'Active'),
+('51847', 2, 2, '2025-01-01', NULL, 'Active');
+
+-- --------------------------------------------------------
+-- Table `posting_transfers`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `posting_transfers` (
+  `transfer_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `service_number` VARCHAR(30) NOT NULL,
+  `from_camp_id` INT NOT NULL,
+  `to_camp_id` INT NOT NULL,
+  `effective_date` DATE NOT NULL,
+  `reason` TEXT NOT NULL,
+  `remarks` TEXT NULL,
+  `supporting_documents` VARCHAR(255) NULL,
+  `status` ENUM('Draft', 'Pending Origin Approval', 'Origin Approved', 'Pending Destination Review', 'Pending Destination Approval', 'Transfer Completed', 'Returned for Correction', 'Rejected', 'Cancelled') NOT NULL DEFAULT 'Draft',
+  `created_by` INT NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (`service_number`) REFERENCES `personnel` (`service_number`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (`from_camp_id`) REFERENCES `camps` (`camp_id`),
+  FOREIGN KEY (`to_camp_id`) REFERENCES `camps` (`camp_id`),
+  FOREIGN KEY (`created_by`) REFERENCES `users` (`user_id`),
+  INDEX idx_transfer_status (`status`),
+  INDEX idx_transfer_service (`service_number`),
+  INDEX idx_transfer_from_camp (`from_camp_id`),
+  INDEX idx_transfer_to_camp (`to_camp_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table `posting_approvals`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `posting_approvals` (
+  `approval_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `transfer_id` INT NOT NULL,
+  `action_by` INT NOT NULL,
+  `action_role` VARCHAR(50) NOT NULL,
+  `action` ENUM('Submit', 'Approve', 'Reject', 'Return', 'Cancel', 'Override') NOT NULL,
+  `remarks` TEXT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`transfer_id`) REFERENCES `posting_transfers` (`transfer_id`) ON DELETE CASCADE,
+  FOREIGN KEY (`action_by`) REFERENCES `users` (`user_id`),
+  INDEX idx_posting_approval_transfer (`transfer_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Seed LAC Adikaram (51837) and OCPROVST users for camps 1 and 2
+INSERT INTO `personnel` (`service_number`, `rank_id`, `initials`, `full_name`, `trade`, `squadron`, `camp_id`, `contact_number`, `email`, `status`) VALUES
+('51837', 5, 'S.', 'Adikaram', 'Provost Guard', 'No 2 Squadron', 2, '+94755555553', 'adikaram@slaf.lk', 'Active'),
+('51846', 2, 'K.L.', 'Ekala OCPROVST', 'Provost Officer', 'Provost Squadron', 1, '+94722222223', 'ocprovost.ekala@slaf.lk', 'Active'),
+('51847', 2, 'A.P.', 'Ratmalana OCPROVST', 'Provost Officer', 'No 2 Squadron', 2, '+94722222224', 'ocprovost.ratmalana@slaf.lk', 'Active');
+
+INSERT INTO `users` (`service_number`, `password_hash`, `role_id`, `status`) VALUES
+('51837', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 4, 'Active'),
+('51846', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 2, 'Active'),
+('51847', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 2, 'Active');
+
+INSERT INTO `postings` (`service_number`, `from_camp_id`, `to_camp_id`, `effective_date`, `end_date`, `status`) VALUES
+('51837', 2, 2, '2025-01-01', NULL, 'Active'),
+('51846', 1, 1, '2025-01-01', NULL, 'Active'),
+('51847', 2, 2, '2025-01-01', NULL, 'Active');
