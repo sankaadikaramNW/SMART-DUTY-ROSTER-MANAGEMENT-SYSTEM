@@ -1007,7 +1007,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tileRole) return;
         
         fetch(`${BASE_URL}/dashboard/attendance-stats`)
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error("Server error (HTTP " + res.status + ")");
+                return res.json();
+            })
             .then(data => {
                 if (data.error) {
                     console.error("Dashboard stats error: ", data.error);
@@ -1117,10 +1120,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Fetch leaves from endpoint
         fetch(`${BASE_URL}/leaves/calendar-data?start=${startStr}&end=${endStr}`)
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error("Server error (HTTP " + res.status + ")");
+                return res.json();
+            })
             .then(leaves => {
                 calendarBody.innerHTML = '';
                 
+                if (!Array.isArray(leaves)) {
+                    throw new TypeError("Invalid calendar data received");
+                }
+
                 // Group leaves by Date string
                 const leavesByDate = {};
                 

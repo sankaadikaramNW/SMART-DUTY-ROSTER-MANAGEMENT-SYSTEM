@@ -34,7 +34,7 @@ class LeaveRecord {
     public static function getActiveLeavesRange($startDate, $endDate) {
         $db = Database::getInstance()->getConnection();
         $stmt = $db->prepare("
-            SELECT lr.*, p.full_name, rk.rank_name AS rank, rk.rank_short_name
+            SELECT lr.*, p.full_name, rk.rank_name AS `rank`, rk.rank_short_name
             FROM leave_records lr
             JOIN personnel p ON lr.service_number = p.service_number
             LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
@@ -158,7 +158,7 @@ class LeaveRecord {
         
         // Find latest camp attendance record for each personnel
         $stmt = $db->query("
-            SELECT p.service_number, p.full_name, rk.rank_short_name AS rank, c.camp_name, ca.check_in_date, ca.check_out_date,
+            SELECT p.service_number, p.full_name, rk.rank_short_name AS `rank`, c.camp_name, ca.check_in_date, ca.check_out_date,
                    DATEDIFF(CURDATE(), ca.check_in_date) AS days_in_camp
             FROM personnel p
             LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
@@ -179,7 +179,7 @@ class LeaveRecord {
     public static function getAllWithPersonnel() {
         $db = Database::getInstance()->getConnection();
         $stmt = $db->query("
-            SELECT lr.*, p.full_name, rk.rank_short_name AS rank, c.camp_name
+            SELECT lr.*, p.full_name, rk.rank_short_name AS `rank`, c.camp_name
             FROM leave_records lr
             JOIN personnel p ON lr.service_number = p.service_number
             LEFT JOIN ranks rk ON p.rank_id = rk.rank_id

@@ -1,40 +1,9 @@
 <?php
 include __DIR__ . '/../layout/header.php';
 ?>
-<style>
-.login-card {
-    border: 2px solid #008bc2 !important;
-    box-shadow:
-        0 0 8px  rgba(0, 139, 194, 0.7),
-        0 0 20px rgba(0, 139, 194, 0.5),
-        0 0 40px rgba(0, 139, 194, 0.3),
-        0 0 70px rgba(0, 139, 194, 0.15),
-        inset 0 0 20px rgba(0, 139, 194, 0.04) !important;
-    animation: neon-blink 2s infinite !important;
-}
-
-@keyframes neon-blink {
-    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
-        border-color: #012330ff !important;
-        box-shadow:
-            0 0 8px  rgba(0, 139, 194, 0.8),
-            0 0 20px rgba(2, 35, 48, 0.55),
-            0 0 40px rgba(0, 139, 194, 0.35),
-            0 0 70px rgba(0, 139, 194, 0.15),
-            inset 0 0 20px rgba(0, 139, 194, 0.04) !important;
-    }
-    20%, 22%, 24%, 55% {
-        border-color: rgba(0, 139, 194, 0.15) !important;
-        box-shadow: 
-            0 0 2px rgba(0, 139, 194, 0.05),
-            inset 0 0 2px rgba(0, 139, 194, 0.01) !important;
-    }
-}
-</style>
-?>
 <div class="login-card mx-auto text-center animate-fade-in">
     <div class="mb-3">
-        <img src="<?= BASE_URL ?>/views/assets/images/slaf_logo.png?v=<?= time() ?>" alt="Sri Lanka Air Force Logo" class="login-logo mb-2" style="width:160px !important;height:auto !important;display:block;margin:0 auto 12px;">
+        <img src="<?= BASE_URL ?>/views/assets/images/slaf_logo.png?v=<?= time() ?>" alt="Sri Lanka Air Force Logo" class="login-logo mb-2" style="width:110px !important;height:auto !important;display:block;margin:0 auto 12px;">
         <h2 class="login-title mb-1">Welcome back</h2>
         <p class="login-subtitle mb-0">AFP Duty Roster Management System</p>
     </div>
