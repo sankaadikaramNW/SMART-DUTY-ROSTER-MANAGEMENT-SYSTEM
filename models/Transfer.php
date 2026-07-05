@@ -11,7 +11,7 @@ class Transfer {
         $db = Database::getInstance()->getConnection();
         $stmt = $db->prepare("
             SELECT pt.*, 
-                   p.initials, p.full_name, rk.rank_name AS rank, rk.rank_short_name,
+                   p.initials, p.full_name, rk.rank_name AS `rank`, rk.rank_short_name,
                    fc.camp_name AS from_camp_name, tc.camp_name AS to_camp_name,
                    u.service_number AS creator_service_number
             FROM posting_transfers pt

@@ -9,7 +9,7 @@ class DutyAssignment {
     public static function getByRosterId($rosterId) {
         $db = Database::getInstance()->getConnection();
         $stmt = $db->prepare("
-            SELECT a.*, rk.rank_name AS rank, rk.rank_short_name, p.initials, p.full_name, p.trade, p.squadron, p.status AS personnel_status, c.camp_name,
+            SELECT a.*, rk.rank_name AS `rank`, rk.rank_short_name, p.initials, p.full_name, p.trade, p.squadron, p.status AS personnel_status, c.camp_name,
                    s.shift_name, s.start_time, s.end_time, t.duty_type_name,
                    pos.effective_date AS posting_effective_date,
                    pos_from.camp_name AS posting_from_camp_name
@@ -90,7 +90,7 @@ class DutyAssignment {
     public static function getCalendarData($campId, $startDate, $endDate, $statusList = []) {
         $db = Database::getInstance()->getConnection();
         
-        $sql = "SELECT a.*, rk.rank_name AS rank, p.initials, p.full_name, s.shift_name, s.start_time, s.end_time, t.duty_type_name, r.roster_name, r.status AS roster_status, c.camp_name
+        $sql = "SELECT a.*, rk.rank_name AS `rank`, p.initials, p.full_name, s.shift_name, s.start_time, s.end_time, t.duty_type_name, r.roster_name, r.status AS roster_status, c.camp_name
                 FROM duty_assignments a
                 JOIN duty_rosters r ON a.roster_id = r.roster_id
                 JOIN camps c ON r.camp_id = c.camp_id
@@ -151,7 +151,7 @@ class DutyAssignment {
             // Fetch personnel status and camp details
             $placeholders = implode(',', array_fill(0, count($serviceNumbers), '?'));
             $stmt = $db->prepare("
-                SELECT p.service_number, rk.rank_name AS rank, p.full_name, p.status, p.camp_id 
+                SELECT p.service_number, rk.rank_name AS `rank`, p.full_name, p.status, p.camp_id 
                 FROM personnel p
                 LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
                 WHERE p.service_number IN ($placeholders)

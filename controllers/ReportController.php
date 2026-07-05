@@ -41,7 +41,7 @@ class ReportController {
 
             $db = Database::getInstance()->getConnection();
 
-            $sql = "SELECT a.*, rk.rank_name AS rank, p.initials, p.full_name, p.trade, p.squadron, s.shift_name, s.start_time, s.end_time, t.duty_type_name, r.roster_name, c.camp_name
+            $sql = "SELECT a.*, rk.rank_name AS `rank`, p.initials, p.full_name, p.trade, p.squadron, s.shift_name, s.start_time, s.end_time, t.duty_type_name, r.roster_name, c.camp_name
                     FROM duty_assignments a
                     JOIN duty_rosters r ON a.roster_id = r.roster_id
                     JOIN camps c ON r.camp_id = c.camp_id

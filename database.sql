@@ -1,8 +1,8 @@
 -- Smart Duty Roster Management System Schema & Seed Data
--- Database: smart_duty_roster
+-- Database: afp
 
-CREATE DATABASE IF NOT EXISTS `smart_duty_roster` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `smart_duty_roster`;
+CREATE DATABASE IF NOT EXISTS `afp` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `afp`;
 
 -- --------------------------------------------------------
 -- Table `camps`
@@ -245,7 +245,8 @@ INSERT INTO `roles` (`role_id`, `role_name`, `description`) VALUES
 (2, 'OCPROVST', 'Officer Commanding Provost - Approves, rejects or returns rosters.'),
 (3, 'SNCO', 'Senior Non-Commissioned Officer - Schedules and drafts duty rosters for assigned camp.'),
 (4, 'Airman', 'Normal service personnel who view assigned duties and notifications.'),
-(5, 'Warrant Officer IC', 'Warrant Officer In-Charge - Schedules duty rosters, manages personnel, and administers user accounts.');
+(5, 'Warrant Officer IC', 'Warrant Officer In-Charge - Schedules duty rosters, manages personnel, and administers user accounts.'),
+(6, 'Super Admin', 'Super Admin with absolute privileges, including immutable log auditing.');
 
 -- Seed Shifts
 INSERT INTO `shifts` (`shift_id`, `shift_name`, `start_time`, `end_time`, `duration_hours`, `description`, `status`) VALUES
@@ -281,6 +282,8 @@ INSERT INTO `ranks` (`rank_id`, `rank_code`, `rank_name`, `rank_short_name`, `di
 
 -- Seed Personnel (Admin, OCPROVST, SNCO, and Airmen for different bases)
 INSERT INTO `personnel` (`service_number`, `rank_id`, `initials`, `full_name`, `trade`, `squadron`, `camp_id`, `contact_number`, `email`, `status`) VALUES
+-- Super Admin
+('sadmin', 8, 'S.', 'Super Administrator', 'Cyber Security', 'Directorate of IT', 1, '+94777777777', 'sadmin@slaf.lk', 'Active'),
 -- Administrator
 ('admin', 8, 'A.B.', 'John Smith', 'Admin General', 'Admin HQ', 1, '+94711111111', 'admin@slaf.lk', 'Active'),
 -- OCPROVST Katunayake
@@ -298,6 +301,7 @@ INSERT INTO `personnel` (`service_number`, `rank_id`, `initials`, `full_name`, `
 
 -- Seed Users (Passwords are all hashed using standard BCRYPT of 'Password@123')
 INSERT INTO `users` (`service_number`, `password_hash`, `role_id`, `status`) VALUES
+('sadmin', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 6, 'Active'),
 ('admin', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 1, 'Active'),
 ('51838', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 2, 'Active'),
 ('51839', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 3, 'Active'),
@@ -308,6 +312,7 @@ INSERT INTO `users` (`service_number`, `password_hash`, `role_id`, `status`) VAL
 
 -- Seed initial active postings
 INSERT INTO `postings` (`service_number`, `from_camp_id`, `to_camp_id`, `effective_date`, `end_date`, `status`) VALUES
+('sadmin', 1, 1, '2025-01-01', NULL, 'Active'),
 ('admin', 1, 1, '2025-01-01', NULL, 'Active'),
 ('51838', 3, 3, '2025-01-01', NULL, 'Active'),
 ('51839', 1, 1, '2025-01-01', NULL, 'Active'),
@@ -373,3 +378,46 @@ INSERT INTO `postings` (`service_number`, `from_camp_id`, `to_camp_id`, `effecti
 ('51837', 2, 2, '2025-01-01', NULL, 'Active'),
 ('51846', 1, 1, '2025-01-01', NULL, 'Active'),
 ('51847', 2, 2, '2025-01-01', NULL, 'Active');
+
+-- --------------------------------------------------------
+-- Table `camp_attendance`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `camp_attendance` (
+  `attendance_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `service_number` VARCHAR(30) NOT NULL,
+  `check_in_date` DATE NOT NULL,
+  `check_out_date` DATE NULL,
+  FOREIGN KEY (`service_number`) REFERENCES `personnel` (`service_number`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table `leave_records`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `leave_records` (
+  `leave_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `service_number` VARCHAR(30) NOT NULL,
+  `leave_start_date` DATE NOT NULL,
+  `leave_end_date` DATE NOT NULL,
+  `leave_type` VARCHAR(50) NOT NULL,
+  `approved_by` VARCHAR(30) NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `actual_reporting_date` DATE DEFAULT NULL,
+  `granted_end_date` DATE DEFAULT NULL,
+  `granted_by` VARCHAR(30) DEFAULT NULL,
+  `granted_reason` TEXT DEFAULT NULL,
+  `granted_at` TIMESTAMP NULL DEFAULT NULL,
+  FOREIGN KEY (`service_number`) REFERENCES `personnel` (`service_number`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Seed camp_attendance data
+INSERT INTO `camp_attendance` (`service_number`, `check_in_date`, `check_out_date`) VALUES
+('sadmin', '2026-07-01', NULL),
+('admin', '2026-06-25', NULL),
+('51837', '2026-06-01', NULL),
+('51839', '2026-07-04', NULL),
+('51838', '2026-06-01', '2026-06-19');
+
+-- Seed leave_records data
+INSERT INTO `leave_records` (`service_number`, `leave_start_date`, `leave_end_date`, `leave_type`, `approved_by`) VALUES
+('51838', '2026-06-20', '2026-06-30', 'Annual Leave', 'admin'),
+('51840', '2026-07-01', '2026-07-10', 'Casual Leave', 'admin');

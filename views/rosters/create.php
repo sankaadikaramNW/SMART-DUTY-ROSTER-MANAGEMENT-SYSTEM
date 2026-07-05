@@ -486,8 +486,15 @@ include __DIR__ . '/../layout/header.php';
                                         row.style.borderLeft = 'none';
                                         const infoDiv = row.querySelector('.row-conflict-info');
                                         if (infoDiv) {
-                                            infoDiv.style.display = 'none';
-                                            infoDiv.innerHTML = '';
+                                            const days = parseInt(item.days_in_camp || 0);
+                                            if (days > 30) {
+                                                row.style.borderLeft = '4px solid #ef4444';
+                                                infoDiv.innerHTML = `<div class="text-danger"><i class="fas fa-triangle-exclamation"></i> Warning: This person has been staying ${days} days in the camp.</div>`;
+                                                infoDiv.style.display = 'block';
+                                            } else {
+                                                infoDiv.style.display = 'none';
+                                                infoDiv.innerHTML = '';
+                                            }
                                         }
                                     });
 

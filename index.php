@@ -97,6 +97,9 @@ $routes = [
         '/notifications' => 'NotificationController@getNotifications',
         '/transfers' => 'TransferController@index',
         '/transfers/view' => 'TransferController@view',
+        '/leaves' => 'LeaveController@index',
+        '/leaves/calendar-data' => 'LeaveController@calendarData',
+        '/dashboard/attendance-stats' => 'DashboardController@getAttendanceStats',
     ],
     'POST' => [
         '/login' => 'AuthController@loginProcess',
@@ -117,6 +120,9 @@ $routes = [
         '/users/save' => 'AdminController@saveUser',
         '/users/status' => 'AdminController@toggleUserStatus',
         '/notifications/read' => 'NotificationController@markAsRead',
+        '/leaves/save' => 'LeaveController@save',
+        '/leaves/report-return' => 'LeaveController@reportReturn',
+        '/leaves/grant-extension' => 'LeaveController@grantExtension',
     ]
 ];
 

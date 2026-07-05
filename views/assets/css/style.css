@@ -18,7 +18,7 @@
     --radius-md: 12px;
     --radius-lg: 20px;
     --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    
+
     /* Conflict Levels colors */
     --status-normal: #10b981;
     --status-warning: #f59e0b;
@@ -96,13 +96,19 @@ body::before {
     transition: var(--transition-smooth);
 }
 
-.nav-link-custom:hover, .nav-link-custom.active {
+.nav-link-custom:hover,
+.nav-link-custom.active {
     color: var(--text-primary) !important;
     background: rgba(255, 255, 255, 0.05);
 }
 
 /* Heading Styling */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     font-family: 'Space Grotesk', sans-serif;
     font-weight: 600;
     color: var(--text-primary);
@@ -137,7 +143,8 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Custom Buttons */
 .btn-custom {
-    padding: 12px 24px; /* Ensured 44px minimum height touch target */
+    padding: 12px 24px;
+    /* Ensured 44px minimum height touch target */
     font-weight: 500;
     border-radius: var(--radius-sm);
     transition: var(--transition-smooth);
@@ -194,6 +201,7 @@ h1, h2, h3, h4, h5, h6 {
     background: linear-gradient(135deg, #f59e0b, #d97706);
     color: white;
 }
+
 .btn-custom-warning:hover {
     opacity: 0.9;
     box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
@@ -204,6 +212,7 @@ h1, h2, h3, h4, h5, h6 {
     background: linear-gradient(135deg, #f97316, #ea580c);
     color: white;
 }
+
 .btn-custom-orange:hover {
     opacity: 0.9;
     box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
@@ -256,11 +265,35 @@ h1, h2, h3, h4, h5, h6 {
     gap: 4px;
 }
 
-.badge-draft { background: rgba(156, 163, 175, 0.15); color: #9ca3af; border: 1px solid rgba(156, 163, 175, 0.3); }
-.badge-submitted { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-.badge-approved { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-.badge-rejected { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-.badge-published { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+.badge-draft {
+    background: rgba(156, 163, 175, 0.15);
+    color: #9ca3af;
+    border: 1px solid rgba(156, 163, 175, 0.3);
+}
+
+.badge-submitted {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-approved {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-rejected {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.badge-published {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
 
 /* Dashboard Cards */
 .stat-card {
@@ -345,8 +378,15 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Animations */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .animate-fade-in {
@@ -378,15 +418,19 @@ h1, h2, h3, h4, h5, h6 {
         background: white !important;
         color: black !important;
     }
+
     .glass-card {
         background: transparent !important;
         border: 1px solid #ccc !important;
         box-shadow: none !important;
         color: black !important;
     }
-    .navbar-custom, footer {
+
+    .navbar-custom,
+    footer {
         display: none !important;
     }
+
     .btn-custom {
         display: none !important;
     }
@@ -447,17 +491,17 @@ h1, h2, h3, h4, h5, h6 {
     .sidebar-custom .sidebar-menu::-webkit-scrollbar {
         width: 6px;
     }
-    
+
     .sidebar-custom .sidebar-menu::-webkit-scrollbar-track {
         background: transparent;
     }
-    
+
     .sidebar-custom .sidebar-menu::-webkit-scrollbar-thumb {
         background-color: var(--glass-highlight);
         border-radius: 3px;
         transition: background-color 0.2s;
     }
-    
+
     .sidebar-custom .sidebar-menu::-webkit-scrollbar-thumb:hover {
         background-color: var(--text-muted);
     }
@@ -538,7 +582,8 @@ h1, h2, h3, h4, h5, h6 {
     border-left: 3px solid transparent;
 }
 
-.sidebar-link:hover, .sidebar-link.active {
+.sidebar-link:hover,
+.sidebar-link.active {
     color: var(--accent-blue) !important;
     background: #eff6ff;
     border-left-color: var(--accent-blue);
@@ -668,14 +713,18 @@ h1, h2, h3, h4, h5, h6 {
         background-color: var(--bg-secondary) !important;
         border-right: 1px solid var(--glass-border) !important;
     }
+
     .topbar-custom {
         left: 0;
-        padding: 0 15px; /* Compact padding for small screens */
+        padding: 0 15px;
+        /* Compact padding for small screens */
     }
+
     .main-layout {
         margin-left: 0;
         width: 100%;
     }
+
     .mobile-nav-toggle {
         display: block !important;
     }
@@ -725,7 +774,8 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
 }
 
-.modal-header, .modal-footer {
+.modal-header,
+.modal-footer {
     border-color: var(--glass-border) !important;
 }
 
@@ -755,17 +805,45 @@ h1, h2, h3, h4, h5, h6 {
     width: 100%;
     min-width: 320px;
     background: #ffffff !important;
-    border: none !important;
-    box-shadow: none !important;
+    border: 2px solid #008bc2 !important;
+    border-radius: 18px !important;
+    box-shadow:
+        0 0 8px  rgba(0, 139, 194, 0.7),
+        0 0 20px rgba(0, 139, 194, 0.5),
+        0 0 40px rgba(0, 139, 194, 0.3),
+        0 0 70px rgba(0, 139, 194, 0.15),
+        inset 0 0 20px rgba(0, 139, 194, 0.04) !important;
     z-index: 1;
     position: relative;
-    padding: 10px 15px !important;
+    padding: 28px 28px 20px !important;
+    animation: neon-blink 2s infinite;
 }
 
+@keyframes neon-blink {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+        border-color: #008bc2 !important;
+        box-shadow:
+            0 0 8px  rgba(0, 139, 194, 0.8),
+            0 0 20px rgba(0, 139, 194, 0.55),
+            0 0 40px rgba(0, 139, 194, 0.35),
+            0 0 70px rgba(0, 139, 194, 0.15),
+            inset 0 0 20px rgba(0, 139, 194, 0.04) !important;
+    }
+    20%, 22%, 24%, 55% {
+        border-color: rgba(0, 139, 194, 0.15) !important;
+        box-shadow: 
+            0 0 2px rgba(0, 139, 194, 0.05),
+            inset 0 0 2px rgba(0, 139, 194, 0.01) !important;
+    }
+}
+
+
+
 .login-logo {
-    width: 50px;
-    height: auto;
-    margin-bottom: 8px;
+    width: 160px !important;
+    height: auto !important;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.2));
 }
 
 .login-title {
@@ -858,8 +936,15 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @keyframes scaleUp {
-    0% { transform: scale(0); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 .login-btn {
@@ -897,9 +982,11 @@ h1, h2, h3, h4, h5, h6 {
         width: 100%;
         padding: 5px 10px !important;
     }
+
     .login-title {
         font-size: 20px;
     }
+
     .cf-turnstile-mock {
         width: 100%;
     }
@@ -911,26 +998,31 @@ h1, h2, h3, h4, h5, h6 {
     width: 10% !important;
     min-width: 100px !important;
 }
+
 #assignmentsTable th:nth-child(2),
 #assignmentsTable td:nth-child(2) {
     width: 12% !important;
     min-width: 90px !important;
 }
+
 #assignmentsTable th:nth-child(3),
 #assignmentsTable td:nth-child(3) {
     width: 16% !important;
     min-width: 110px !important;
 }
+
 #assignmentsTable th:nth-child(4),
 #assignmentsTable td:nth-child(4) {
     width: 44% !important;
     min-width: 320px !important;
 }
+
 #assignmentsTable th:nth-child(5),
 #assignmentsTable td:nth-child(5) {
     width: 14% !important;
     min-width: 120px !important;
 }
+
 #assignmentsTable th:nth-child(6),
 #assignmentsTable td:nth-child(6) {
     width: 4% !important;
@@ -1094,4 +1186,3 @@ textarea.form-control-custom:focus {
     background-color: #f1f5f9 !important;
     color: #0f172a !important;
 }
-

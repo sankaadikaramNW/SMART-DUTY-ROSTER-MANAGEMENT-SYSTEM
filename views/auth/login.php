@@ -1,9 +1,40 @@
 <?php
 include __DIR__ . '/../layout/header.php';
 ?>
+<style>
+.login-card {
+    border: 2px solid #008bc2 !important;
+    box-shadow:
+        0 0 8px  rgba(0, 139, 194, 0.7),
+        0 0 20px rgba(0, 139, 194, 0.5),
+        0 0 40px rgba(0, 139, 194, 0.3),
+        0 0 70px rgba(0, 139, 194, 0.15),
+        inset 0 0 20px rgba(0, 139, 194, 0.04) !important;
+    animation: neon-blink 2s infinite !important;
+}
+
+@keyframes neon-blink {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+        border-color: #012330ff !important;
+        box-shadow:
+            0 0 8px  rgba(0, 139, 194, 0.8),
+            0 0 20px rgba(2, 35, 48, 0.55),
+            0 0 40px rgba(0, 139, 194, 0.35),
+            0 0 70px rgba(0, 139, 194, 0.15),
+            inset 0 0 20px rgba(0, 139, 194, 0.04) !important;
+    }
+    20%, 22%, 24%, 55% {
+        border-color: rgba(0, 139, 194, 0.15) !important;
+        box-shadow: 
+            0 0 2px rgba(0, 139, 194, 0.05),
+            inset 0 0 2px rgba(0, 139, 194, 0.01) !important;
+    }
+}
+</style>
+?>
 <div class="login-card mx-auto text-center animate-fade-in">
     <div class="mb-3">
-        <img src="<?= BASE_URL ?>/views/assets/images/slaf_logo.png" alt="Sri Lanka Air Force Logo" class="login-logo mb-2">
+        <img src="<?= BASE_URL ?>/views/assets/images/slaf_logo.png?v=<?= time() ?>" alt="Sri Lanka Air Force Logo" class="login-logo mb-2" style="width:160px !important;height:auto !important;display:block;margin:0 auto 12px;">
         <h2 class="login-title mb-1">Welcome back</h2>
         <p class="login-subtitle mb-0">AFP Duty Roster Management System</p>
     </div>
@@ -39,7 +70,7 @@ include __DIR__ . '/../layout/header.php';
                 <span class="input-group-text login-input-group-text">
                     <i class="fas fa-user"></i>
                 </span>
-                <input type="text" class="form-control login-input-height login-input-height-append" id="service_number" name="service_number" placeholder="Service No or admin" pattern="[Aa][Dd][Mm][Ii][Nn]|\d+" title="Must be a valid Service Number (e.g., 51837 or admin)" required autocomplete="username">
+                <input type="text" class="form-control login-input-height login-input-height-append" id="service_number" name="service_number" placeholder="Service No, admin or sadmin" pattern="[Ss]?[Aa][Dd][Mm][Ii][Nn]|\d+" title="Must be a valid Service Number (e.g., 51837, admin or sadmin)" required autocomplete="username">
             </div>
         </div>
         
@@ -53,31 +84,10 @@ include __DIR__ . '/../layout/header.php';
             </div>
         </div>
         
-        <!-- Offline Secure Verification Mock Widget -->
-        <div class="login-captcha-section mb-3 d-flex justify-content-center">
-            <div class="cf-turnstile-mock d-flex align-items-center justify-content-between p-2 rounded" id="turnstileWidget">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="cf-status-container d-flex align-items-center justify-content-center">
-                        <div class="spinner-border text-primary" role="status" id="captchaSpinner" style="width: 1.25rem; height: 1.25rem; border-width: 0.18em;">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <div class="cf-success-checkmark d-none" id="captchaSuccess">
-                            <i class="fas fa-circle-check text-success fs-5 animate-scale-up"></i>
-                        </div>
-                    </div>
-                    <div class="d-flex flex-column text-start" style="line-height: 1.2;">
-                        <span class="cf-text-status" id="captchaTextStatus" style="font-size: 13px; font-weight: 500; color: #475569;">Verifying...</span>
-                    </div>
-                </div>
-                <div class="text-end d-flex flex-column align-items-end justify-content-center" style="line-height: 1.2; padding-right: 5px;">
-                    <span class="cf-brand-title" style="font-size: 8px; font-weight: 700; color: #64748b; letter-spacing: 0.5px;">SECURE CHECK</span>
-                    <span style="font-size: 7px; color: #94a3b8; font-weight: 500;">Intranet Protocol</span>
-                </div>
-            </div>
-        </div>
         
+
         <div class="d-grid mb-3">
-            <button type="submit" id="submitBtn" class="btn btn-primary login-btn d-flex align-items-center justify-content-center gap-2" disabled>
+            <button type="submit" id="submitBtn" class="btn btn-primary login-btn d-flex align-items-center justify-content-center gap-2">
                 <i class="fas fa-right-to-bracket"></i> Sign In
             </button>
         </div>
@@ -89,26 +99,7 @@ include __DIR__ . '/../layout/header.php';
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const spinner = document.getElementById('captchaSpinner');
-    const success = document.getElementById('captchaSuccess');
-    const statusText = document.getElementById('captchaTextStatus');
-    const submitBtn = document.getElementById('submitBtn');
-    const widget = document.getElementById('turnstileWidget');
-    
-    // Simulate Cloudflare Turnstile verification flow with smooth transition
-    setTimeout(() => {
-        spinner.classList.add('d-none');
-        success.classList.remove('d-none');
-        statusText.textContent = 'Success!';
-        statusText.style.color = '#15803d'; // Green-700
-        statusText.style.fontWeight = '600';
-        submitBtn.removeAttribute('disabled');
-        widget.classList.add('verified');
-    }, 600);
-});
-</script>
+
 <?php
 include __DIR__ . '/../layout/footer.php';
 ?>

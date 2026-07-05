@@ -15,7 +15,7 @@ class Personnel {
             $campId = $restrictedCampId;
         }
 
-        $sql = "SELECT p.*, c.camp_name, r.rank_name AS rank, r.rank_short_name 
+        $sql = "SELECT p.*, c.camp_name, r.rank_name AS `rank`, r.rank_short_name 
                 FROM personnel p 
                 LEFT JOIN camps c ON p.camp_id = c.camp_id 
                 LEFT JOIN ranks r ON p.rank_id = r.rank_id
@@ -45,7 +45,7 @@ class Personnel {
         LocationMiddleware::validatePersonnel($serviceNumber);
 
         $stmt = $db->prepare("
-            SELECT p.*, c.camp_name, r.rank_name AS rank, r.rank_short_name 
+            SELECT p.*, c.camp_name, r.rank_name AS `rank`, r.rank_short_name 
             FROM personnel p 
             LEFT JOIN camps c ON p.camp_id = c.camp_id 
             LEFT JOIN ranks r ON p.rank_id = r.rank_id
@@ -135,12 +135,33 @@ class Personnel {
         }
     }
 
+    // Get consecutive days a person has stayed in the camp
+    public static function getConsecutiveDaysInCamp($serviceNumber) {
+        $db = Database::getInstance()->getConnection();
+        $stmt = $db->prepare("
+            SELECT check_in_date, check_out_date 
+            FROM camp_attendance 
+            WHERE service_number = ? 
+            ORDER BY check_in_date DESC, attendance_id DESC 
+            LIMIT 1
+        ");
+        $stmt->execute([$serviceNumber]);
+        $res = $stmt->fetch();
+        if ($res && $res['check_out_date'] === null) {
+            $checkIn = new DateTime($res['check_in_date']);
+            $today = new DateTime();
+            $diff = $checkIn->diff($today);
+            return $diff->days;
+        }
+        return 0;
+    }
+
     // Lookup matching personnel (AJAX auto-completers)
     public static function search($query) {
         $db = Database::getInstance()->getConnection();
         $restrictedCampId = LocationMiddleware::getCampConstraint();
 
-        $sql = "SELECT p.*, c.camp_name, rk.rank_name AS rank, rk.rank_short_name,
+        $sql = "SELECT p.*, c.camp_name, rk.rank_name AS `rank`, rk.rank_short_name,
                        pos.effective_date AS posting_effective_date,
                        pos_from.camp_name AS posting_from_camp_name
                 FROM personnel p 
@@ -169,6 +190,12 @@ class Personnel {
         $sql .= " ORDER BY rk.display_order ASC, p.service_number ASC LIMIT 25";
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
-        return $stmt->fetchAll();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        foreach ($rows as &$row) {
+            $row['days_in_camp'] = self::getConsecutiveDaysInCamp($row['service_number']);
+        }
+        
+        return $rows;
     }
 }

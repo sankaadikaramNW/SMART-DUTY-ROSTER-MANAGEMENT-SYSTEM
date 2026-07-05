@@ -90,7 +90,7 @@ class PersonnelController {
             Security::verifyCsrf();
 
             $serviceNumber = strtoupper(Security::sanitize($_POST['service_number'] ?? ''));
-            $isAdmin = (strtolower($serviceNumber) === 'admin');
+            $isAdmin = (strtolower($serviceNumber) === 'admin' || strtolower($serviceNumber) === 'sadmin');
             $rankId = !empty($_POST['rank_id']) ? (int)$_POST['rank_id'] : null;
             $initials = Security::sanitize($_POST['initials'] ?? '');
             $fullName = Security::sanitize($_POST['full_name'] ?? '');
@@ -125,7 +125,7 @@ class PersonnelController {
             Security::verifyCsrf();
 
             $serviceNumber = Security::sanitize($_POST['service_number'] ?? '');
-            $isAdmin = (strtolower($serviceNumber) === 'admin');
+            $isAdmin = (strtolower($serviceNumber) === 'admin' || strtolower($serviceNumber) === 'sadmin');
             $rankId = !empty($_POST['rank_id']) ? (int)$_POST['rank_id'] : null;
             $initials = Security::sanitize($_POST['initials'] ?? '');
             $fullName = Security::sanitize($_POST['full_name'] ?? '');

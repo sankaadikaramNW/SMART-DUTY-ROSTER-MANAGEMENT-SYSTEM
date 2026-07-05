@@ -10,13 +10,30 @@ require_once dirname(__DIR__) . '/helpers/Env.php';
 Env::load(dirname(__DIR__) . '/.env');
 
 // Dynamically discover base URL as fallback
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)) ? "https://" : "http://";
+$protocol = 'http://';
+if (
+    (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
+    (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443) ||
+    (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https')
+) {
+    $protocol = 'https://';
+}
+
 $domain = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
 $script = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : '';
 $dir = dirname($script);
 $base_url = $protocol . $domain . rtrim(str_replace('\\', '/', $dir), '/');
 
-define('BASE_URL', Env::get('APP_URL', $base_url));
+$env_app_url = Env::get('APP_URL');
+$is_localhost_request = (strpos($domain, 'localhost') !== false || $domain === '127.0.0.1');
+
+if ($is_localhost_request) {
+    define('BASE_URL', $base_url);
+} elseif ($env_app_url) {
+    define('BASE_URL', rtrim($env_app_url, '/'));
+} else {
+    define('BASE_URL', $base_url);
+}
 define('APP_NAME', Env::get('APP_NAME', 'Smart Duty Roster Management System'));
 
 // Database settings

@@ -50,7 +50,7 @@ class DashboardController {
         // 5. TODAY'S DUTY CREW — all personnel assigned to duty today (for this camp)
         $todayCrewSql = "
             SELECT a.assignment_id, a.duty_date, a.status AS assignment_status,
-                   p.service_number, rk.rank_name AS rank, p.initials, p.full_name,
+                   p.service_number, rk.rank_name AS `rank`, p.initials, p.full_name,
                    s.shift_name, s.start_time, s.end_time,
                    t.duty_type_name,
                    r.roster_name, r.roster_id,
@@ -128,5 +128,36 @@ class DashboardController {
         // Render dashboard view
         $pageTitle = 'Dashboard';
         include __DIR__ . '/../views/dashboard/index.php';
+    }
+
+    // JSON API for dashboard metrics and stays modal
+    public function getAttendanceStats() {
+        try {
+            $systemTime = date('H:i:s');
+            $overdueCount = LeaveRecord::getOverdueLeaveCount();
+            
+            // Get active crew members count (unique personnel assigned today on published rosters)
+            $db = Database::getInstance()->getConnection();
+            $stmt = $db->query("
+                SELECT COUNT(DISTINCT a.service_number) 
+                FROM duty_assignments a
+                JOIN duty_rosters r ON a.roster_id = r.roster_id
+                WHERE a.duty_date = CURDATE()
+                  AND r.status = 'Published'
+            ");
+            $activeCrewCount = (int)$stmt->fetchColumn();
+            
+            // List of stays
+            $stays = LeaveRecord::getPersonnelStays();
+            
+            return Response::json([
+                'system_time' => $systemTime,
+                'overdue_count' => $overdueCount,
+                'active_crew_count' => $activeCrewCount,
+                'personnel_stays' => $stays
+            ]);
+        } catch (Exception $e) {
+            return Response::json(['error' => $e->getMessage()], 500);
+        }
     }
 }

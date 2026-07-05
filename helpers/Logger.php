@@ -28,6 +28,24 @@ class Logger {
         file_put_contents($logFile, $formatted, FILE_APPEND);
     }
 
+    /**
+     * Filter out sensitive keys from data before logging
+     */
+    private static function sanitizeLogData($data) {
+        if (!is_array($data)) {
+            return $data;
+        }
+        $sensitiveKeys = ['password', 'password_hash', 'new_password', 'confirm_password', 'hash', 'password_confirm'];
+        foreach ($data as $key => $value) {
+            if (in_array(strtolower($key), $sensitiveKeys)) {
+                $data[$key] = '[REDACTED]';
+            } elseif (is_array($value)) {
+                $data[$key] = self::sanitizeLogData($value);
+            }
+        }
+        return $data;
+    }
+
     // Insert immutable audit logging
     public static function audit($module, $action, $previousData = null, $newData = null) {
         try {
@@ -43,8 +61,11 @@ class Logger {
             $ipAddress = self::getIp();
             $userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'Unknown';
             
-            $prevJson = $previousData ? json_encode($previousData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : null;
-            $newJson = $newData ? json_encode($newData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : null;
+            $cleanPrevious = self::sanitizeLogData($previousData);
+            $cleanNew = self::sanitizeLogData($newData);
+            
+            $prevJson = $cleanPrevious ? json_encode($cleanPrevious, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : null;
+            $newJson = $cleanNew ? json_encode($cleanNew, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : null;
             
             $stmt->execute([
                 ':user_id' => $userId,

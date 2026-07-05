@@ -55,7 +55,7 @@ if ($isLoggedIn && $serviceNum) {
     <!-- FontAwesome 6 for Icons -->
     <link href="<?= BASE_URL ?>/views/assets/vendor/css/all.min.css" rel="stylesheet">
     <!-- Custom Style Sheet -->
-    <link href="<?= BASE_URL ?>/views/assets/css/style.css" rel="stylesheet">
+    <link href="<?= BASE_URL ?>/views/assets/css/style.css?v=<?= time() ?>" rel="stylesheet">
     <script>
         const BASE_URL = '<?= BASE_URL ?>';
         const CSRF_TOKEN = '<?= Security::csrfToken() ?>';
@@ -86,11 +86,14 @@ if ($isLoggedIn && $serviceNum) {
                         <i class="fas fa-chart-line"></i> Dashboard
                     </a>
                     
-                    <?php if ($roleName === 'Administrator'): ?>
+                    <?php if ($roleName === 'Administrator' || $roleName === 'Super Admin'): ?>
                         <!-- ROSTER OPERATIONS -->
                         <div class="sidebar-group-title">Roster Operations</div>
                         <a class="sidebar-link <?= ($route ?? '') === '/personnel' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel">
                             <i class="fas fa-users-gear"></i> Personnel
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/leaves' ? 'active' : '' ?>" href="<?= BASE_URL ?>/leaves">
+                            <i class="fas fa-plane-departure"></i> Leave Management
                         </a>
                         <a class="sidebar-link <?= in_array(($route ?? ''), ['/postings', '/transfers', '/transfers/view']) ? 'active' : '' ?>" href="<?= BASE_URL ?>/transfers">
                             <i class="fas fa-right-left"></i> Transfers
@@ -119,9 +122,11 @@ if ($isLoggedIn && $serviceNum) {
                         <a class="sidebar-link <?= ($route ?? '') === '/users' ? 'active' : '' ?>" href="<?= BASE_URL ?>/users">
                             <i class="fas fa-user-shield"></i> User Accounts
                         </a>
-                        <a class="sidebar-link <?= ($route ?? '') === '/audit-logs' ? 'active' : '' ?>" href="<?= BASE_URL ?>/audit-logs">
-                            <i class="fas fa-receipt"></i> Audit Logs
-                        </a>
+                        <?php if ($roleName === 'Super Admin'): ?>
+                            <a class="sidebar-link <?= ($route ?? '') === '/audit-logs' ? 'active' : '' ?>" href="<?= BASE_URL ?>/audit-logs">
+                                <i class="fas fa-receipt"></i> Audit Logs
+                            </a>
+                        <?php endif; ?>
                         
                         <!-- REPORTING -->
                         <div class="sidebar-group-title">Reporting</div>
@@ -134,6 +139,9 @@ if ($isLoggedIn && $serviceNum) {
                         <div class="sidebar-group-title">Roster Operations</div>
                         <a class="sidebar-link <?= ($route ?? '') === '/personnel' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel">
                             <i class="fas fa-users"></i> Personnel
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/leaves' ? 'active' : '' ?>" href="<?= BASE_URL ?>/leaves">
+                            <i class="fas fa-plane-departure"></i> Leave Management
                         </a>
                         <a class="sidebar-link <?= in_array(($route ?? ''), ['/postings', '/transfers', '/transfers/view']) ? 'active' : '' ?>" href="<?= BASE_URL ?>/transfers">
                             <i class="fas fa-right-left"></i> Transfers
@@ -160,6 +168,9 @@ if ($isLoggedIn && $serviceNum) {
                         <a class="sidebar-link <?= ($route ?? '') === '/personnel' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel">
                             <i class="fas fa-users"></i> Personnel
                         </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/leaves' ? 'active' : '' ?>" href="<?= BASE_URL ?>/leaves">
+                            <i class="fas fa-plane-departure"></i> Leave Management
+                        </a>
                         <a class="sidebar-link <?= in_array(($route ?? ''), ['/postings', '/transfers', '/transfers/view']) ? 'active' : '' ?>" href="<?= BASE_URL ?>/transfers">
                             <i class="fas fa-right-left"></i> Transfers
                         </a>
@@ -181,6 +192,9 @@ if ($isLoggedIn && $serviceNum) {
                         <div class="sidebar-group-title">Roster Operations</div>
                         <a class="sidebar-link <?= ($route ?? '') === '/personnel' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel">
                             <i class="fas fa-users"></i> Personnel
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/leaves' ? 'active' : '' ?>" href="<?= BASE_URL ?>/leaves">
+                            <i class="fas fa-plane-departure"></i> Leave Management
                         </a>
                         <a class="sidebar-link <?= in_array(($route ?? ''), ['/postings', '/transfers', '/transfers/view']) ? 'active' : '' ?>" href="<?= BASE_URL ?>/transfers">
                             <i class="fas fa-right-left"></i> Transfers

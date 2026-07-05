@@ -66,8 +66,9 @@ class Security {
         return password_verify($password, $hash);
     }
 
-    // Validate SLAF Service Number format (e.g. 51837 or 'admin' for system administrator)
+    // Validate SLAF Service Number format (e.g. 51837 or 'admin'/'sadmin' for system administrators)
     public static function validateServiceNumber($serviceNumber) {
-        return strtolower($serviceNumber) === 'admin' || (bool)preg_match('/^\d+$/', $serviceNumber);
+        $clean = strtolower($serviceNumber);
+        return $clean === 'admin' || $clean === 'sadmin' || (bool)preg_match('/^\d+$/', $serviceNumber);
     }
 }

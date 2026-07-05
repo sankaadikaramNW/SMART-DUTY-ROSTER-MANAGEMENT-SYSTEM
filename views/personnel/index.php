@@ -96,7 +96,7 @@ include __DIR__ . '/../layout/header.php';
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label for="service_number" class="form-label text-secondary small">Service Number</label>
-                        <input type="text" class="form-control form-control-custom" id="service_number" name="service_number" placeholder="e.g. 51837 or admin" pattern="[Aa][Dd][Mm][Ii][Nn]|\d+" title="Must be a valid Service Number (e.g., 51837 or admin)" required>
+                        <input type="text" class="form-control form-control-custom" id="service_number" name="service_number" placeholder="e.g. 51837, admin or sadmin" pattern="[Ss]?[Aa][Dd][Mm][Ii][Nn]|\d+" title="Must be a valid Service Number (e.g., 51837, admin or sadmin)" required>
                     </div>
                     <div class="col-md-6">
                         <label for="rank_id" class="form-label text-secondary small">Rank</label>

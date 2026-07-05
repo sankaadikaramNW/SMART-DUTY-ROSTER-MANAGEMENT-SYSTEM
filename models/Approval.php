@@ -37,7 +37,7 @@ class Approval {
     public static function getByRosterId($rosterId) {
         $db = Database::getInstance()->getConnection();
         $stmt = $db->prepare("
-            SELECT a.*, rk.rank_name AS rank, p.initials, p.full_name, r.role_name
+            SELECT a.*, rk.rank_name AS `rank`, p.initials, p.full_name, r.role_name
             FROM approvals a
             JOIN users u ON a.action_by = u.user_id
             JOIN roles r ON u.role_id = r.role_id

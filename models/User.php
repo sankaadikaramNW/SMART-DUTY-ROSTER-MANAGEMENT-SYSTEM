@@ -9,7 +9,7 @@ class User {
     public static function authenticate($serviceNumber, $password) {
         $db = Database::getInstance()->getConnection();
         $stmt = $db->prepare("
-            SELECT u.*, r.role_name, p.camp_id, p.full_name, rk.rank_name AS rank 
+            SELECT u.*, r.role_name, p.camp_id, p.full_name, rk.rank_name AS `rank` 
             FROM users u
             JOIN roles r ON u.role_id = r.role_id
             JOIN personnel p ON u.service_number = p.service_number
@@ -30,7 +30,7 @@ class User {
         $db = Database::getInstance()->getConnection();
         
         $sql = "
-            SELECT u.*, r.role_name, p.full_name, rk.rank_name AS rank, p.camp_id, c.camp_name 
+            SELECT u.*, r.role_name, p.full_name, rk.rank_name AS `rank`, p.camp_id, c.camp_name 
             FROM users u
             JOIN roles r ON u.role_id = r.role_id
             JOIN personnel p ON u.service_number = p.service_number
