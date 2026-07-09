@@ -123,6 +123,8 @@ $routes = [
         '/leaves/save' => 'LeaveController@save',
         '/leaves/report-return' => 'LeaveController@reportReturn',
         '/leaves/grant-extension' => 'LeaveController@grantExtension',
+        '/leaves/edit' => 'LeaveController@edit',
+        '/leaves/delete' => 'LeaveController@delete',
     ]
 ];
 

@@ -192,4 +192,104 @@ class LeaveRecord {
         }
         return $rows;
     }
+
+    // Retrieve single leave record by ID
+    public static function getById($leaveId) {
+        $db = Database::getInstance()->getConnection();
+        $stmt = $db->prepare("
+            SELECT lr.*, p.full_name, rk.rank_short_name AS `rank`, p.camp_id
+            FROM leave_records lr
+            JOIN personnel p ON lr.service_number = p.service_number
+            LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
+            WHERE lr.leave_id = :leave_id
+        ");
+        $stmt->execute([':leave_id' => $leaveId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // Update an existing leave record
+    public static function updateLeave($leaveId, $serviceNumber, $startDate, $endDate, $leaveType, $actualReportingDate, $grantedEndDate, $grantedReason, $currentUserServiceNumber) {
+        $db = Database::getInstance()->getConnection();
+        
+        $stmt = $db->prepare("SELECT * FROM leave_records WHERE leave_id = ?");
+        $stmt->execute([$leaveId]);
+        $prevData = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$prevData) {
+            throw new Exception("Leave record not found.");
+        }
+
+        // Validate SNCO location compliance
+        LocationMiddleware::validatePersonnel($serviceNumber);
+        LocationMiddleware::validatePersonnel($prevData['service_number']);
+
+        // Determine extension fields
+        $grantedBy = $prevData['granted_by'];
+        $grantedAt = $prevData['granted_at'];
+
+        if (!empty($grantedEndDate)) {
+            if ($prevData['granted_end_date'] !== $grantedEndDate) {
+                $grantedBy = $currentUserServiceNumber;
+                $grantedAt = date('Y-m-d H:i:s');
+            }
+        } else {
+            $grantedEndDate = null;
+            $grantedBy = null;
+            $grantedReason = null;
+            $grantedAt = null;
+        }
+
+        $stmt = $db->prepare("
+            UPDATE leave_records 
+            SET service_number = :service_number,
+                leave_start_date = :leave_start_date,
+                leave_end_date = :leave_end_date,
+                leave_type = :leave_type,
+                actual_reporting_date = :actual_reporting_date,
+                granted_end_date = :granted_end_date,
+                granted_by = :granted_by,
+                granted_reason = :granted_reason,
+                granted_at = :granted_at
+            WHERE leave_id = :leave_id
+        ");
+        
+        $stmt->execute([
+            ':service_number' => $serviceNumber,
+            ':leave_start_date' => $startDate,
+            ':leave_end_date' => $endDate,
+            ':leave_type' => $leaveType,
+            ':actual_reporting_date' => !empty($actualReportingDate) ? $actualReportingDate : null,
+            ':granted_end_date' => $grantedEndDate,
+            ':granted_by' => $grantedBy,
+            ':granted_reason' => $grantedReason,
+            ':granted_at' => $grantedAt,
+            ':leave_id' => $leaveId
+        ]);
+
+        $stmt = $db->prepare("SELECT * FROM leave_records WHERE leave_id = ?");
+        $stmt->execute([$leaveId]);
+        $newData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        Logger::audit('Leave Management', 'Update Leave ID: ' . $leaveId, $prevData, $newData);
+    }
+
+    // Delete a leave record
+    public static function deleteLeave($leaveId) {
+        $db = Database::getInstance()->getConnection();
+        
+        $stmt = $db->prepare("SELECT * FROM leave_records WHERE leave_id = ?");
+        $stmt->execute([$leaveId]);
+        $prevData = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$prevData) {
+            throw new Exception("Leave record not found.");
+        }
+
+        // Validate SNCO location compliance
+        LocationMiddleware::validatePersonnel($prevData['service_number']);
+
+        $stmt = $db->prepare("DELETE FROM leave_records WHERE leave_id = :leave_id");
+        $stmt->execute([':leave_id' => $leaveId]);
+
+        Logger::audit('Leave Management', 'Delete Leave ID: ' . $leaveId, $prevData, null);
+    }
 }
+

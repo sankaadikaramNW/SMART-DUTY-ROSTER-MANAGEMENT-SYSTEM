@@ -142,18 +142,25 @@ include __DIR__ . '/../../views/layout/header.php';
                                     </td>
                                     <td><span class="<?= $statusClass ?>"><?= $icon ?> <?= $status ?></span></td>
                                     <td>
-                                        <?php if ($l['actual_reporting_date'] === null): ?>
-                                            <div class="d-flex flex-column gap-1.5">
+                                        <div class="d-flex flex-column gap-1.5">
+                                            <?php if ($l['actual_reporting_date'] === null): ?>
                                                 <button type="button" class="btn btn-xs btn-outline-success py-1 px-1.5" onclick="openReturnModal(<?= $l['leave_id'] ?>, '<?= htmlspecialchars($l['service_number']) ?>');" style="font-size:0.75rem;">
                                                     <i class="fas fa-check-circle"></i> Return
                                                 </button>
                                                 <button type="button" class="btn btn-xs btn-outline-purple py-1 px-1.5" onclick="openExtensionModal(<?= $l['leave_id'] ?>, '<?= htmlspecialchars($l['service_number']) ?>');" style="font-size:0.75rem;">
                                                     <i class="fas fa-plane-departure"></i> Extend
                                                 </button>
+                                            <?php endif; ?>
+                                            
+                                            <div class="d-flex gap-1">
+                                                <button type="button" class="btn btn-xs btn-outline-primary py-1 px-1 flex-grow-1" onclick="openEditModal(<?= $l['leave_id'] ?>, '<?= htmlspecialchars($l['service_number']) ?>', '<?= htmlspecialchars($l['leave_start_date']) ?>', '<?= htmlspecialchars($l['leave_end_date']) ?>', '<?= htmlspecialchars($l['leave_type']) ?>', '<?= htmlspecialchars($l['actual_reporting_date'] ?? '') ?>', '<?= htmlspecialchars($l['granted_end_date'] ?? '') ?>', '<?= htmlspecialchars($l['granted_reason'] ?? '') ?>');" style="font-size:0.725rem;">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </button>
+                                                <button type="button" class="btn btn-xs btn-outline-danger py-1 px-1 flex-grow-1" onclick="confirmDeleteLeave(<?= $l['leave_id'] ?>, '<?= htmlspecialchars($l['service_number']) ?>');" style="font-size:0.725rem;">
+                                                    <i class="fas fa-trash-alt"></i> Delete
+                                                </button>
                                             </div>
-                                        <?php else: ?>
-                                            <span class="text-secondary small">Processed</span>
-                                        <?php endif; ?>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -239,6 +246,101 @@ include __DIR__ . '/../../views/layout/header.php';
         </div>
     </div>
 </div>
+
+<!-- Edit Leave Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content glass-card">
+            <div class="modal-header border-bottom border-secondary border-opacity-10 bg-transparent py-3 px-4">
+                <h5 class="modal-title fw-bold text-dark" id="editModalLabel">
+                    <i class="fas fa-edit text-primary me-2"></i>Edit Leave Record
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="<?= BASE_URL ?>/leaves/edit" method="POST">
+                <?= Security::csrfField() ?>
+                <input type="hidden" id="edit_leave_id" name="leave_id" value="">
+                
+                <div class="modal-body text-dark p-4">
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-bold">Service No</label>
+                        <input type="text" class="form-control form-control-custom text-dark bg-light" id="edit_service_number" name="service_number" readonly>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_leave_type" class="form-label text-secondary small fw-bold">Leave Type</label>
+                        <select class="form-select form-control-custom text-dark" id="edit_leave_type" name="leave_type" required>
+                            <option value="Annual Leave">Annual Leave</option>
+                            <option value="Casual Leave">Casual Leave</option>
+                            <option value="Sick Leave">Sick Leave</option>
+                            <option value="Duty Leave">Duty Leave</option>
+                            <option value="Emergency Leave">Emergency Leave</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_leave_start_date" class="form-label text-secondary small fw-bold">Leave Start Date</label>
+                        <input type="date" class="form-control form-control-custom text-dark" id="edit_leave_start_date" name="leave_start_date" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_leave_end_date" class="form-label text-secondary small fw-bold">Leave End Date</label>
+                        <input type="date" class="form-control form-control-custom text-dark" id="edit_leave_end_date" name="leave_end_date" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_actual_reporting_date" class="form-label text-secondary small fw-bold">Actual Reporting Date (Optional)</label>
+                        <input type="date" class="form-control form-control-custom text-dark" id="edit_actual_reporting_date" name="actual_reporting_date">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_granted_end_date" class="form-label text-secondary small fw-bold">Extended Return Date (Optional)</label>
+                        <input type="date" class="form-control form-control-custom text-dark" id="edit_granted_end_date" name="granted_end_date">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_granted_reason" class="form-label text-secondary small fw-bold">Reason for Extension (Optional)</label>
+                        <textarea class="form-control form-control-custom text-dark" id="edit_granted_reason" name="granted_reason" rows="2" placeholder="Explain why the extension was authorized..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="modal-footer border-top border-secondary border-opacity-10">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-custom btn-custom-primary py-2 px-3">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content glass-card">
+            <div class="modal-header border-bottom border-secondary border-opacity-10 bg-transparent py-3 px-4">
+                <h5 class="modal-title fw-bold text-dark" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle text-danger me-2"></i>Delete Leave Record
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="<?= BASE_URL ?>/leaves/delete" method="POST">
+                <?= Security::csrfField() ?>
+                <input type="hidden" id="del_leave_id" name="leave_id" value="">
+                
+                <div class="modal-body text-dark p-4">
+                    <p class="mb-2">Are you sure you want to delete the leave record for Service Number <strong id="del_service_number"></strong>?</p>
+                    <p class="text-danger small mb-0"><i class="fas fa-info-circle text-danger me-1"></i> This action is permanent and cannot be undone.</p>
+                </div>
+                
+                <div class="modal-footer border-top border-secondary border-opacity-10">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger btn-sm py-2 px-3">Delete Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 
 <style>
 /* Adjust form inputs and selectors colors for high accessibility and readable black text */
@@ -386,6 +488,30 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('ret_service_number').value = serviceNum;
         
         const modalEl = document.getElementById('returnModal');
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    };
+
+    window.openEditModal = function(leaveId, serviceNum, startDate, endDate, leaveType, actualReportingDate, grantedEndDate, grantedReason) {
+        document.getElementById('edit_leave_id').value = leaveId;
+        document.getElementById('edit_service_number').value = serviceNum;
+        document.getElementById('edit_leave_start_date').value = startDate;
+        document.getElementById('edit_leave_end_date').value = endDate;
+        document.getElementById('edit_leave_type').value = leaveType;
+        document.getElementById('edit_actual_reporting_date').value = actualReportingDate;
+        document.getElementById('edit_granted_end_date').value = grantedEndDate;
+        document.getElementById('edit_granted_reason').value = grantedReason;
+        
+        const modalEl = document.getElementById('editModal');
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    };
+
+    window.confirmDeleteLeave = function(leaveId, serviceNum) {
+        document.getElementById('del_leave_id').value = leaveId;
+        document.getElementById('del_service_number').innerText = serviceNum;
+        
+        const modalEl = document.getElementById('deleteModal');
         const modal = new bootstrap.Modal(modalEl);
         modal.show();
     };

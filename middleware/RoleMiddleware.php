@@ -24,7 +24,7 @@ class RoleMiddleware {
                 '/rosters', '/rosters/create', '/rosters/save', '/rosters/view', '/rosters/approve', '/rosters/assignment-action', '/rosters/calendar', '/rosters/calendar-data', '/rosters/timeline', '/rosters/conflict-check', '/rosters/action',
                 '/camps', '/camps/save', '/shifts', '/shifts/save', '/duty-types', '/duty-types/save', '/ranks', '/ranks/save', '/users', '/users/save', '/users/status',
                 '/reports', '/reports/generate', '/audit-logs', '/notifications', '/notifications/read',
-                '/leaves', '/leaves/save', '/leaves/calendar-data', '/dashboard/attendance-stats', '/leaves/report-return', '/leaves/grant-extension'
+                '/leaves', '/leaves/save', '/leaves/calendar-data', '/dashboard/attendance-stats', '/leaves/report-return', '/leaves/grant-extension', '/leaves/edit', '/leaves/delete'
             ],
             'Administrator' => [
                 '/dashboard', '/logout', 
@@ -33,7 +33,7 @@ class RoleMiddleware {
                 '/rosters', '/rosters/create', '/rosters/save', '/rosters/view', '/rosters/approve', '/rosters/assignment-action', '/rosters/calendar', '/rosters/calendar-data', '/rosters/timeline', '/rosters/conflict-check', '/rosters/action',
                 '/camps', '/camps/save', '/shifts', '/shifts/save', '/duty-types', '/duty-types/save', '/ranks', '/ranks/save', '/users', '/users/save', '/users/status',
                 '/reports', '/reports/generate', '/notifications', '/notifications/read',
-                '/leaves', '/leaves/save', '/leaves/calendar-data', '/dashboard/attendance-stats', '/leaves/report-return', '/leaves/grant-extension'
+                '/leaves', '/leaves/save', '/leaves/calendar-data', '/dashboard/attendance-stats', '/leaves/report-return', '/leaves/grant-extension', '/leaves/edit', '/leaves/delete'
             ],
             'OCPROVST' => [
                 '/dashboard', '/logout',
@@ -42,7 +42,7 @@ class RoleMiddleware {
                 '/rosters', '/rosters/view', '/rosters/approve', '/rosters/assignment-action', '/rosters/calendar', '/rosters/calendar-data', '/rosters/timeline', '/rosters/action',
                 '/users', '/users/save', '/users/status',
                 '/reports', '/reports/generate', '/notifications', '/notifications/read',
-                '/leaves', '/leaves/save', '/leaves/calendar-data', '/dashboard/attendance-stats', '/leaves/report-return', '/leaves/grant-extension'
+                '/leaves', '/leaves/save', '/leaves/calendar-data', '/dashboard/attendance-stats', '/leaves/report-return', '/leaves/grant-extension', '/leaves/edit', '/leaves/delete'
             ],
             'Warrant Officer IC' => [
                 '/dashboard', '/logout',
@@ -51,7 +51,7 @@ class RoleMiddleware {
                 '/rosters', '/rosters/create', '/rosters/save', '/rosters/view', '/rosters/calendar', '/rosters/calendar-data', '/rosters/timeline', '/rosters/conflict-check', '/rosters/action',
                 '/users', '/users/save', '/users/status',
                 '/reports', '/reports/generate', '/notifications', '/notifications/read',
-                '/leaves', '/leaves/save', '/leaves/calendar-data', '/dashboard/attendance-stats', '/leaves/report-return', '/leaves/grant-extension'
+                '/leaves', '/leaves/save', '/leaves/calendar-data', '/dashboard/attendance-stats', '/leaves/report-return', '/leaves/grant-extension', '/leaves/edit', '/leaves/delete'
             ],
             'SNCO' => [
                 '/dashboard', '/logout',
@@ -59,7 +59,7 @@ class RoleMiddleware {
                 '/transfers', '/transfers/view', '/transfers/create', '/transfers/edit', '/transfers/action', '/transfers/cancel',
                 '/rosters', '/rosters/create', '/rosters/save', '/rosters/view', '/rosters/calendar', '/rosters/calendar-data', '/rosters/timeline', '/rosters/conflict-check', '/rosters/action',
                 '/reports', '/reports/generate', '/notifications', '/notifications/read',
-                '/leaves', '/leaves/save', '/leaves/calendar-data', '/dashboard/attendance-stats', '/leaves/report-return', '/leaves/grant-extension'
+                '/leaves', '/leaves/save', '/leaves/calendar-data', '/dashboard/attendance-stats', '/leaves/report-return', '/leaves/grant-extension', '/leaves/edit', '/leaves/delete'
             ],
             'Airman' => [
                 '/dashboard', '/logout',

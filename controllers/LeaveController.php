@@ -122,4 +122,71 @@ class LeaveController {
             Response::redirect('/leaves');
         }
     }
+
+    // Edit leave record details
+    public function edit() {
+        try {
+            Security::verifyCsrf();
+            
+            $leaveId = (int)($_POST['leave_id'] ?? 0);
+            $serviceNumber = Security::sanitize($_POST['service_number'] ?? '');
+            $startDate = Security::sanitize($_POST['leave_start_date'] ?? '');
+            $endDate = Security::sanitize($_POST['leave_end_date'] ?? '');
+            $leaveType = Security::sanitize($_POST['leave_type'] ?? '');
+            $actualReportingDate = Security::sanitize($_POST['actual_reporting_date'] ?? '');
+            $grantedEndDate = Security::sanitize($_POST['granted_end_date'] ?? '');
+            $grantedReason = Security::sanitize($_POST['granted_reason'] ?? '');
+            $currentUserServiceNumber = Session::get('service_number');
+
+            if (!$leaveId || empty($serviceNumber) || empty($startDate) || empty($endDate) || empty($leaveType)) {
+                throw new Exception("Missing required fields for update.");
+            }
+
+            if (strtotime($startDate) > strtotime($endDate)) {
+                throw new Exception("Leave start date cannot be after end date.");
+            }
+
+            // Verify if user is authorized to manage this personnel
+            LocationMiddleware::validatePersonnel($serviceNumber);
+
+            LeaveRecord::updateLeave(
+                $leaveId, 
+                $serviceNumber, 
+                $startDate, 
+                $endDate, 
+                $leaveType, 
+                $actualReportingDate, 
+                $grantedEndDate, 
+                $grantedReason, 
+                $currentUserServiceNumber
+            );
+
+            Session::set('success_message', "Leave record updated successfully.");
+            Response::redirect('/leaves');
+        } catch (Exception $e) {
+            Session::set('error_message', $e->getMessage());
+            Response::redirect('/leaves');
+        }
+    }
+
+    // Delete leave record
+    public function delete() {
+        try {
+            Security::verifyCsrf();
+            
+            $leaveId = (int)($_POST['leave_id'] ?? 0);
+            if (!$leaveId) {
+                throw new Exception("Leave ID is required.");
+            }
+
+            LeaveRecord::deleteLeave($leaveId);
+
+            Session::set('success_message', "Leave record deleted successfully.");
+            Response::redirect('/leaves');
+        } catch (Exception $e) {
+            Session::set('error_message', $e->getMessage());
+            Response::redirect('/leaves');
+        }
+    }
 }
+
