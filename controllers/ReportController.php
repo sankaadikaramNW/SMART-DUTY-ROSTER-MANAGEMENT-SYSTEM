@@ -32,6 +32,12 @@ class ReportController {
                 throw new Exception("Please specify a target Camp/Base for the report.");
             }
 
+            $exportType = Security::sanitize($_GET['export_type'] ?? 'print');
+            $roleName = Session::get('role_name');
+            if ($roleName === 'Warrant Officer IC') {
+                Logger::audit('Report Management', 'Generate Report for Camp ID: ' . $campId . ' (Format: ' . $exportType . ')');
+            }
+
             $startDate = Security::sanitize($_GET['start_date'] ?? date('Y-m-01'));
             $endDate = Security::sanitize($_GET['end_date'] ?? date('Y-m-t'));
             $shiftId = isset($_GET['shift_id']) && $_GET['shift_id'] !== '' ? (int)$_GET['shift_id'] : null;
@@ -41,7 +47,7 @@ class ReportController {
 
             $db = Database::getInstance()->getConnection();
 
-            $sql = "SELECT a.*, rk.rank_name AS `rank`, p.initials, p.full_name, p.trade, p.squadron, s.shift_name, s.start_time, s.end_time, t.duty_type_name, r.roster_name, c.camp_name
+            $sql = "SELECT a.*, rk.rank_name AS `rank`, p.initials, p.full_name, p.trade, p.squadron, s.shift_name, s.start_time, s.end_time, t.duty_type_name, t.color_code, t.icon_class, r.roster_name, c.camp_name
                     FROM duty_assignments a
                     JOIN duty_rosters r ON a.roster_id = r.roster_id
                     JOIN camps c ON r.camp_id = c.camp_id

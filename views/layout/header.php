@@ -54,8 +54,16 @@ if ($isLoggedIn && $serviceNum) {
     <link href="<?= BASE_URL ?>/views/assets/vendor/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome 6 for Icons -->
     <link href="<?= BASE_URL ?>/views/assets/vendor/css/all.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <!-- Custom Style Sheet -->
     <link href="<?= BASE_URL ?>/views/assets/css/style.css?v=<?= time() ?>" rel="stylesheet">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- FullCalendar -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
     <script>
         const BASE_URL = '<?= BASE_URL ?>';
         const CSRF_TOKEN = '<?= Security::csrfToken() ?>';
@@ -90,7 +98,10 @@ if ($isLoggedIn && $serviceNum) {
                         <!-- ROSTER OPERATIONS -->
                         <div class="sidebar-group-title">Roster Operations</div>
                         <a class="sidebar-link <?= ($route ?? '') === '/personnel' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel">
-                            <i class="fas fa-users-gear"></i> Personnel
+                            <i class="fas fa-users-gear"></i> Active Personnel
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/personnel/archived' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel/archived">
+                            <i class="fas fa-box-archive"></i> Archived Personnel
                         </a>
                         <a class="sidebar-link <?= ($route ?? '') === '/leaves' ? 'active' : '' ?>" href="<?= BASE_URL ?>/leaves">
                             <i class="fas fa-plane-departure"></i> Leave Management
@@ -120,7 +131,13 @@ if ($isLoggedIn && $serviceNum) {
                             <i class="fas fa-list-ol"></i> Ranks
                         </a>
                         <a class="sidebar-link <?= ($route ?? '') === '/users' ? 'active' : '' ?>" href="<?= BASE_URL ?>/users">
-                            <i class="fas fa-user-shield"></i> User Accounts
+                            <i class="fas fa-user-shield"></i> Active Users
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/users/archived' ? 'active' : '' ?>" href="<?= BASE_URL ?>/users/archived">
+                            <i class="fas fa-user-lock"></i> Archived Users
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/users/locked' ? 'active' : '' ?>" href="<?= BASE_URL ?>/users/locked">
+                            <i class="fas fa-ban"></i> Locked Accounts
                         </a>
                         <?php if ($roleName === 'Super Admin'): ?>
                             <a class="sidebar-link <?= ($route ?? '') === '/audit-logs' ? 'active' : '' ?>" href="<?= BASE_URL ?>/audit-logs">
@@ -137,83 +154,86 @@ if ($isLoggedIn && $serviceNum) {
                     <?php elseif ($roleName === 'OCPROVST'): ?>
                         <!-- ROSTER OPERATIONS -->
                         <div class="sidebar-group-title">Roster Operations</div>
-                        <a class="sidebar-link <?= ($route ?? '') === '/personnel' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel">
-                            <i class="fas fa-users"></i> Personnel
-                        </a>
-                        <a class="sidebar-link <?= ($route ?? '') === '/leaves' ? 'active' : '' ?>" href="<?= BASE_URL ?>/leaves">
-                            <i class="fas fa-plane-departure"></i> Leave Management
-                        </a>
-                        <a class="sidebar-link <?= in_array(($route ?? ''), ['/postings', '/transfers', '/transfers/view']) ? 'active' : '' ?>" href="<?= BASE_URL ?>/transfers">
-                            <i class="fas fa-right-left"></i> Transfers
+                        <a class="sidebar-link <?= ($route ?? '') === '/rosters/approve' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters/approve">
+                            <i class="fas fa-stamp text-warning"></i> Pending Duty Crew Approvals
                         </a>
                         <a class="sidebar-link <?= ($route ?? '') === '/rosters' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters">
-                            <i class="fas fa-calendar-days"></i> All Rosters
+                            <i class="fas fa-clipboard-list text-success"></i> Approved Duty Crews
                         </a>
-                        <a class="sidebar-link <?= ($route ?? '') === '/rosters/approve' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters/approve">
-                            <i class="fas fa-stamp"></i> Duty Approvals
+                        <a class="sidebar-link <?= ($route ?? '') === '/rosters/calendar' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters/calendar">
+                            <i class="fas fa-calendar-week"></i> Duty Calendar
                         </a>
-                        <a class="sidebar-link <?= ($route ?? '') === '/users' ? 'active' : '' ?>" href="<?= BASE_URL ?>/users">
-                            <i class="fas fa-user-shield"></i> User Accounts
-                        </a>
-                        
-                        <!-- REPORTING -->
-                        <div class="sidebar-group-title">Reporting</div>
                         <a class="sidebar-link <?= ($route ?? '') === '/reports' ? 'active' : '' ?>" href="<?= BASE_URL ?>/reports">
-                            <i class="fas fa-print"></i> Reports
+                            <i class="fas fa-print"></i> Duty Reports
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/rosters/crew-history' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters/crew-history">
+                            <i class="fas fa-history"></i> Approval History
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/personnel/view' && ($_GET['service_number'] ?? '') === $serviceNum ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel/view?service_number=<?= urlencode($serviceNum) ?>">
+                            <i class="fas fa-user-gear"></i> Profile
                         </a>
 
                     <?php elseif ($roleName === 'Warrant Officer IC'): ?>
                         <!-- ROSTER OPERATIONS -->
                         <div class="sidebar-group-title">Roster Operations</div>
                         <a class="sidebar-link <?= ($route ?? '') === '/personnel' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel">
-                            <i class="fas fa-users"></i> Personnel
-                        </a>
-                        <a class="sidebar-link <?= ($route ?? '') === '/leaves' ? 'active' : '' ?>" href="<?= BASE_URL ?>/leaves">
-                            <i class="fas fa-plane-departure"></i> Leave Management
+                            <i class="fas fa-users"></i> Personnel Management
                         </a>
                         <a class="sidebar-link <?= in_array(($route ?? ''), ['/postings', '/transfers', '/transfers/view']) ? 'active' : '' ?>" href="<?= BASE_URL ?>/transfers">
-                            <i class="fas fa-right-left"></i> Transfers
+                            <i class="fas fa-right-left"></i> Posting Management
                         </a>
                         <a class="sidebar-link <?= ($route ?? '') === '/rosters' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters">
-                            <i class="fas fa-calendar-days"></i> Rosters
+                            <i class="fas fa-calendar-days"></i> Duty Roster Management
                         </a>
-                        <a class="sidebar-link <?= ($route ?? '') === '/users' ? 'active' : '' ?>" href="<?= BASE_URL ?>/users">
-                            <i class="fas fa-user-shield"></i> User Accounts
+                        <a class="sidebar-link <?= ($route ?? '') === '/rosters/create' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters/create">
+                            <i class="fas fa-calendar-plus text-primary"></i> Duty Assignment
                         </a>
-                        
-                        <!-- REPORTING -->
-                        <div class="sidebar-group-title">Reporting</div>
+                        <a class="sidebar-link <?= ($route ?? '') === '/rosters/calendar' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters/calendar">
+                            <i class="fas fa-calendar-week"></i> Duty Calendar
+                        </a>
                         <a class="sidebar-link <?= ($route ?? '') === '/reports' ? 'active' : '' ?>" href="<?= BASE_URL ?>/reports">
                             <i class="fas fa-print"></i> Reports
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/personnel/archived' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel/archived">
+                            <i class="fas fa-box-archive text-warning"></i> Archived Personnel (Read Only)
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/users/archived' ? 'active' : '' ?>" href="<?= BASE_URL ?>/users/archived">
+                            <i class="fas fa-user-lock text-warning"></i> Archived Users (Read Only)
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/personnel/view' && ($_GET['service_number'] ?? '') === $serviceNum ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel/view?service_number=<?= urlencode($serviceNum) ?>">
+                            <i class="fas fa-user-gear"></i> Profile
                         </a>
 
                     <?php elseif ($roleName === 'SNCO'): ?>
                         <!-- ROSTER OPERATIONS -->
                         <div class="sidebar-group-title">Roster Operations</div>
                         <a class="sidebar-link <?= ($route ?? '') === '/personnel' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel">
-                            <i class="fas fa-users"></i> Personnel
-                        </a>
-                        <a class="sidebar-link <?= ($route ?? '') === '/leaves' ? 'active' : '' ?>" href="<?= BASE_URL ?>/leaves">
-                            <i class="fas fa-plane-departure"></i> Leave Management
-                        </a>
-                        <a class="sidebar-link <?= in_array(($route ?? ''), ['/postings', '/transfers', '/transfers/view']) ? 'active' : '' ?>" href="<?= BASE_URL ?>/transfers">
-                            <i class="fas fa-right-left"></i> Transfers
+                            <i class="fas fa-users-viewfinder"></i> Personnel List (View Only)
                         </a>
                         <a class="sidebar-link <?= ($route ?? '') === '/rosters' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters">
-                            <i class="fas fa-calendar-days"></i> Rosters
+                            <i class="fas fa-calendar-check text-success"></i> Approved Duty Rosters
                         </a>
-                        
-                        <!-- REPORTING -->
-                        <div class="sidebar-group-title">Reporting</div>
+                        <a class="sidebar-link <?= ($route ?? '') === '/rosters/calendar' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters/calendar">
+                            <i class="fas fa-calendar-week"></i> Duty Calendar (View Only)
+                        </a>
                         <a class="sidebar-link <?= ($route ?? '') === '/reports' ? 'active' : '' ?>" href="<?= BASE_URL ?>/reports">
                             <i class="fas fa-print"></i> Reports
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/personnel/view' && ($_GET['service_number'] ?? '') === $serviceNum ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel/view?service_number=<?= urlencode($serviceNum) ?>">
+                            <i class="fas fa-user-gear"></i> Profile
                         </a>
 
                     <?php elseif ($roleName === 'Airman'): ?>
                         <!-- SERVICE MEMBER -->
                         <div class="sidebar-group-title">My Schedule</div>
                         <a class="sidebar-link <?= ($route ?? '') === '/rosters' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters">
-                            <i class="fas fa-calendar-days"></i> Duty Schedule
+                            <i class="fas fa-calendar-days text-info"></i> My Duties
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/rosters/calendar' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters/calendar">
+                            <i class="fas fa-calendar-week text-primary"></i> My Duty Calendar
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/personnel/view' && ($_GET['service_number'] ?? '') === $serviceNum ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel/view?service_number=<?= urlencode($serviceNum) ?>">
+                            <i class="fas fa-user-gear"></i> Profile
                         </a>
                     <?php endif; ?>
                 </div>

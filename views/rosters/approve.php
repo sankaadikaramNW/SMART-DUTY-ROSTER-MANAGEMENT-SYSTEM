@@ -1,278 +1,404 @@
 <?php
 include __DIR__ . '/../layout/header.php';
 ?>
-<div class="row mb-4 align-items-center">
-    <div class="col-md-12">
+
+<!-- ===== WELCOME HEADER ===== -->
+<div class="row mb-4 align-items-center animate-fade-in">
+    <div class="col-md-8 col-12">
         <h2 class="fw-bold mb-1 gradient-text"><i class="fas fa-stamp"></i> Roster Duty Approvals</h2>
-        <p class="text-secondary">Review and authorize pending watch duty schedules submitted by SNCOs.</p>
+        <p class="text-secondary mb-0">Perform bulk crew reviews, inspect personnel warnings, and authorize guard duty rosters.</p>
+    </div>
+    <div class="col-md-4 col-12 text-md-end mt-2 mt-md-0">
+        <a href="<?= BASE_URL ?>/rosters/calendar" class="btn btn-custom btn-custom-secondary btn-sm">
+            <i class="fas fa-calendar-alt me-1"></i> Watch Calendar
+        </a>
     </div>
 </div>
 
-<?php if (empty($pendingRosters)): ?>
-    <div class="glass-card p-5 text-center my-4">
-        <div class="text-success mb-3" style="font-size: 3rem;">
+<?php if (empty($dutyCrews)): ?>
+    <div class="glass-card p-5 text-center my-4 animate-fade-in">
+        <div class="text-success mb-3" style="font-size: 3.5rem;">
             <i class="fas fa-circle-check"></i>
         </div>
-        <h4 class="fw-bold text-dark">No Pending Roster Approvals</h4>
-        <p class="text-secondary">All submitted duty rosters have been processed and approved.</p>
-        <a href="<?= BASE_URL ?>/rosters" class="btn btn-custom btn-custom-secondary mt-2">
-            <i class="fas fa-calendar-days"></i> View All Rosters
+        <h4 class="fw-bold text-dark">No Pending Duty Crews</h4>
+        <p class="text-secondary">All submitted duty rosters and guard crews have been processed.</p>
+        <a href="<?= BASE_URL ?>/dashboard" class="btn btn-custom btn-custom-primary mt-2 px-4 py-2">
+            <i class="fas fa-chart-line me-1"></i> Go to Dashboard
         </a>
     </div>
 <?php else: ?>
-    <div class="row">
-        <div class="col-12">
-            <?php foreach ($pendingRosters as $r): ?>
-                <div class="glass-card mb-5 p-0 overflow-hidden" style="border-top: 4px solid var(--accent-indigo);">
-                    <!-- Header -->
-                    <div class="p-4 border-bottom border-secondary border-opacity-10 d-flex flex-wrap justify-content-between align-items-center bg-light bg-opacity-50">
-                        <div>
-                            <h4 class="fw-bold mb-1 text-primary">Duty #<?= htmlspecialchars($r['roster_name']) ?></h4>
-                            <div class="small text-secondary">
-                                <i class="fas fa-campground me-1"></i> Camp: <strong><?= htmlspecialchars($r['camp_name']) ?></strong> &bull; 
-                                <i class="fas fa-calendar-days me-1"></i> Duration: <strong><?= date('d-M-Y', strtotime($r['start_date'])) ?> to <?= date('d-M-Y', strtotime($r['end_date'])) ?></strong>
-                            </div>
-                        </div>
-                        <div class="mt-2 mt-sm-0">
-                            <span class="badge bg-warning bg-opacity-25 text-warning px-3 py-2 border border-warning border-opacity-25 rounded-pill">
-                                <i class="fas fa-clock-rotate-left me-1"></i> Pending Approval
-                            </span>
-                        </div>
-                    </div>
+    <!-- ===== BULK PIPELINE CONTROL ACTION BAR ===== -->
+    <div class="glass-card p-3 mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3 animate-fade-in bg-light bg-opacity-50">
+        <div class="d-flex align-items-center gap-2">
+            <div class="form-check fs-6 mb-0">
+                <input class="form-check-input border-secondary" type="checkbox" id="selectAllCrews">
+                <label class="form-check-label text-dark fw-bold" for="selectAllCrews">Select All</label>
+            </div>
+            <span class="text-secondary small font-monospace" id="selectedCountBadge">(0 selected)</span>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-success btn-sm px-3 py-2" id="btnBulkApprove">
+                <i class="fas fa-check-double me-1"></i> Bulk Approve
+            </button>
+            <button type="button" class="btn btn-danger btn-sm px-3 py-2" id="btnBulkReject">
+                <i class="fas fa-circle-xmark me-1"></i> Bulk Reject
+            </button>
+        </div>
+    </div>
 
-                    <!-- Body -->
-                    <div class="p-4">
-                        <div class="row g-3 mb-4 text-secondary small border-bottom pb-3 border-secondary border-opacity-10">
-                            <div class="col-md-4">
-                                <i class="fas fa-user-pen me-1"></i> Created/Assigned By: <strong class="text-dark"><?= htmlspecialchars($r['creator_rank'] . ' ' . $r['creator_name']) ?></strong>
-                            </div>
-                            <div class="col-md-4">
-                                <i class="fas fa-clock me-1"></i> Submitted At: <strong class="text-dark"><?= date('d-M-Y H:i', strtotime($r['updated_at'])) ?></strong>
-                            </div>
-                        </div>
+    <!-- ===== DUTY CREW GRID TABLE ===== -->
+    <div class="glass-card p-0 overflow-hidden animate-fade-in">
+        <div class="table-custom-container">
+            <table class="table-custom text-dark" style="font-size: 0.85rem;">
+                <thead>
+                    <tr>
+                        <th style="width: 3%;"></th> <!-- Checkbox -->
+                        <th style="width: 3%;"></th> <!-- Accordion Toggle -->
+                        <th style="width: 14%;">Crew ID</th>
+                        <th style="width: 10%;">Duty Date</th>
+                        <th style="width: 10%;">Shift</th>
+                        <th style="width: 12%;">Duty Type</th>
+                        <th style="width: 10%;">Location</th>
+                        <th style="width: 8%;" class="text-center">Assigned</th>
+                        <th style="width: 14%;">Submitted By</th>
+                        <th style="width: 10%;" class="text-center">Warnings</th>
+                        <th style="width: 6%;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($dutyCrews as $key => $crew): ?>
+                        <!-- Main Crew Row -->
+                        <tr class="crew-main-row bg-white align-middle" data-crew-key="<?= htmlspecialchars($key) ?>" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                            <!-- Selection Checkbox -->
+                            <td class="text-center">
+                                <input type="checkbox" class="form-check-input border-secondary crew-selector" data-crew-key="<?= htmlspecialchars($key) ?>">
+                            </td>
+                            <!-- Accordion Toggle -->
+                            <td class="text-center">
+                                <button type="button" class="btn btn-xs p-1 text-primary btn-toggle-accordion" style="font-size: 0.95rem; border: none; background: transparent;">
+                                    <i class="fas fa-chevron-right transition-transform" id="icon-<?= htmlspecialchars($key) ?>"></i>
+                                </button>
+                            </td>
+                            <!-- Crew ID -->
+                            <td class="font-monospace text-primary fw-bold" style="font-size:0.75rem;">CREW-<?= htmlspecialchars($key) ?></td>
+                            <!-- Duty Date -->
+                            <td class="fw-semibold text-dark"><?= date('D, d M Y', strtotime($crew['duty_date'])) ?></td>
+                            <!-- Shift -->
+                            <td>
+                                <span class="fw-semibold text-dark"><?= htmlspecialchars($crew['shift_name']) ?></span>
+                                <div class="text-secondary" style="font-size:0.72rem;"><?= substr($crew['start_time'], 0, 5) ?> - <?= substr($crew['end_time'], 0, 5) ?></div>
+                            </td>
+                            <!-- Duty Type -->
+                            <td>
+                                <span class="badge d-inline-flex align-items-center gap-1 px-2.5 py-1 text-dark" style="background: <?= htmlspecialchars($crew['color_code']) ?>16; border: 1px solid <?= htmlspecialchars($crew['color_code']) ?>44; color: <?= htmlspecialchars($crew['color_code']) ?> !important; font-size:0.75rem;">
+                                    <i class="<?= htmlspecialchars($crew['icon_class']) ?>"></i> <?= htmlspecialchars($crew['duty_type_name']) ?>
+                                </span>
+                            </td>
+                            <!-- Location -->
+                            <td class="text-dark"><i class="fas fa-campground text-muted me-1"></i> <?= htmlspecialchars($crew['camp_name']) ?></td>
+                            <!-- Total Assigned -->
+                            <td class="text-center">
+                                <span class="badge bg-secondary bg-opacity-10 text-dark border px-2.5 py-1 rounded-pill fw-bold">
+                                    <?= count($crew['personnel']) ?> Airmen
+                                </span>
+                            </td>
+                            <!-- Submitted By -->
+                            <td>
+                                <div class="fw-semibold text-dark"><?= htmlspecialchars($crew['creator_rank'] . ' ' . $crew['creator_name']) ?></div>
+                                <div class="text-secondary font-monospace" style="font-size:0.7rem;"><?= date('d M, H:i', strtotime($crew['submission_time'])) ?></div>
+                            </td>
+                            <!-- Conflict Warnings -->
+                            <td class="text-center">
+                                <?php if ($crew['duplicate_warnings_count'] > 0): ?>
+                                    <span class="badge bg-danger bg-opacity-15 text-danger border border-danger border-opacity-25 px-2.5 py-1.5 rounded animate-pulse">
+                                        <i class="fas fa-triangle-exclamation"></i> <?= $crew['duplicate_warnings_count'] ?> Conflict(s)
+                                    </span>
+                                <?php else: ?>
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 px-2 py-1">
+                                        🟢 Clean
+                                    </span>
+                                <?php endif; ?>
+                            </td>
+                            <!-- Current Status -->
+                            <td>
+                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-20 px-2.5 py-1">
+                                    Pending
+                                </span>
+                            </td>
+                        </tr>
 
-                        <h5 class="fw-bold text-secondary mb-3"><i class="fas fa-shield-halved text-info me-2"></i> Watch Duty Entries</h5>
-                        
-                        <?php
-                        // Group assignments by Date, Shift, and Duty Type
-                        $groupedAssignments = [];
-                        foreach ($r['assignments'] as $as) {
-                            $key = $as['duty_date'] . '_' . $as['shift_id'] . '_' . $as['duty_type_id'];
-                            if (!isset($groupedAssignments[$key])) {
-                                $groupedAssignments[$key] = [
-                                    'duty_date'      => $as['duty_date'],
-                                    'shift_name'     => $as['shift_name'],
-                                    'start_time'     => $as['start_time'],
-                                    'end_time'       => $as['end_time'],
-                                    'duty_type_name' => $as['duty_type_name'],
-                                    'remarks'        => $as['remarks'],
-                                    'personnel'      => []
-                                ];
-                            }
-                            $groupedAssignments[$key]['personnel'][] = [
-                                'assignment_id'  => $as['assignment_id'],
-                                'service_number' => $as['service_number'],
-                                'rank'           => $as['rank'],
-                                'full_name'      => $as['full_name'],
-                                'status'         => $as['status'],
-                                'supervisor_remarks' => $as['supervisor_remarks'] ?? ''
-                            ];
-                        }
-                        ?>
-
-                        <div class="row g-4">
-                            <?php foreach ($groupedAssignments as $group): ?>
-                                <div class="col-md-6 col-12">
-                                    <div class="p-3 rounded border border-secondary border-opacity-10 bg-dark bg-opacity-10 h-100 d-flex flex-column justify-content-between">
-                                        <div>
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <span class="badge bg-primary bg-opacity-25 text-info border border-info border-opacity-25"><?= htmlspecialchars($group['duty_type_name']) ?></span>
-                                                <span class="small text-muted font-monospace"><i class="fas fa-clock me-1"></i><?= htmlspecialchars($group['shift_name']) ?></span>
-                                            </div>
-                                            <div class="mb-2">
-                                                <i class="fas fa-calendar-day text-secondary me-1"></i>
-                                                <strong class="text-dark"><?= date('D, d-M-Y', strtotime($group['duty_date'])) ?></strong>
-                                                <span class="small text-muted">(<?= date('H:i', strtotime($group['start_time'])) ?> - <?= date('H:i', strtotime($group['end_time'])) ?>)</span>
-                                            </div>
-
-                                            <div class="mt-3">
-                                                <div class="text-secondary small fw-medium mb-1">Personnel Assigned:</div>
-                                                <ul class="list-unstyled mb-0">
-                                                    <?php foreach ($group['personnel'] as $pers): ?>
-                                                        <li class="d-flex align-items-center justify-content-between gap-2 mb-2 p-2 bg-white bg-opacity-50 rounded">
-                                                            <div class="d-flex align-items-center gap-2">
-                                                                <span class="font-monospace small text-primary fw-bold"><?= htmlspecialchars($pers['service_number']) ?></span>
-                                                                <span class="text-dark small"><?= htmlspecialchars($pers['rank'] . ' ' . $pers['full_name']) ?></span>
-                                                            </div>
-                                                            <div class="d-flex align-items-center gap-1 flex-shrink-0">
-                                                                <?php if ($pers['status'] === 'Pending'): ?>
-                                                                    <!-- Approve Button (direct form submit) -->
-                                                                    <form action="<?= BASE_URL ?>/rosters/assignment-action" method="POST" class="d-inline">
-                                                                        <?= Security::csrfField() ?>
-                                                                        <input type="hidden" name="assignment_id" value="<?= (int)$pers['assignment_id'] ?>">
-                                                                        <input type="hidden" name="roster_id" value="<?= (int)$r['roster_id'] ?>">
-                                                                        <input type="hidden" name="status" value="Approved">
-                                                                        <input type="hidden" name="supervisor_remarks" value="">
-                                                                        <button type="submit" class="btn btn-sm btn-success py-1 px-2" style="font-size: 0.72rem;" title="Approve this duty assignment">
-                                                                            <i class="fas fa-check"></i> Approve
-                                                                        </button>
-                                                                    </form>
-                                                                    <!-- Reject Button (triggers modal) -->
-                                                                    <button type="button"
-                                                                        class="btn btn-sm btn-danger py-1 px-2"
-                                                                        style="font-size: 0.72rem;"
-                                                                        title="Reject this duty assignment"
-                                                                        data-bs-toggle="modal"
-                                                                        data-bs-target="#rejectModal"
-                                                                        data-assignment-id="<?= (int)$pers['assignment_id'] ?>"
-                                                                        data-roster-id="<?= (int)$r['roster_id'] ?>"
-                                                                        data-person="<?= htmlspecialchars($pers['rank'] . ' ' . $pers['full_name']) ?>">
-                                                                        <i class="fas fa-xmark"></i> Reject
-                                                                    </button>
-                                                                <?php else: ?>
-                                                                    <?php 
-                                                                    $badgeClass = $pers['status'] === 'Approved' ? 'bg-success' : 'bg-danger';
-                                                                    ?>
-                                                                    <span class="badge <?= $badgeClass ?> px-2 py-1 rounded small" style="font-size: 0.65rem;">
-                                                                        <?= htmlspecialchars($pers['status']) ?>
-                                                                    </span>
-                                                                    <?php if ($pers['supervisor_remarks']): ?>
-                                                                        <span class="small text-muted" style="font-size: 0.7rem;" title="<?= htmlspecialchars($pers['supervisor_remarks']) ?>">
-                                                                            <i class="fas fa-comment-dots text-warning"></i>
-                                                                        </span>
-                                                                    <?php endif; ?>
-                                                                <?php endif; ?>
-                                                            </div>
-                                                        </li>
-                                                    <?php endforeach; ?>
-                                                </ul>
-                                            </div>
+                        <!-- Accordion Detail Row -->
+                        <tr class="crew-detail-row bg-light" id="detail-<?= htmlspecialchars($key) ?>" style="display: none;">
+                            <td colspan="11" class="p-3">
+                                <div class="p-3 rounded border border-light bg-white bg-opacity-75 shadow-sm">
+                                    <h6 class="fw-bold text-primary mb-2.5"><i class="fas fa-users-gear me-1"></i> Crew Personnel Roster Details</h6>
+                                    
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-bordered table-sm small mb-0 align-middle text-dark">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th style="width: 12%;">Service Number</th>
+                                                    <th style="width: 20%;">Rank & Full Name</th>
+                                                    <th style="width: 15%;">Trade</th>
+                                                    <th style="width: 15%;">Section</th>
+                                                    <th style="width: 15%;">Last Guard Duty</th>
+                                                    <th style="width: 12%;">Personnel Status</th>
+                                                    <th style="width: 11%;">Status Warnings</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php foreach ($crew['personnel'] as $p): ?>
+                                                    <tr class="<?= $p['is_conflict'] ? 'table-warning bg-opacity-10' : '' ?>">
+                                                        <td class="font-monospace text-muted fw-bold"><?= htmlspecialchars($p['service_number']) ?></td>
+                                                        <td class="fw-bold"><?= htmlspecialchars($p['rank'] . ' ' . $p['full_name']) ?></td>
+                                                        <td><?= htmlspecialchars($p['trade']) ?></td>
+                                                        <td><?= htmlspecialchars($p['section'] ?: '—') ?></td>
+                                                        <td class="font-monospace"><?= htmlspecialchars($p['prev_duty_date']) ?></td>
+                                                        <td>
+                                                            <span class="badge <?= $p['personnel_status'] === 'Active' ? 'bg-success' : 'bg-danger' ?> bg-opacity-10 text-dark-50 border">
+                                                                <?= htmlspecialchars($p['personnel_status']) ?>
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <?php if ($p['is_double_booked']): ?>
+                                                                <span class="text-danger small fw-bold d-block"><i class="fas fa-triangle-exclamation"></i> Double Booked</span>
+                                                            <?php endif; ?>
+                                                            <?php if ($p['personnel_status'] === 'Leave'): ?>
+                                                                <span class="text-danger small fw-bold d-block"><i class="fas fa-plane-departure"></i> On Leave</span>
+                                                            <?php elseif ($p['personnel_status'] === 'Inactive'): ?>
+                                                                <span class="text-danger small fw-bold d-block"><i class="fas fa-ban"></i> Inactive Status</span>
+                                                            <?php endif; ?>
+                                                            <?php if (!$p['is_conflict']): ?>
+                                                                <span class="text-success small">🟢 No warnings</span>
+                                                            <?php endif; ?>
+                                                        </td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <?php if ($crew['remarks']): ?>
+                                        <div class="mt-2.5 p-2 bg-light border rounded small text-secondary">
+                                            <strong>SNCO Remarks:</strong> <em>"<?= htmlspecialchars($crew['remarks']) ?>"</em>
                                         </div>
-
-                                        <?php if ($group['remarks']): ?>
-                                            <div class="mt-3 p-2 bg-warning bg-opacity-10 border-start border-warning rounded-end small text-secondary">
-                                                <i class="fas fa-comment-dots text-warning me-1"></i>Remarks: <?= htmlspecialchars($group['remarks']) ?>
-                                            </div>
-                                        <?php endif; ?>
-                                    </div>
+                                    <?php endif; ?>
                                 </div>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                    <!-- Card Footer: Roster Workflow Actions -->
-                    <div class="card-footer border-top border-secondary border-opacity-10 bg-dark bg-opacity-25 p-4">
-                        <form action="<?= BASE_URL ?>/rosters/action" method="POST" class="w-100">
-                            <?= Security::csrfField() ?>
-                            <input type="hidden" name="roster_id" value="<?= $r['roster_id'] ?>">
-                            
-                            <div class="row align-items-end g-3">
-                                <div class="col-lg-6 col-md-12">
-                                    <label for="remarks_<?= $r['roster_id'] ?>" class="form-label text-secondary small">
-                                        <i class="fas fa-comment-dots text-warning me-1"></i> OCPROVST Remarks / Feedback (Required for Rejection/Return)
-                                    </label>
-                                    <textarea class="form-control form-control-custom" id="remarks_<?= $r['roster_id'] ?>" name="remarks" rows="2" placeholder="Enter remarks or instructions for the SNCO..."></textarea>
-                                </div>
-                                <div class="col-lg-6 col-md-12">
-                                    <div class="d-flex flex-wrap justify-content-sm-end gap-2">
-                                        <button type="submit" name="action" value="Reject" class="btn btn-custom btn-custom-danger flex-grow-1 flex-sm-grow-0">
-                                            <i class="fas fa-circle-xmark"></i> Reject
-                                        </button>
-                                        <button type="submit" name="action" value="Return" class="btn btn-custom btn-custom-warning flex-grow-1 flex-sm-grow-0">
-                                            <i class="fas fa-rotate-left"></i> Return Draft
-                                        </button>
-                                        <button type="submit" name="action" value="Approve" class="btn btn-custom btn-custom-success flex-grow-1 flex-sm-grow-0">
-                                            <i class="fas fa-circle-check"></i> Approve
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            <?php endforeach; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         </div>
     </div>
 <?php endif; ?>
 
-<!-- Reject Reason Modal -->
-<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <form action="<?= BASE_URL ?>/rosters/assignment-action" method="POST" id="rejectForm" class="modal-content glass-card">
-            <?= Security::csrfField() ?>
-            <input type="hidden" name="assignment_id" id="rejectAssignmentId" value="">
-            <input type="hidden" name="roster_id" id="rejectRosterId" value="">
-            <input type="hidden" name="status" value="Rejected">
-            <div class="modal-header bg-danger bg-opacity-10">
-                <h5 class="modal-title fw-bold text-danger" id="rejectModalLabel">
-                    <i class="fas fa-xmark-circle me-2"></i> Reject Duty Assignment
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4">
-                <div class="mb-3">
-                    <p class="text-secondary mb-1">Rejecting assignment for:</p>
-                    <p class="fw-bold text-dark" id="rejectPersonName"></p>
-                </div>
-                <div class="mb-3">
-                    <label for="rejectReasonInput" class="form-label text-secondary small">
-                        Reason for Rejection <span class="text-danger">*</span>
-                    </label>
-                    <textarea class="form-control form-control-custom" name="supervisor_remarks" id="rejectReasonInput" rows="3" required placeholder="Describe the reason for rejecting this watch duty assignment..."></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <?php
-                $submitLabel = "Confirm Rejection";
-                $submitClass = "btn-custom-danger";
-                $submitId = "confirmRejectBtn";
-                $submitIcon = "fas fa-circle-xmark";
-                $cancelIcon = "fas fa-xmark";
-                include __DIR__ . '/../components/form-buttons.php';
-                ?>
-            </div>
-        </form>
-    </div>
-</div>
-
+<!-- ===== INTERACTIVE BULK JS SCRIPT ===== -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // Populate reject modal with assignment details
-    const rejectModal = document.getElementById('rejectModal');
-    if (rejectModal) {
-        rejectModal.addEventListener('show.bs.modal', (event) => {
-            const button = event.relatedTarget;
-            const assignmentId = button.getAttribute('data-assignment-id');
-            const rosterId     = button.getAttribute('data-roster-id');
-            const personName   = button.getAttribute('data-person');
+    // Accordion Toggle handlers
+    document.querySelectorAll('.btn-toggle-accordion').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const tr = btn.closest('.crew-main-row');
+            const key = tr.getAttribute('data-crew-key');
+            const detailRow = document.getElementById(`detail-${key}`);
+            const icon = btn.querySelector('i');
 
-            document.getElementById('rejectAssignmentId').value = assignmentId;
-            document.getElementById('rejectRosterId').value     = rosterId;
-            document.getElementById('rejectPersonName').textContent = personName;
-            document.getElementById('rejectReasonInput').value  = '';
+            if (detailRow.style.display === 'none') {
+                detailRow.style.display = 'table-row';
+                icon.style.transform = 'rotate(90deg)';
+                icon.className = 'fas fa-chevron-right text-warning';
+            } else {
+                detailRow.style.display = 'none';
+                icon.style.transform = '';
+                icon.className = 'fas fa-chevron-right';
+            }
+        });
+    });
+
+    // Checkbox selectors
+    const selectAllCheckbox = document.getElementById('selectAllCrews');
+    const crewSelectors = document.querySelectorAll('.crew-selector');
+    const countBadge = document.getElementById('selectedCountBadge');
+
+    function updateSelectedCount() {
+        const checkedCount = document.querySelectorAll('.crew-selector:checked').length;
+        if (countBadge) {
+            countBadge.textContent = `(${checkedCount} selected)`;
+        }
+    }
+
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', () => {
+            const isChecked = selectAllCheckbox.checked;
+            crewSelectors.forEach(cb => {
+                cb.checked = isChecked;
+            });
+            updateSelectedCount();
         });
     }
 
-    // Validate reject form before submit
-    const rejectForm = document.getElementById('rejectForm');
-    if (rejectForm) {
-        rejectForm.addEventListener('submit', (e) => {
-            const reason = document.getElementById('rejectReasonInput').value.trim();
-            if (!reason) {
-                e.preventDefault();
-                document.getElementById('rejectReasonInput').classList.add('is-invalid');
-                return;
-            }
-            document.getElementById('rejectReasonInput').classList.remove('is-invalid');
-            document.getElementById('confirmRejectBtn').disabled = true;
-            document.getElementById('confirmRejectBtn').innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Rejecting...';
+    crewSelectors.forEach(cb => {
+        cb.addEventListener('change', () => {
+            updateSelectedCount();
+            // sync selectAll state
+            const allChecked = document.querySelectorAll('.crew-selector:checked').length === crewSelectors.length;
+            selectAllCheckbox.checked = allChecked;
         });
+    });
 
-        document.getElementById('rejectReasonInput').addEventListener('input', function() {
-            if (this.value.trim()) {
-                this.classList.remove('is-invalid');
+    // Bulk Approve action handler
+    document.getElementById('btnBulkApprove')?.addEventListener('click', () => {
+        const selected = Array.from(document.querySelectorAll('.crew-selector:checked')).map(cb => cb.getAttribute('data-crew-key'));
+
+        if (selected.length === 0) {
+            Swal.fire({
+                title: 'No Selection',
+                text: 'Please select at least one duty crew to approve.',
+                icon: 'warning',
+                confirmButtonColor: '#0ea5e9'
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Bulk Approve Crews',
+            text: `Are you sure you want to approve the selected ${selected.length} duty crew(s)? This will publish their watch assignments immediately.`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, Approve Selected',
+            input: 'textarea',
+            inputPlaceholder: 'Enter authorization directives or remarks (optional)...',
+            inputAttributes: {
+                'aria-label': 'Remarks'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const remarks = result.value || '';
+                
+                // Show loading
+                Swal.fire({
+                    title: 'Processing Approvals',
+                    text: 'Updating watch assignments and database logs...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                fetch(`${BASE_URL}/rosters/bulk-approve`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': CSRF_TOKEN
+                    },
+                    body: JSON.stringify({
+                        crews: selected,
+                        remarks: remarks,
+                        csrf_token: CSRF_TOKEN
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Success',
+                            text: data.message || 'Duty crews approved and published successfully.',
+                            icon: 'success',
+                            confirmButtonColor: '#10b981'
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire('Error', data.error || 'Failed to process bulk approval.', 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error("AJAX Error bulk approve:", err);
+                    Swal.fire('Error', 'An unexpected connection failure occurred.', 'error');
+                });
             }
         });
-    }
+    });
+
+    // Bulk Reject action handler
+    document.getElementById('btnBulkReject')?.addEventListener('click', () => {
+        const selected = Array.from(document.querySelectorAll('.crew-selector:checked')).map(cb => cb.getAttribute('data-crew-key'));
+
+        if (selected.length === 0) {
+            Swal.fire({
+                title: 'No Selection',
+                text: 'Please select at least one duty crew to reject.',
+                icon: 'warning',
+                confirmButtonColor: '#0ea5e9'
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Bulk Reject Crews',
+            text: `Are you sure you want to reject the selected ${selected.length} duty crew(s)? Rejection remarks are mandatory.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, Reject Selected',
+            input: 'textarea',
+            inputPlaceholder: 'Enter mandatory correction directives or rejection remarks...',
+            inputValidator: (value) => {
+                if (!value || !value.trim()) {
+                    return 'You must enter rejection remarks before proceeding!';
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const remarks = result.value;
+
+                // Show loading
+                Swal.fire({
+                    title: 'Processing Rejections',
+                    text: 'Returning watch assignments to originating SNCOs...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                fetch(`${BASE_URL}/rosters/bulk-reject`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': CSRF_TOKEN
+                    },
+                    body: JSON.stringify({
+                        crews: selected,
+                        remarks: remarks,
+                        csrf_token: CSRF_TOKEN
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Returned',
+                            text: data.message || 'Selected duty crews have been returned to SNCO.',
+                            icon: 'info',
+                            confirmButtonColor: '#0ea5e9'
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire('Error', data.error || 'Failed to process bulk rejection.', 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error("AJAX Error bulk reject:", err);
+                    Swal.fire('Error', 'An unexpected connection failure occurred.', 'error');
+                });
+            }
+        });
+    });
 });
 </script>
 

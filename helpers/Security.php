@@ -21,7 +21,7 @@ class Security {
         return '<input type="hidden" name="csrf_token" value="' . self::escape(self::csrfToken()) . '">';
     }
 
-    // Verify token from POST or custom header (like X-CSRF-Token)
+    // Verify token from POST or custom header (like X-CSRF-Token) or JSON body
     public static function verifyCsrf() {
         if (session_status() === PHP_SESSION_NONE) {
             Session::start();
@@ -32,6 +32,14 @@ class Security {
             $token = $_POST['csrf_token'];
         } elseif (isset($_SERVER['HTTP_X_CSRF_TOKEN'])) {
             $token = $_SERVER['HTTP_X_CSRF_TOKEN'];
+        } else {
+            $rawInput = file_get_contents('php://input');
+            if (!empty($rawInput)) {
+                $jsonData = json_decode($rawInput, true);
+                if (is_array($jsonData) && isset($jsonData['csrf_token'])) {
+                    $token = $jsonData['csrf_token'];
+                }
+            }
         }
 
         if (!$token || !isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {

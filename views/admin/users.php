@@ -11,9 +11,11 @@ include __DIR__ . '/../layout/header.php';
 <div class="glass-card mb-4">
     <div class="card-header border-bottom border-secondary border-opacity-10 bg-transparent py-3 px-4 d-flex justify-content-between align-items-center">
         <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-list text-info me-2"></i> User Accounts List</h5>
-        <button type="button" class="btn btn-sm btn-custom btn-custom-primary py-2" onclick="openUserModal();">
-            <i class="fas fa-user-plus"></i> Create User Account
-        </button>
+        <?php if ($roleName === 'Administrator' || $roleName === 'Super Admin' || $roleName === 'Warrant Officer IC'): ?>
+            <button type="button" class="btn btn-sm btn-custom btn-custom-primary py-2" onclick="openUserModal();">
+                <i class="fas fa-user-plus"></i> Create User Account
+            </button>
+        <?php endif; ?>
     </div>
     <div class="card-body p-4">
         <div class="table-custom-container">
@@ -53,20 +55,34 @@ include __DIR__ . '/../layout/header.php';
                                     </span>
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-sm btn-custom btn-custom-secondary py-1 px-2 me-1" 
-                                            onclick="openUserModal(<?= htmlspecialchars(json_encode($u), ENT_QUOTES, 'UTF-8') ?>);">
-                                        <i class="fas fa-key"></i> Edit
-                                    </button>
-                                    
-                                    <form action="<?= BASE_URL ?>/users/status" method="POST" class="d-inline">
-                                        <?= Security::csrfField() ?>
-                                        <input type="hidden" name="user_id" value="<?= $u['user_id'] ?>">
-                                        <input type="hidden" name="status" value="<?= $u['status'] === 'Active' ? 'Suspended' : 'Active' ?>">
-                                        <button type="submit" class="btn btn-sm btn-custom btn-custom-<?= $u['status'] === 'Active' ? 'danger' : 'success' ?> py-1 px-2">
-                                            <i class="fas fa-<?= $u['status'] === 'Active' ? 'ban' : 'circle-check' ?>"></i>
-                                            <?= $u['status'] === 'Active' ? 'Suspend' : 'Activate' ?>
+                                    <?php if ($roleName === 'Administrator' || $roleName === 'Super Admin' || $roleName === 'Warrant Officer IC'): ?>
+                                        <button type="button" class="btn btn-sm btn-custom btn-custom-secondary py-1 px-2 me-1" 
+                                                onclick="openUserModal(<?= htmlspecialchars(json_encode($u), ENT_QUOTES, 'UTF-8') ?>);">
+                                            <i class="fas fa-edit"></i> Edit
                                         </button>
-                                    </form>
+                                        
+                                        <form action="<?= BASE_URL ?>/users/status" method="POST" class="d-inline me-1">
+                                            <?= Security::csrfField() ?>
+                                            <input type="hidden" name="user_id" value="<?= $u['user_id'] ?>">
+                                            <input type="hidden" name="status" value="<?= $u['status'] === 'Active' ? 'Suspended' : 'Active' ?>">
+                                            <button type="submit" class="btn btn-sm btn-custom btn-custom-<?= $u['status'] === 'Active' ? 'danger' : 'success' ?> py-1 px-2 me-1">
+                                                <i class="fas fa-<?= $u['status'] === 'Active' ? 'ban' : 'circle-check' ?>"></i>
+                                                <?= $u['status'] === 'Active' ? 'Suspend' : 'Activate' ?>
+                                            </button>
+                                        </form>
+                                        
+                                        <?php if ($roleName === 'Administrator' || $roleName === 'Super Admin'): ?>
+                                            <button type="button" class="btn btn-sm btn-custom btn-custom-warning py-1 px-2 me-1" onclick="openResetPasswordModal(<?= $u['user_id'] ?>, '<?= htmlspecialchars($u['service_number'], ENT_QUOTES, 'UTF-8') ?>')">
+                                                <i class="fas fa-key"></i> Reset
+                                            </button>
+                                            
+                                            <button type="button" class="btn btn-sm btn-custom btn-custom-danger py-1 px-2" onclick="confirmArchiveUser(<?= $u['user_id'] ?>, '<?= htmlspecialchars($u['service_number'], ENT_QUOTES, 'UTF-8') ?>')">
+                                                <i class="fas fa-box-archive"></i> Archive
+                                            </button>
+                                        <?php endif; ?>
+                                    <?php else: ?>
+                                        <span class="text-secondary small">Read-Only</span>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -113,6 +129,12 @@ include __DIR__ . '/../layout/header.php';
                     <select class="form-select form-control-custom" id="role_id" name="role_id" required>
                         <option value="" disabled selected>Select Role</option>
                         <?php foreach ($roles as $r): ?>
+                            <?php 
+                            // Warrant Officer IC cannot assign high privilege roles
+                            if ($roleName === 'Warrant Officer IC' && ((int)$r['role_id'] === 1 || (int)$r['role_id'] === 6)) {
+                                continue;
+                            }
+                            ?>
                             <option value="<?= $r['role_id'] ?>"><?= htmlspecialchars($r['role_name']) ?></option>
                         <?php endforeach; ?>
                     </select>
@@ -219,6 +241,100 @@ include __DIR__ . '/../layout/header.php';
 
         document.getElementById('userModalLabel').innerHTML = data ? '<i class="fas fa-user-pen me-2"></i> Edit Account credentials' : '<i class="fas fa-user-plus me-2"></i> Register New User Account';
         modal.show();
+    }
+</script>
+
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form action="<?= BASE_URL ?>/users/password-reset" method="POST" class="modal-content glass-card">
+            <?= Security::csrfField() ?>
+            <input type="hidden" id="reset_user_id" name="user_id">
+            
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold text-dark" id="resetPasswordModalLabel"><i class="fas fa-key me-2 text-warning"></i> Reset Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label text-secondary small fw-bold">User Service Number</label>
+                    <input type="text" class="form-control form-control-custom bg-light text-muted" id="reset_service_number" readonly>
+                </div>
+                <div class="mb-3">
+                    <label for="temp_password" class="form-label text-secondary small fw-bold">Temporary Password</label>
+                    <input type="password" class="form-control form-control-custom" id="temp_password" name="temp_password" placeholder="At least 8 characters..." required minlength="8">
+                </div>
+                <div class="mb-3">
+                    <label for="reset_reason" class="form-label text-secondary small fw-bold">Reason for Password Reset</label>
+                    <input type="text" class="form-control form-control-custom" id="reset_reason" name="reset_reason" placeholder="e.g. User request, Forgotten password..." required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-custom btn-custom-secondary px-3 py-2" data-bs-dismiss="modal"><i class="fas fa-xmark"></i> Cancel</button>
+                <button type="submit" class="btn btn-sm btn-custom btn-custom-warning px-3 py-2"><i class="fas fa-key"></i> Reset Password</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Archive User Form (POST) -->
+<form id="archiveUserForm" action="<?= BASE_URL ?>/users/archive" method="POST" style="display:none;">
+    <?= Security::csrfField() ?>
+    <input type="hidden" name="user_id" id="archiveUserId">
+    <input type="hidden" name="archive_reason" id="archiveUserReason">
+</form>
+
+<script>
+    let resetModal;
+    document.addEventListener('DOMContentLoaded', () => {
+        resetModal = new bootstrap.Modal(document.getElementById('resetPasswordModal'));
+    });
+
+    function openResetPasswordModal(userId, serviceNumber) {
+        document.getElementById('reset_user_id').value = userId;
+        document.getElementById('reset_service_number').value = serviceNumber;
+        document.getElementById('temp_password').value = '';
+        document.getElementById('reset_reason').value = '';
+        resetModal.show();
+    }
+
+    function confirmArchiveUser(userId, serviceNumber) {
+        Swal.fire({
+            title: 'Archive User Account?',
+            html: `Are you sure you want to archive the login account for Service Number:<br><strong>${serviceNumber}</strong>?<br><br>This will suspend their access and hide the account from the active users list.`,
+            icon: 'warning',
+            input: 'text',
+            inputPlaceholder: 'Enter Archive Reason (e.g. Posted Out, Retired)...',
+            inputAttributes: {
+                required: 'true'
+            },
+            showCancelButton: true,
+            confirmButtonText: '<i class="fas fa-box-archive"></i> Archive Account',
+            confirmButtonColor: '#ef4444',
+            cancelButtonText: '<i class="fas fa-xmark"></i> Cancel',
+            cancelButtonColor: '#64748b',
+            background: '#ffffff',
+            customClass: {
+                popup: 'glass-card text-dark',
+                confirmButton: 'btn btn-danger px-4 py-2 small me-2',
+                cancelButton: 'btn btn-secondary px-4 py-2 small'
+            },
+            buttonsStyling: false,
+            preConfirm: (reason) => {
+                if (!reason || reason.trim() === '') {
+                    Swal.showValidationMessage('An archive reason is required.');
+                    return false;
+                }
+                return reason;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('archiveUserId').value = userId;
+                document.getElementById('archiveUserReason').value = result.value;
+                document.getElementById('archiveUserForm').submit();
+            }
+        });
     }
 </script>
 

@@ -4,7 +4,7 @@ include __DIR__ . '/../layout/header.php';
 <div class="login-card mx-auto text-center animate-fade-in">
     <div class="mb-3">
         <img src="<?= BASE_URL ?>/views/assets/images/slaf_logo.png?v=<?= time() ?>" alt="Sri Lanka Air Force Logo" class="login-logo mb-2" style="width:110px !important;height:auto !important;display:block;margin:0 auto 12px;">
-        <h2 class="login-title mb-1">Welcome back</h2>
+        <h2 class="login-title mb-1">Welcome</h2>
         <p class="login-subtitle mb-0">AFP Duty Roster Management System</p>
     </div>
     

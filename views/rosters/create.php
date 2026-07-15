@@ -87,6 +87,7 @@ include __DIR__ . '/../layout/header.php';
                                                     <option value="<?= $dt['duty_type_id'] ?>" <?= (int)$as['duty_type_id'] === (int)$dt['duty_type_id'] ? 'selected' : '' ?>><?= htmlspecialchars($dt['duty_type_name']) ?></option>
                                                 <?php endforeach; ?>
                                             </select>
+                                            <div class="row-duty-type-preview mt-1 small d-flex align-items-center gap-1.5" style="font-size:0.75rem;"></div>
                                         </td>
                                         <td>
                                             <div class="position-relative personnel-search-wrapper">
@@ -167,6 +168,25 @@ include __DIR__ . '/../layout/header.php';
         const dutyTypesHtml = document.getElementById('dutyTypesTemplate').innerHTML;
 
         let rowIndex = tbody.querySelectorAll('.assignment-row').length;
+        const dutyTypesData = <?= json_encode($dutyTypes) ?>;
+
+        function updateDutyTypePreview(row) {
+            const select = row.querySelector('.row-duty-type');
+            const preview = row.querySelector('.row-duty-type-preview');
+            if (!select || !preview) return;
+
+            const dtId = parseInt(select.value);
+            const dt = dutyTypesData.find(d => parseInt(d.duty_type_id) === dtId);
+
+            if (dt) {
+                preview.innerHTML = `
+                    <span class="d-inline-block rounded-circle" style="width: 10px; height: 10px; background-color: ${dt.color_code}; border: 1px solid rgba(0,0,0,0.15); margin-top:2px;"></span>
+                    <span class="text-secondary small"><i class="${dt.icon_class} me-1 text-info"></i> ${dt.duty_type_name}</span>
+                `;
+            } else {
+                preview.innerHTML = '';
+            }
+        }
 
         // Function to add a row
         function addRow() {
@@ -189,6 +209,7 @@ include __DIR__ . '/../layout/header.php';
                     <select class="form-select form-control-custom row-duty-type" required>
                         ${dutyTypesHtml}
                     </select>
+                    <div class="row-duty-type-preview mt-1 small d-flex align-items-center gap-1.5" style="font-size:0.75rem;"></div>
                 </td>
                 <td>
                     <div class="position-relative personnel-search-wrapper">
@@ -205,6 +226,7 @@ include __DIR__ . '/../layout/header.php';
                         </div>
                     </div>
                     <div class="row-conflict-info mt-1 small" style="display:none;"></div>
+                </td>
                 <td>
                     <textarea class="form-control form-control-custom row-remarks" rows="1" placeholder="Notes..."></textarea>
                 </td>
@@ -221,6 +243,8 @@ include __DIR__ . '/../layout/header.php';
 
             tbody.appendChild(tr);
             initAutocomplete(tr);
+            updateDutyTypePreview(tr);
+            tr.querySelector('.row-duty-type').addEventListener('change', () => updateDutyTypePreview(tr));
             rowIndex++;
         }
 
@@ -230,9 +254,11 @@ include __DIR__ . '/../layout/header.php';
             addRow();
             addRow();
         } else {
-            // Initialize autocomplete on existing rows
+            // Initialize autocomplete and preview on existing rows
             tbody.querySelectorAll('.assignment-row').forEach(row => {
                 initAutocomplete(row);
+                updateDutyTypePreview(row);
+                row.querySelector('.row-duty-type').addEventListener('change', () => updateDutyTypePreview(row));
             });
 
             // Re-bind remove buttons on existing rows

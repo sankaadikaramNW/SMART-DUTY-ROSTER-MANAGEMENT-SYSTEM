@@ -28,6 +28,11 @@ class PersonnelController {
                 throw new Exception("Personnel profile not found.");
             }
 
+            $roleName = Session::get('role_name');
+            if ($roleName === 'Warrant Officer IC') {
+                Logger::audit('Personnel Management', 'View Personnel Profile: ' . $serviceNumber);
+            }
+
             $postings = Posting::getHistory($serviceNumber);
             
             // Get camps for editing form
@@ -95,13 +100,14 @@ class PersonnelController {
             $initials = Security::sanitize($_POST['initials'] ?? '');
             $fullName = Security::sanitize($_POST['full_name'] ?? '');
             $trade = Security::sanitize($_POST['trade'] ?? '');
-            $squadron = Security::sanitize($_POST['squadron'] ?? '');
+            $f1250 = Security::sanitize($_POST['f1250'] ?? '');
+            $section = Security::sanitize($_POST['section'] ?? '');
+            $appointment = Security::sanitize($_POST['appointment'] ?? '');
             $campId = !empty($_POST['camp_id']) ? (int)$_POST['camp_id'] : null;
             $contactNumber = Security::sanitize($_POST['contact_number'] ?? null);
-            $email = Security::sanitize($_POST['email'] ?? '');
             $status = Security::sanitize($_POST['status'] ?? 'Active');
 
-            if (empty($serviceNumber) || (!$isAdmin && !$rankId) || empty($fullName) || (!$isAdmin && !$campId) || empty($email)) {
+            if (empty($serviceNumber) || (!$isAdmin && !$rankId) || empty($fullName) || (!$isAdmin && !$campId) || (!$isAdmin && empty($f1250)) || (!$isAdmin && empty($section)) || (!$isAdmin && empty($appointment))) {
                 throw new Exception("Missing required fields.");
             }
 
@@ -109,7 +115,7 @@ class PersonnelController {
                 throw new Exception("Service Number must follow the format SLAF/BRANCH/NUMBER (e.g., SLAF/AIR/301).");
             }
 
-            Personnel::save($serviceNumber, $rankId, $initials, $fullName, $trade, $squadron, $campId, $contactNumber, $email, $status, false);
+            Personnel::save($serviceNumber, $rankId, $initials, $fullName, $trade, $f1250, $section, $appointment, $campId, $contactNumber, $status, false);
 
             Session::set('success_message', "Personnel profile $serviceNumber created successfully.");
             Response::redirect('/personnel');
@@ -130,17 +136,18 @@ class PersonnelController {
             $initials = Security::sanitize($_POST['initials'] ?? '');
             $fullName = Security::sanitize($_POST['full_name'] ?? '');
             $trade = Security::sanitize($_POST['trade'] ?? '');
-            $squadron = Security::sanitize($_POST['squadron'] ?? '');
+            $f1250 = Security::sanitize($_POST['f1250'] ?? '');
+            $section = Security::sanitize($_POST['section'] ?? '');
+            $appointment = Security::sanitize($_POST['appointment'] ?? '');
             $campId = !empty($_POST['camp_id']) ? (int)$_POST['camp_id'] : null;
             $contactNumber = Security::sanitize($_POST['contact_number'] ?? null);
-            $email = Security::sanitize($_POST['email'] ?? '');
             $status = Security::sanitize($_POST['status'] ?? 'Active');
 
-            if (empty($serviceNumber) || (!$isAdmin && !$rankId) || empty($fullName) || (!$isAdmin && !$campId) || empty($email)) {
+            if (empty($serviceNumber) || (!$isAdmin && !$rankId) || empty($fullName) || (!$isAdmin && !$campId) || (!$isAdmin && empty($f1250)) || (!$isAdmin && empty($section)) || (!$isAdmin && empty($appointment))) {
                 throw new Exception("Missing required fields.");
             }
 
-            Personnel::save($serviceNumber, $rankId, $initials, $fullName, $trade, $squadron, $campId, $contactNumber, $email, $status, true);
+            Personnel::save($serviceNumber, $rankId, $initials, $fullName, $trade, $f1250, $section, $appointment, $campId, $contactNumber, $status, true);
 
             Session::set('success_message', "Personnel profile $serviceNumber updated successfully.");
             Response::redirect('/personnel/view?service_number=' . urlencode($serviceNumber));
@@ -175,6 +182,65 @@ class PersonnelController {
         } catch (Exception $e) {
             Session::set('error_message', $e->getMessage());
             Response::redirect('/postings');
+        }
+    }
+
+    // View archived personnel list
+    public function archivedIndex() {
+        $personnelList = Personnel::getAll(null, null, 1);
+        $pageTitle = 'Archived Personnel';
+        include __DIR__ . '/../views/personnel/archived.php';
+    }
+
+    // Archive personnel profile
+    public function archive() {
+        try {
+            Security::verifyCsrf();
+            $roleName = Session::get('role_name');
+            if ($roleName !== 'Administrator' && $roleName !== 'Super Admin') {
+                throw new Exception("Unauthorized: Only Administrator and Super Administrator can archive personnel.");
+            }
+
+            $serviceNumber = Security::sanitize($_POST['service_number'] ?? '');
+            $reason = Security::sanitize($_POST['archive_reason'] ?? 'Administrative Decision');
+            if (empty($serviceNumber) || empty($reason)) {
+                throw new Exception("Service number and reason are required.");
+            }
+
+            $adminServiceNum = Session::get('service_number');
+            Personnel::archive($serviceNumber, $reason, $adminServiceNum);
+
+            Session::set('success_message', "Personnel profile $serviceNumber archived successfully.");
+            Response::redirect('/personnel');
+        } catch (Exception $e) {
+            Session::set('error_message', $e->getMessage());
+            Response::redirect('/personnel');
+        }
+    }
+
+    // Restore personnel profile
+    public function restore() {
+        try {
+            Security::verifyCsrf();
+            $roleName = Session::get('role_name');
+            if ($roleName !== 'Administrator' && $roleName !== 'Super Admin') {
+                throw new Exception("Unauthorized: Only Administrator and Super Administrator can restore personnel.");
+            }
+
+            $serviceNumber = Security::sanitize($_POST['service_number'] ?? '');
+            $reason = Security::sanitize($_POST['restore_reason'] ?? 'Administrative Decision');
+            if (empty($serviceNumber) || empty($reason)) {
+                throw new Exception("Service number and reason are required.");
+            }
+
+            $adminServiceNum = Session::get('service_number');
+            Personnel::restore($serviceNumber, $reason, $adminServiceNum);
+
+            Session::set('success_message', "Personnel profile $serviceNumber restored successfully.");
+            Response::redirect('/personnel/archived');
+        } catch (Exception $e) {
+            Session::set('error_message', $e->getMessage());
+            Response::redirect('/personnel/archived');
         }
     }
 }

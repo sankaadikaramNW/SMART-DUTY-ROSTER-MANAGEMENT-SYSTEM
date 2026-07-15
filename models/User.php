@@ -26,7 +26,7 @@ class User {
     }
 
     // Get list of all accounts for Admin review
-    public static function getAll($campId = null) {
+    public static function getAll($campId = null, $isArchived = 0) {
         $db = Database::getInstance()->getConnection();
         
         $sql = "
@@ -36,11 +36,12 @@ class User {
             JOIN personnel p ON u.service_number = p.service_number
             LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
             LEFT JOIN camps c ON p.camp_id = c.camp_id
+            WHERE u.is_archived = :is_archived
         ";
         
-        $params = [];
+        $params = [':is_archived' => $isArchived];
         if ($campId !== null) {
-            $sql .= " WHERE p.camp_id = :camp_id";
+            $sql .= " AND p.camp_id = :camp_id";
             $params[':camp_id'] = $campId;
         }
         
@@ -146,11 +147,145 @@ class User {
     public static function updatePassword($userId, $newPassword) {
         $db = Database::getInstance()->getConnection();
         $hash = Security::hashPassword($newPassword);
-        $stmt = $db->prepare("UPDATE users SET password_hash = :hash WHERE user_id = :user_id");
+        $stmt = $db->prepare("UPDATE users SET password_hash = :hash, force_password_change = 0 WHERE user_id = :user_id");
         $stmt->execute([
             ':hash' => $hash,
             ':user_id' => $userId
         ]);
         Logger::audit('Account Security', 'Password updated for User ID: ' . $userId);
+    }
+
+    // Retrieve user by service number (includes inactive, locked, or archived)
+    public static function getByServiceNumber($serviceNumber) {
+        $db = Database::getInstance()->getConnection();
+        $stmt = $db->prepare("
+            SELECT u.*, r.role_name, p.camp_id, p.full_name, rk.rank_name AS `rank`, p.status AS personnel_status, p.is_archived AS personnel_is_archived, c.camp_name 
+            FROM users u
+            JOIN roles r ON u.role_id = r.role_id
+            JOIN personnel p ON u.service_number = p.service_number
+            LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
+            LEFT JOIN camps c ON p.camp_id = c.camp_id
+            WHERE u.service_number = :service_number
+        ");
+        $stmt->execute([':service_number' => $serviceNumber]);
+        return $stmt->fetch();
+    }
+
+    // Archive a user account
+    public static function archive($userId, $reason, $adminServiceNumber) {
+        $db = Database::getInstance()->getConnection();
+        $prevData = self::getById($userId);
+        if (!$prevData) {
+            throw new Exception("User account not found.");
+        }
+        
+        $stmt = $db->prepare("
+            UPDATE users 
+            SET is_archived = 1, archived_at = CURRENT_TIMESTAMP, 
+                archived_by = :archived_by, archive_reason = :archive_reason,
+                status = 'Suspended'
+            WHERE user_id = :user_id
+        ");
+        $stmt->execute([
+            ':archived_by' => $adminServiceNumber,
+            ':archive_reason' => $reason,
+            ':user_id' => $userId
+        ]);
+        
+        $newData = self::getById($userId);
+        Logger::audit('User Management', 'Archive User ID: ' . $userId, $prevData, $newData);
+    }
+
+    // Restore a user account
+    public static function restore($userId, $reason, $adminServiceNumber) {
+        $db = Database::getInstance()->getConnection();
+        $prevData = self::getById($userId);
+        if (!$prevData) {
+            throw new Exception("User account not found.");
+        }
+        
+        $stmt = $db->prepare("
+            UPDATE users 
+            SET is_archived = 0, restored_at = CURRENT_TIMESTAMP, 
+                restored_by = :restored_by, restore_reason = :restore_reason,
+                status = 'Active'
+            WHERE user_id = :user_id
+        ");
+        $stmt->execute([
+            ':restored_by' => $adminServiceNumber,
+            ':restore_reason' => $reason,
+            ':user_id' => $userId
+        ]);
+        
+        $newData = self::getById($userId);
+        Logger::audit('User Management', 'Restore User ID: ' . $userId, $prevData, $newData);
+    }
+
+    // Lock a user account
+    public static function lock($userId, $reason) {
+        $db = Database::getInstance()->getConnection();
+        $prevData = self::getById($userId);
+        $stmt = $db->prepare("
+            UPDATE users 
+            SET status = 'Locked', lock_date = CURRENT_TIMESTAMP, lock_reason = :reason 
+            WHERE user_id = :user_id
+        ");
+        $stmt->execute([':reason' => $reason, ':user_id' => $userId]);
+        $newData = self::getById($userId);
+        Logger::audit('User Management', 'Account Locked (User ID: ' . $userId . '): ' . $reason, $prevData, $newData);
+    }
+
+    // Unlock a user account
+    public static function unlock($userId, $reason, $adminServiceNumber) {
+        $db = Database::getInstance()->getConnection();
+        $prevData = self::getById($userId);
+        $stmt = $db->prepare("
+            UPDATE users 
+            SET status = 'Active', failed_attempts = 0, locked_until = NULL, 
+                lock_date = NULL, lock_reason = NULL, unlock_reason = :reason, 
+                unlock_date = CURRENT_TIMESTAMP, unlocked_by = :unlocked_by 
+            WHERE user_id = :user_id
+        ");
+        $stmt->execute([
+            ':reason' => $reason, 
+            ':unlocked_by' => $adminServiceNumber,
+            ':user_id' => $userId
+        ]);
+        $newData = self::getById($userId);
+        Logger::audit('User Management', 'Account Unlocked (User ID: ' . $userId . '): ' . $reason, $prevData, $newData);
+    }
+
+    // Reset a user password
+    public static function resetPassword($userId, $tempPassword, $reason, $adminServiceNumber) {
+        $db = Database::getInstance()->getConnection();
+        $prevData = self::getById($userId);
+        if (!$prevData) {
+            throw new Exception("User account not found.");
+        }
+        
+        $hash = Security::hashPassword($tempPassword);
+        $stmt = $db->prepare("
+            UPDATE users 
+            SET password_hash = :hash, force_password_change = 1, 
+                password_reset_at = CURRENT_TIMESTAMP, password_reset_by = :reset_by, 
+                password_reset_reason = :reason 
+            WHERE user_id = :user_id
+        ");
+        $stmt->execute([
+            ':hash' => $hash,
+            ':reset_by' => $adminServiceNumber,
+            ':reason' => $reason,
+            ':user_id' => $userId
+        ]);
+        
+        $newData = self::getById($userId);
+        Logger::audit('User Management', 'Password Reset (User ID: ' . $userId . '): ' . $reason, $prevData, $newData);
+    }
+
+    // Increment failed login attempts
+    public static function incrementFailedAttempts($userId) {
+        $db = Database::getInstance()->getConnection();
+        $stmt = $db->prepare("UPDATE users SET failed_attempts = failed_attempts + 1 WHERE user_id = ?");
+        $stmt->execute([$userId]);
     }
 }

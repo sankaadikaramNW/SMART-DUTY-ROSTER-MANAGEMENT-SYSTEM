@@ -7,127 +7,92 @@ class DashboardController {
 
     // Render Main Dashboard Screen
     public function index() {
-        $db = Database::getInstance()->getConnection();
-        
-        $roleName    = Session::get('role_name');
-        $serviceNum  = Session::get('service_number');
-        $campId      = Session::get('camp_id');
-        $restrictedCampId = LocationMiddleware::getCampConstraint();
+        try {
+            $db = Database::getInstance()->getConnection();
+            
+            $roleName    = Session::get('role_name');
+            $serviceNum  = Session::get('service_number');
+            $campId      = Session::get('camp_id');
+            $restrictedCampId = LocationMiddleware::getCampConstraint();
 
-        // 1. Get total personnel count
-        $pCountSql = "SELECT COUNT(*) FROM personnel WHERE status = 'Active'";
-        $pParams = [];
-        if ($restrictedCampId !== null) {
-            $pCountSql .= " AND camp_id = ?";
-            $pParams[] = $restrictedCampId;
-        }
-        $stmt = $db->prepare($pCountSql);
-        $stmt->execute($pParams);
-        $totalPersonnel = (int)$stmt->fetchColumn();
+            $camps = Camp::getAll(true);
+            $shifts = Shift::getAll(true);
+            $activeDutyTypes = DutyType::getAll(true);
+            
+            $activeCampId = $restrictedCampId ?? $campId ?? 1;
 
-        // 2. Get total rosters count
-        $rCountSql = "SELECT COUNT(*) FROM duty_rosters WHERE 1=1";
-        $rParams = [];
-        if ($restrictedCampId !== null) {
-            $rCountSql .= " AND camp_id = ?";
-            $rParams[] = $restrictedCampId;
-        }
-        $stmt = $db->prepare($rCountSql);
-        $stmt->execute($rParams);
-        $totalRosters = (int)$stmt->fetchColumn();
+            // Fetch welcome info
+            $rankName = Session::get('rank');
+            $fullName = Session::get('full_name');
+            $today = date('l, d F Y');
 
-        // 3. Get pending approvals (Rosters in 'Submitted' status)
-        $pendingApprovals = 0;
-        if ($roleName === 'OCPROVST' || $roleName === 'Administrator') {
-            $stmt = $db->query("SELECT COUNT(*) FROM duty_rosters WHERE status = 'Submitted'");
-            $pendingApprovals = (int)$stmt->fetchColumn();
-        }
+            if ($roleName === 'OCPROVST') {
+                $ocStats = [];
+                // Pending Duty Crews
+                $stmt = $db->prepare("SELECT COUNT(DISTINCT da.roster_id, da.duty_date, da.shift_id, da.duty_type_id) 
+                                      FROM duty_assignments da 
+                                      JOIN duty_rosters dr ON da.roster_id = dr.roster_id 
+                                      WHERE dr.status = 'Submitted' AND dr.camp_id = ?");
+                $stmt->execute([$activeCampId]);
+                $ocStats['pending_crews'] = (int)$stmt->fetchColumn();
 
-        // 4. Get active shifts count
-        $stmt = $db->query("SELECT COUNT(*) FROM shifts WHERE status = 'Active'");
-        $totalShifts = (int)$stmt->fetchColumn();
+                // Approved Duty Crews (Published)
+                $stmt = $db->prepare("SELECT COUNT(DISTINCT da.roster_id, da.duty_date, da.shift_id, da.duty_type_id) 
+                                      FROM duty_assignments da 
+                                      JOIN duty_rosters dr ON da.roster_id = dr.roster_id 
+                                      WHERE dr.status = 'Published' AND dr.camp_id = ?");
+                $stmt->execute([$activeCampId]);
+                $ocStats['approved_crews'] = (int)$stmt->fetchColumn();
 
-        // 5. TODAY'S DUTY CREW — all personnel assigned to duty today (for this camp)
-        $todayCrewSql = "
-            SELECT a.assignment_id, a.duty_date, a.status AS assignment_status,
-                   p.service_number, rk.rank_name AS `rank`, p.initials, p.full_name,
-                   s.shift_name, s.start_time, s.end_time,
-                   t.duty_type_name,
-                   r.roster_name, r.roster_id,
-                   c.camp_name
-            FROM duty_assignments a
-            JOIN duty_rosters r    ON a.roster_id = r.roster_id
-            JOIN camps c           ON r.camp_id   = c.camp_id
-            JOIN personnel p       ON a.service_number = p.service_number
-            LEFT JOIN ranks rk     ON p.rank_id   = rk.rank_id
-            JOIN shifts s          ON a.shift_id  = s.shift_id
-            JOIN duty_types t      ON a.duty_type_id = t.duty_type_id
-            WHERE a.duty_date = CURDATE()
-              AND r.status = 'Published'
-        ";
-        $todayParams = [];
-        if ($restrictedCampId !== null) {
-            $todayCrewSql .= " AND r.camp_id = ?";
-            $todayParams[] = $restrictedCampId;
-        }
-        $todayCrewSql .= " ORDER BY s.start_time ASC, rk.display_order ASC";
-        $stmt = $db->prepare($todayCrewSql);
-        $stmt->execute($todayParams);
-        $todayCrew = $stmt->fetchAll();
+                // Rejected Duty Crews
+                $stmt = $db->prepare("SELECT COUNT(DISTINCT da.roster_id, da.duty_date, da.shift_id, da.duty_type_id) 
+                                      FROM duty_assignments da 
+                                      JOIN duty_rosters dr ON da.roster_id = dr.roster_id 
+                                      WHERE dr.status = 'Rejected' AND dr.camp_id = ?");
+                $stmt->execute([$activeCampId]);
+                $ocStats['rejected_crews'] = (int)$stmt->fetchColumn();
 
-        // Check if the logged-in user is on duty today
-        $myTodayDuty = [];
-        foreach ($todayCrew as $tc) {
-            if ($tc['service_number'] === $serviceNum) {
-                $myTodayDuty[] = $tc;
+                // Today's Approved Duties (personnel count)
+                $stmt = $db->prepare("SELECT COUNT(*) 
+                                      FROM duty_assignments da 
+                                      JOIN duty_rosters dr ON da.roster_id = dr.roster_id 
+                                      WHERE dr.status = 'Published' AND dr.camp_id = ? AND da.duty_date = CURDATE()");
+                $stmt->execute([$activeCampId]);
+                $ocStats['today_duties'] = (int)$stmt->fetchColumn();
+
+                // Upcoming Duties
+                $stmt = $db->prepare("SELECT COUNT(*) 
+                                      FROM duty_assignments da 
+                                      JOIN duty_rosters dr ON da.roster_id = dr.roster_id 
+                                      WHERE dr.status = 'Published' AND dr.camp_id = ? AND da.duty_date > CURDATE()");
+                $stmt->execute([$activeCampId]);
+                $ocStats['upcoming_duties'] = (int)$stmt->fetchColumn();
+
+                // Recent Approvals
+                $stmt = $db->prepare("SELECT dca.*, p.full_name, rk.rank_short_name, dr.roster_name, dt.duty_type_name, s.shift_name
+                                      FROM duty_crew_approvals dca
+                                      JOIN duty_rosters dr ON dca.roster_id = dr.roster_id
+                                      JOIN users u ON dca.action_by = u.user_id
+                                      LEFT JOIN personnel p ON u.service_number = p.service_number
+                                      LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
+                                      JOIN duty_types dt ON dca.duty_type_id = dt.duty_type_id
+                                      JOIN shifts s ON dca.shift_id = s.shift_id
+                                      WHERE dr.camp_id = ?
+                                      ORDER BY dca.created_at DESC LIMIT 5");
+                $stmt->execute([$activeCampId]);
+                $ocStats['recent_approvals'] = $stmt->fetchAll();
+
+                $pageTitle = 'OCPROVST Dashboard - Approving Authority';
+                include __DIR__ . '/../views/dashboard/ocprovst_dashboard.php';
+                return;
             }
-        }
 
-        // 6. Get user's personal upcoming duties (next 5 upcoming, excluding today)
-        $upcomingDuties = [];
-        if ($serviceNum) {
-            $stmt = $db->prepare("
-                SELECT a.*, r.roster_name, s.shift_name, s.start_time, s.end_time, t.duty_type_name, c.camp_name
-                FROM duty_assignments a
-                JOIN duty_rosters r ON a.roster_id = r.roster_id
-                JOIN camps c ON r.camp_id = c.camp_id
-                JOIN shifts s ON a.shift_id = s.shift_id
-                JOIN duty_types t ON a.duty_type_id = t.duty_type_id
-                WHERE a.service_number = ? AND a.duty_date > CURDATE()
-                  AND r.status = 'Published'
-                ORDER BY a.duty_date ASC, s.start_time ASC
-                LIMIT 5
-            ");
-            $stmt->execute([$serviceNum]);
-            $upcomingDuties = $stmt->fetchAll();
+            $pageTitle = 'Dashboard - Watch Calendar';
+            include __DIR__ . '/../views/dashboard/index.php';
+        } catch (Exception $e) {
+            Session::set('error_message', $e->getMessage());
+            Response::redirect('/login');
         }
-
-        // 7. Recent duty rosters for list view
-        $recentRostersSql = "SELECT r.*, c.camp_name 
-                             FROM duty_rosters r 
-                             JOIN camps c ON r.camp_id = c.camp_id 
-                             WHERE 1=1";
-        $rrParams = [];
-        if ($restrictedCampId !== null) {
-            $recentRostersSql .= " AND r.camp_id = ?";
-            $rrParams[] = $restrictedCampId;
-        }
-        $recentRostersSql .= " ORDER BY r.updated_at DESC LIMIT 5";
-        $stmt = $db->prepare($recentRostersSql);
-        $stmt->execute($rrParams);
-        $recentRosters = $stmt->fetchAll();
-
-        // 8. Fetch Posting Transfer workflow metrics
-        $transferStats = [];
-        if ($roleName === 'Administrator') {
-            $transferStats = Transfer::getDashboardStats(null);
-        } elseif ($roleName === 'SNCO' || $roleName === 'OCPROVST' || $roleName === 'Warrant Officer IC') {
-            $transferStats = Transfer::getDashboardStats($campId);
-        }
-
-        // Render dashboard view
-        $pageTitle = 'Dashboard';
-        include __DIR__ . '/../views/dashboard/index.php';
     }
 
     // JSON API for dashboard metrics and stays modal

@@ -32,16 +32,20 @@ include __DIR__ . '/../layout/header.php';
                     <span class="fw-medium text-dark"><?= htmlspecialchars($person['trade']) ?></span>
                 </div>
                 <div class="d-flex justify-content-between mb-3">
-                    <span class="text-secondary small">Squadron:</span>
-                    <span class="fw-medium text-dark"><?= htmlspecialchars($person['squadron']) ?></span>
+                    <span class="text-secondary small fw-bold text-info"><i class="fas fa-id-card"></i> F.1250 ID Card:</span>
+                    <span class="fw-bold text-dark"><?= htmlspecialchars($person['f1250'] ?? 'N/A') ?></span>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-secondary small">Section:</span>
+                    <span class="fw-medium text-dark"><?= htmlspecialchars($person['section'] ?? 'N/A') ?></span>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-secondary small">Appointment:</span>
+                    <span class="fw-medium text-dark"><?= htmlspecialchars($person['appointment'] ?? 'N/A') ?></span>
                 </div>
                 <div class="d-flex justify-content-between mb-3">
                     <span class="text-secondary small">Active Camp / Base:</span>
                     <span class="fw-medium text-info"><i class="fas fa-campground"></i> <?= htmlspecialchars($person['camp_name'] ?? 'No Location') ?></span>
-                </div>
-                <div class="d-flex justify-content-between mb-3">
-                    <span class="text-secondary small">Email:</span>
-                    <span class="fw-medium text-dark"><?= htmlspecialchars($person['email']) ?></span>
                 </div>
                 <div class="d-flex justify-content-between mb-3">
                     <span class="text-secondary small">Contact Number:</span>
@@ -62,15 +66,103 @@ include __DIR__ . '/../layout/header.php';
                 </div>
             </div>
 
-            <?php if ($roleName === 'SNCO' || $roleName === 'Warrant Officer IC' || $roleName === 'Administrator'): ?>
+            <?php if ($roleName === 'Warrant Officer IC' || $roleName === 'Administrator' || $roleName === 'Super Admin'): ?>
                 <div class="border-top pt-4 mt-4 d-grid gap-2">
-                    <button type="button" class="btn btn-custom btn-custom-secondary w-100" data-bs-toggle="modal" data-bs-target="#editPersonnelModal">
-                        <i class="fas fa-user-pen"></i> Edit Profile
-                    </button>
-                    <button type="button" class="btn btn-custom btn-custom-primary w-100" data-bs-toggle="modal" data-bs-target="#addPostingModal">
-                        <i class="fas fa-right-left"></i> Assign Transfer Posting
-                    </button>
+                    <?php if ($roleName !== 'Super Admin'): // WO/Admin can edit ?>
+                        <button type="button" class="btn btn-custom btn-custom-secondary w-100" data-bs-toggle="modal" data-bs-target="#editPersonnelModal">
+                            <i class="fas fa-user-pen"></i> Edit Profile
+                        </button>
+                    <?php endif; ?>
+                    <?php if ($roleName === 'Administrator' || $roleName === 'Super Admin'): ?>
+                        <button type="button" class="btn btn-custom btn-custom-danger w-100" onclick="confirmArchivePersonnel('<?= htmlspecialchars($person['service_number'], ENT_QUOTES, 'UTF-8') ?>', '<?= htmlspecialchars($person['rank'] . ' ' . $person['initials'] . ' ' . $person['full_name'], ENT_QUOTES, 'UTF-8') ?>')">
+                            <i class="fas fa-box-archive"></i> Archive Personnel Profile
+                        </button>
+                    <?php endif; ?>
+                    <?php if ($roleName !== 'Super Admin'): ?>
+                        <button type="button" class="btn btn-custom btn-custom-primary w-100" data-bs-toggle="modal" data-bs-target="#addPostingModal">
+                            <i class="fas fa-right-left"></i> Assign Transfer Posting
+                        </button>
+                    <?php endif; ?>
                 </div>
+            <?php endif; ?>
+
+            <!-- Archive Form (POST) -->
+            <?php if ($roleName === 'Administrator' || $roleName === 'Super Admin'): ?>
+            <form id="archivePersonnelForm" action="<?= BASE_URL ?>/personnel/archive" method="POST" style="display:none;">
+                <?= Security::csrfField() ?>
+                <input type="hidden" name="service_number" value="<?= htmlspecialchars($person['service_number']) ?>">
+                <input type="hidden" name="archive_reason" id="archiveReasonInput">
+            </form>
+            <script>
+                function confirmArchivePersonnel(serviceNumber, name) {
+                    Swal.fire({
+                        title: 'Archive Personnel Profile?',
+                        html: `Are you sure you want to archive the personnel profile for:<br><strong>${serviceNumber} - ${name}</strong>?<br><br>This will hide the record from all active modules and deactivate any linked login accounts.`,
+                        icon: 'warning',
+                        input: 'select',
+                        inputOptions: {
+                            'Retirement': 'Retirement',
+                            'Resignation': 'Resignation',
+                            'Long Term Leave': 'Long Term Leave',
+                            'Transfer': 'Transfer',
+                            'Duplicate Record': 'Duplicate Record',
+                            'Administrative Decision': 'Administrative Decision',
+                            'Other': 'Other'
+                        },
+                        inputPlaceholder: 'Select Archive Reason',
+                        showCancelButton: true,
+                        confirmButtonText: '<i class="fas fa-box-archive"></i> Archive Profile',
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonText: '<i class="fas fa-xmark"></i> Cancel',
+                        cancelButtonColor: '#64748b',
+                        background: '#ffffff',
+                        customClass: {
+                            popup: 'glass-card text-dark',
+                            confirmButton: 'btn btn-danger px-4 py-2 small me-2',
+                            cancelButton: 'btn btn-secondary px-4 py-2 small'
+                        },
+                        buttonsStyling: false,
+                        preConfirm: (reason) => {
+                            if (!reason) {
+                                Swal.showValidationMessage('An archive reason is required.');
+                                return false;
+                            }
+                            return reason;
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const reason = result.value;
+                            if (reason === 'Other') {
+                                Swal.fire({
+                                    title: 'Custom Archive Reason',
+                                    text: 'Please specify the custom archive reason:',
+                                    input: 'text',
+                                    inputAttributes: {
+                                        required: 'true'
+                                    },
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Submit Archive',
+                                    confirmButtonColor: '#ef4444',
+                                    cancelButtonText: 'Cancel',
+                                    customClass: {
+                                        confirmButton: 'btn btn-danger px-4 py-2 small me-2',
+                                        cancelButton: 'btn btn-secondary px-4 py-2 small'
+                                    },
+                                    buttonsStyling: false
+                                }).then((customResult) => {
+                                    if (customResult.isConfirmed && customResult.value.trim() !== '') {
+                                        document.getElementById('archiveReasonInput').value = customResult.value;
+                                        document.getElementById('archivePersonnelForm').submit();
+                                    }
+                                });
+                            } else {
+                                document.getElementById('archiveReasonInput').value = reason;
+                                document.getElementById('archivePersonnelForm').submit();
+                            }
+                        }
+                    });
+                }
+            </script>
             <?php endif; ?>
         </div>
     </div>
@@ -154,8 +246,16 @@ include __DIR__ . '/../layout/header.php';
                         <input type="text" class="form-control form-control-custom" id="trade" name="trade" value="<?= htmlspecialchars($person['trade']) ?>" required>
                     </div>
                     <div class="col-md-6">
-                        <label for="squadron" class="form-label text-secondary small">Squadron</label>
-                        <input type="text" class="form-control form-control-custom" id="squadron" name="squadron" value="<?= htmlspecialchars($person['squadron']) ?>" required>
+                        <label for="f1250" class="form-label text-secondary small fw-bold">F.1250 ID Card Number</label>
+                        <input type="text" class="form-control form-control-custom" id="f1250" name="f1250" value="<?= htmlspecialchars($person['f1250'] ?? '') ?>" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="section" class="form-label text-secondary small">Section</label>
+                        <input type="text" class="form-control form-control-custom" id="section" name="section" value="<?= htmlspecialchars($person['section'] ?? '') ?>" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="appointment" class="form-label text-secondary small">Appointment</label>
+                        <input type="text" class="form-control form-control-custom" id="appointment" name="appointment" value="<?= htmlspecialchars($person['appointment'] ?? '') ?>" required>
                     </div>
                     <div class="col-md-6">
                         <label for="camp_id" class="form-label text-secondary small">Assigned Camp / Base</label>
@@ -185,10 +285,6 @@ include __DIR__ . '/../layout/header.php';
                             <option value="Temporary Duty" <?= $person['status'] === 'Temporary Duty' ? 'selected' : '' ?>>Temporary Duty (TDY)</option>
                             <option value="Inactive" <?= $person['status'] === 'Inactive' ? 'selected' : '' ?>>Inactive</option>
                         </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="email" class="form-label text-secondary small">Email Address</label>
-                        <input type="email" class="form-control form-control-custom" id="email" name="email" value="<?= htmlspecialchars($person['email']) ?>" required>
                     </div>
                     <div class="col-md-6">
                         <label for="contact_number" class="form-label text-secondary small">Contact Number</label>

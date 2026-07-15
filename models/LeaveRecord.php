@@ -164,7 +164,7 @@ class LeaveRecord {
             LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
             LEFT JOIN camps c ON p.camp_id = c.camp_id
             JOIN camp_attendance ca ON p.service_number = ca.service_number
-            WHERE ca.attendance_id = (
+            WHERE p.is_archived = 0 AND ca.attendance_id = (
                 SELECT MAX(ca2.attendance_id)
                 FROM camp_attendance ca2
                 WHERE ca2.service_number = p.service_number

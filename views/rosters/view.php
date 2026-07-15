@@ -10,7 +10,7 @@ include __DIR__ . '/../layout/header.php';
         <a href="<?= BASE_URL ?>/rosters" class="btn btn-custom btn-custom-secondary me-2">
             <i class="fas fa-arrow-left"></i> Back to Lists
         </a>
-        <button type="button" class="btn btn-custom btn-custom-secondary" onclick="window.print();">
+        <button type="button" class="btn btn-custom btn-custom-secondary" id="btnPrintRoster">
             <i class="fas fa-print"></i> Print Roster
         </button>
     </div>
@@ -45,7 +45,7 @@ include __DIR__ . '/../layout/header.php';
                                         <div class="fw-bold text-dark"><?= htmlspecialchars($as['rank'] . ' ' . $as['full_name']) ?></div>
                                         <span class="small text-secondary font-monospace"><?= htmlspecialchars($as['service_number']) ?></span>
                                     </td>
-                                    <td><span class="badge bg-secondary bg-opacity-25 text-info border border-info border-opacity-25 px-2.5 py-1 rounded"><?= htmlspecialchars($as['duty_type_name']) ?></span></td>
+                                    <td><span class="badge px-2.5 py-1 rounded d-inline-flex align-items-center gap-1" style="background: <?= htmlspecialchars($as['color_code']) ?>1c; border: 1px solid <?= htmlspecialchars($as['color_code']) ?>55; color: <?= htmlspecialchars($as['color_code']) ?>;"><i class="<?= htmlspecialchars($as['icon_class']) ?>"></i> <?= htmlspecialchars($as['duty_type_name']) ?></span></td>
                                     <td>
                                         <div class="fw-medium text-dark"><?= htmlspecialchars($as['shift_name']) ?></div>
                                         <span class="small text-muted"><?= htmlspecialchars(date('H:i', strtotime($as['start_time']))) ?> - <?= htmlspecialchars(date('H:i', strtotime($as['end_time']))) ?></span>
@@ -119,7 +119,7 @@ include __DIR__ . '/../layout/header.php';
                 <span class="text-secondary small">Creation Date:</span>
                 <span class="text-dark small"><?= date('F d, Y', strtotime($roster['created_at'])) ?></span>
             </div>
-            <?php if (($roleName === 'SNCO' || $roleName === 'Warrant Officer IC' || $roleName === 'Administrator') && ($roster['status'] === 'Draft' || $roster['status'] === 'Rejected')): ?>
+            <?php if (($roleName === 'Warrant Officer IC' || $roleName === 'Administrator' || $roleName === 'Super Admin') && ($roster['status'] === 'Draft' || $roster['status'] === 'Rejected')): ?>
                 <div class="border-top pt-3 mt-3 d-grid gap-2">
                     <a href="<?= BASE_URL ?>/rosters/create?id=<?= $roster['roster_id'] ?>" class="btn btn-custom btn-custom-warning justify-content-center">
                         <i class="fas fa-pen-to-square"></i> Edit Roster Draft
@@ -136,8 +136,8 @@ include __DIR__ . '/../layout/header.php';
             <?php endif; ?>
         </div>
 
-        <!-- OCPROVST Decision Panel -->
-        <?php if ($roleName === 'OCPROVST' && $roster['status'] === 'Submitted'): ?>
+        <!-- Decision Panel -->
+        <?php if (($roleName === 'OCPROVST' || $roleName === 'Warrant Officer IC') && $roster['status'] === 'Submitted'): ?>
             <div class="glass-card p-4 mb-4 border border-warning border-opacity-25 animate-fade-in">
                 <h5 class="fw-bold mb-3 text-warning"><i class="fas fa-clipboard-check me-2"></i> Roster Decision</h5>
                 <form action="<?= BASE_URL ?>/rosters/action" method="POST" id="rosterApprovalForm">
@@ -148,15 +148,21 @@ include __DIR__ . '/../layout/header.php';
                         <textarea class="form-control form-control-custom" id="remarks" name="remarks" rows="3" placeholder="Provide feedback or instructions here..."></textarea>
                     </div>
                     <div class="d-flex flex-column gap-2">
-                        <button type="submit" name="action" value="Approve" class="btn btn-custom btn-custom-success w-100 justify-content-center">
-                            <i class="fas fa-circle-check"></i> Approve & Publish
-                        </button>
+                        <?php if ($roleName === 'OCPROVST'): ?>
+                            <button type="submit" name="action" value="Approve" class="btn btn-custom btn-custom-success w-100 justify-content-center">
+                                <i class="fas fa-circle-check"></i> Approve & Publish
+                            </button>
+                        <?php endif; ?>
+                        
                         <button type="submit" name="action" value="Return" class="btn btn-custom btn-custom-warning w-100 justify-content-center">
-                            <i class="fas fa-rotate-left"></i> Return to Draft
+                            <i class="fas fa-rotate-left"></i> Return to Draft for Correction
                         </button>
-                        <button type="submit" name="action" value="Reject" class="btn btn-custom btn-custom-danger w-100 justify-content-center">
-                            <i class="fas fa-circle-xmark"></i> Reject & Archive
-                        </button>
+                        
+                        <?php if ($roleName === 'OCPROVST'): ?>
+                            <button type="submit" name="action" value="Reject" class="btn btn-custom btn-custom-danger w-100 justify-content-center">
+                                <i class="fas fa-circle-xmark"></i> Reject & Archive
+                            </button>
+                        <?php endif; ?>
                     </div>
                 </form>
             </div>
@@ -265,6 +271,31 @@ include __DIR__ . '/../layout/header.php';
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const btnPrint = document.getElementById('btnPrintRoster');
+    if (btnPrint) {
+        btnPrint.addEventListener('click', () => {
+            window.print();
+            
+            // Send AJAX request to log print action to audit log
+            fetch(`${BASE_URL}/rosters/audit-print`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': CSRF_TOKEN
+                },
+                body: JSON.stringify({
+                    roster_id: <?= (int)$roster['roster_id'] ?>,
+                    csrf_token: CSRF_TOKEN
+                })
+            });
+        });
+    }
+});
+</script>
+
 <?php
 include __DIR__ . '/../layout/footer.php';
 ?>

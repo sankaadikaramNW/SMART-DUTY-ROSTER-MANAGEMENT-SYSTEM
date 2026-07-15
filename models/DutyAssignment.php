@@ -10,7 +10,7 @@ class DutyAssignment {
         $db = Database::getInstance()->getConnection();
         $stmt = $db->prepare("
             SELECT a.*, rk.rank_name AS `rank`, rk.rank_short_name, p.initials, p.full_name, p.trade, p.squadron, p.status AS personnel_status, c.camp_name,
-                   s.shift_name, s.start_time, s.end_time, t.duty_type_name,
+                   s.shift_name, s.start_time, s.end_time, t.duty_type_name, t.color_code, t.icon_class,
                    pos.effective_date AS posting_effective_date,
                    pos_from.camp_name AS posting_from_camp_name
             FROM duty_assignments a
@@ -87,25 +87,56 @@ class DutyAssignment {
     }
 
     // Get assignments in a date range for calendar views
-    public static function getCalendarData($campId, $startDate, $endDate, $statusList = []) {
+    public static function getCalendarData($campId, $startDate, $endDate, $statusList = [], $extraFilters = []) {
         $db = Database::getInstance()->getConnection();
         
-        $sql = "SELECT a.*, rk.rank_name AS `rank`, p.initials, p.full_name, s.shift_name, s.start_time, s.end_time, t.duty_type_name, r.roster_name, r.status AS roster_status, c.camp_name
+        $sql = "SELECT a.*, rk.rank_name AS `rank`, rk.rank_short_name, p.initials, p.full_name, p.status AS personnel_status,
+                       pc.camp_name AS personnel_camp_name,
+                       s.shift_name, s.start_time, s.end_time, 
+                       t.duty_type_name, t.color_code, t.icon_class, t.duty_code,
+                       r.roster_name, r.status AS roster_status, r.created_at AS roster_created_at,
+                       c.camp_name AS roster_camp_name,
+                       p_creator.full_name AS creator_name, rk_creator.rank_short_name AS creator_rank,
+                       p_approver.full_name AS approver_name, rk_approver.rank_short_name AS approver_rank,
+                       app.created_at AS roster_approved_at
                 FROM duty_assignments a
                 JOIN duty_rosters r ON a.roster_id = r.roster_id
                 JOIN camps c ON r.camp_id = c.camp_id
                 JOIN personnel p ON a.service_number = p.service_number
                 LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
+                JOIN camps pc ON p.camp_id = pc.camp_id
                 JOIN shifts s ON a.shift_id = s.shift_id
                 JOIN duty_types t ON a.duty_type_id = t.duty_type_id
-                WHERE r.camp_id = :camp_id AND a.duty_date BETWEEN :start_date AND :end_date";
+                
+                -- Creator details
+                LEFT JOIN users u_created ON r.created_by = u_created.user_id
+                LEFT JOIN personnel p_creator ON u_created.service_number = p_creator.service_number
+                LEFT JOIN ranks rk_creator ON p_creator.rank_id = rk_creator.rank_id
+                
+                -- Approver details
+                LEFT JOIN approvals app ON r.roster_id = app.roster_id AND app.action = 'Approve'
+                LEFT JOIN users u_approver ON app.action_by = u_approver.user_id
+                LEFT JOIN personnel p_approver ON u_approver.service_number = p_approver.service_number
+                LEFT JOIN ranks rk_approver ON p_approver.rank_id = rk_approver.rank_id
+                
+                WHERE 1=1";
         
-        $params = [
-            ':camp_id' => $campId,
-            ':start_date' => $startDate,
-            ':end_date' => $endDate
-        ];
+        $params = [];
 
+        // Base/Camp filter
+        if ($campId !== 'All' && !empty($campId)) {
+            $sql .= " AND r.camp_id = :camp_id";
+            $params[':camp_id'] = $campId;
+        }
+
+        // Date Range
+        if (!empty($startDate) && !empty($endDate)) {
+            $sql .= " AND a.duty_date BETWEEN :start_date AND :end_date";
+            $params[':start_date'] = $startDate;
+            $params[':end_date'] = $endDate;
+        }
+        
+        // Roster Status List (e.g. for Airman view, only 'Published')
         if (!empty($statusList)) {
             $placeholders = [];
             foreach ($statusList as $i => $status) {
@@ -114,6 +145,35 @@ class DutyAssignment {
                 $params[$key] = $status;
             }
             $sql .= " AND r.status IN (" . implode(',', $placeholders) . ")";
+        }
+
+        // Extra dynamic filters from AJAX
+        if (!empty($extraFilters)) {
+            if (!empty($extraFilters['duty_type_id'])) {
+                $sql .= " AND a.duty_type_id = :duty_type_id";
+                $params[':duty_type_id'] = (int)$extraFilters['duty_type_id'];
+            }
+            if (!empty($extraFilters['shift_id'])) {
+                $sql .= " AND a.shift_id = :shift_id";
+                $params[':shift_id'] = (int)$extraFilters['shift_id'];
+            }
+            if (!empty($extraFilters['priority_level'])) {
+                $sql .= " AND a.priority_level = :priority_level";
+                $params[':priority_level'] = $extraFilters['priority_level'];
+            }
+            if (!empty($extraFilters['status'])) {
+                // Check both assignment status and roster status
+                $sql .= " AND (a.status = :as_status OR r.status = :as_status)";
+                $params[':as_status'] = $extraFilters['status'];
+            }
+            if (!empty($extraFilters['service_number'])) {
+                $sql .= " AND a.service_number = :service_number";
+                $params[':service_number'] = $extraFilters['service_number'];
+            }
+            if (!empty($extraFilters['search'])) {
+                $sql .= " AND (a.service_number LIKE :search OR p.full_name LIKE :search OR a.remarks LIKE :search OR r.roster_name LIKE :search)";
+                $params[':search'] = '%' . $extraFilters['search'] . '%';
+            }
         }
 
         $sql .= " ORDER BY a.duty_date ASC, s.start_time ASC";

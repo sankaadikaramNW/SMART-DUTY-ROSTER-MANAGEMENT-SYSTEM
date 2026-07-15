@@ -67,106 +67,126 @@ include __DIR__ . '/../../views/layout/header.php';
         </div>
     </div>
 
-    <!-- Right Column: Leaves List -->
+    <!-- Right Column: Leaves List & Calendar Tabs -->
     <div class="col-lg-8 col-12">
         <div class="glass-card p-4">
-            <h5 class="fw-bold text-dark mb-3 border-bottom pb-2">
-                <i class="fas fa-list-check text-success me-2"></i>Active & Upcoming Leave Records
-            </h5>
-            
-            <div class="table-custom-container">
-                <table class="table-custom text-dark" style="font-size: 0.85rem;">
-                    <thead>
-                        <tr>
-                            <th style="width: 12%;">Service No</th>
-                            <th style="width: 20%;">Rank & Name</th>
-                            <th style="width: 22%;">Leave Period</th>
-                            <th style="width: 20%;">Details / Extensions</th>
-                            <th style="width: 14%;">Status</th>
-                            <th style="width: 12%;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($leaves)): ?>
-                            <tr>
-                                <td colspan="6" class="text-center text-secondary py-4">No leave records found.</td>
-                            </tr>
-                        <?php else: ?>
-                            <?php foreach ($leaves as $l): ?>
-                                <?php
-                                    $status = $l['status'];
-                                    
-                                    // Set badge styles per status
-                                    if ($status === 'Expected') {
-                                        $statusClass = 'badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25';
-                                        $icon = '🔵';
-                                    } elseif ($status === 'Completed') {
-                                        $statusClass = 'badge bg-success bg-opacity-10 text-success border border-success border-opacity-25';
-                                        $icon = '🟢';
-                                    } elseif ($status === 'Not Reported') {
-                                        $statusClass = 'badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25';
-                                        $icon = '🔴';
-                                    } elseif ($status === 'Late Reported') {
-                                        $statusClass = 'badge badge-orange bg-opacity-15';
-                                        $icon = '🟠';
-                                    } else { // Granted
-                                        $statusClass = 'badge badge-purple bg-opacity-15';
-                                        $icon = '🟣';
-                                    }
-                                ?>
+            <!-- Nav Tabs -->
+            <ul class="nav nav-tabs nav-tabs-custom mb-3" id="leaveTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active fw-bold text-dark" id="list-tab" data-bs-toggle="tab" data-bs-target="#list-pane" type="button" role="tab" aria-controls="list-pane" aria-selected="true">
+                        <i class="fas fa-list-check text-success me-2"></i>Active & Upcoming Leaves
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-bold text-dark" id="calendar-tab" data-bs-toggle="tab" data-bs-target="#calendar-pane" type="button" role="tab" aria-controls="calendar-pane" aria-selected="false">
+                        <i class="fas fa-calendar-days text-primary me-2"></i>Leave Watch Calendar
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="leaveTabsContent">
+                <!-- List Tab Pane -->
+                <div class="tab-pane fade show active" id="list-pane" role="tabpanel" aria-labelledby="list-tab">
+                    <div class="table-custom-container">
+                        <table class="table-custom text-dark" style="font-size: 0.85rem;">
+                            <thead>
                                 <tr>
-                                    <td class="font-monospace text-muted"><?= htmlspecialchars($l['service_number']) ?></td>
-                                    <td class="fw-bold text-dark"><?= htmlspecialchars($l['rank'] . ' ' . $l['full_name']) ?></td>
-                                    <td>
-                                        <div class="fw-medium text-dark"><?= htmlspecialchars($l['leave_start_date']) ?> to <?= htmlspecialchars($l['leave_end_date']) ?></div>
-                                        <span class="text-secondary small font-monospace" style="font-size: 0.725rem;">
-                                            (<?= ceil((strtotime($l['leave_end_date']) - strtotime($l['leave_start_date'])) / 86400) + 1 ?> days)
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="text-dark small">
-                                            <strong>Type:</strong> <?= htmlspecialchars($l['leave_type']) ?>
-                                        </div>
-                                        <?php if ($l['actual_reporting_date']): ?>
-                                            <div class="text-success small mt-1" style="font-size:0.75rem;">
-                                                <i class="fas fa-circle-check"></i> Reported: <?= htmlspecialchars($l['actual_reporting_date']) ?>
-                                            </div>
-                                        <?php endif; ?>
-                                        <?php if ($l['granted_end_date']): ?>
-                                            <div class="text-purple small mt-1 border-top pt-1" style="font-size:0.75rem; border-color: rgba(111,66,193,0.15) !important;">
-                                                <div><strong>Extension:</strong> to <?= htmlspecialchars($l['granted_end_date']) ?></div>
-                                                <div><strong>Auth:</strong> <?= htmlspecialchars($l['granted_by']) ?></div>
-                                                <div class="text-muted text-truncate" style="max-width:180px;"><strong>Reason:</strong> <?= htmlspecialchars($l['granted_reason']) ?></div>
-                                            </div>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td><span class="<?= $statusClass ?>"><?= $icon ?> <?= $status ?></span></td>
-                                    <td>
-                                        <div class="d-flex flex-column gap-1.5">
-                                            <?php if ($l['actual_reporting_date'] === null): ?>
-                                                <button type="button" class="btn btn-xs btn-outline-success py-1 px-1.5" onclick="openReturnModal(<?= $l['leave_id'] ?>, '<?= htmlspecialchars($l['service_number']) ?>');" style="font-size:0.75rem;">
-                                                    <i class="fas fa-check-circle"></i> Return
-                                                </button>
-                                                <button type="button" class="btn btn-xs btn-outline-purple py-1 px-1.5" onclick="openExtensionModal(<?= $l['leave_id'] ?>, '<?= htmlspecialchars($l['service_number']) ?>');" style="font-size:0.75rem;">
-                                                    <i class="fas fa-plane-departure"></i> Extend
-                                                </button>
-                                            <?php endif; ?>
-                                            
-                                            <div class="d-flex gap-1">
-                                                <button type="button" class="btn btn-xs btn-outline-primary py-1 px-1 flex-grow-1" onclick="openEditModal(<?= $l['leave_id'] ?>, '<?= htmlspecialchars($l['service_number']) ?>', '<?= htmlspecialchars($l['leave_start_date']) ?>', '<?= htmlspecialchars($l['leave_end_date']) ?>', '<?= htmlspecialchars($l['leave_type']) ?>', '<?= htmlspecialchars($l['actual_reporting_date'] ?? '') ?>', '<?= htmlspecialchars($l['granted_end_date'] ?? '') ?>', '<?= htmlspecialchars($l['granted_reason'] ?? '') ?>');" style="font-size:0.725rem;">
-                                                    <i class="fas fa-edit"></i> Edit
-                                                </button>
-                                                <button type="button" class="btn btn-xs btn-outline-danger py-1 px-1 flex-grow-1" onclick="confirmDeleteLeave(<?= $l['leave_id'] ?>, '<?= htmlspecialchars($l['service_number']) ?>');" style="font-size:0.725rem;">
-                                                    <i class="fas fa-trash-alt"></i> Delete
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </td>
+                                    <th style="width: 12%;">Service No</th>
+                                    <th style="width: 20%;">Rank & Name</th>
+                                    <th style="width: 22%;">Leave Period</th>
+                                    <th style="width: 20%;">Details / Extensions</th>
+                                    <th style="width: 14%;">Status</th>
+                                    <th style="width: 12%;">Actions</th>
                                 </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($leaves)): ?>
+                                    <tr>
+                                        <td colspan="6" class="text-center text-secondary py-4">No leave records found.</td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($leaves as $l): ?>
+                                        <?php
+                                            $status = $l['status'];
+                                            
+                                            // Set badge styles per status
+                                            if ($status === 'Expected') {
+                                                $statusClass = 'badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25';
+                                                $icon = '🔵';
+                                            } elseif ($status === 'Completed') {
+                                                $statusClass = 'badge bg-success bg-opacity-10 text-success border border-success border-opacity-25';
+                                                $icon = '🟢';
+                                            } elseif ($status === 'Not Reported') {
+                                                $statusClass = 'badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25';
+                                                $icon = '🔴';
+                                            } elseif ($status === 'Late Reported') {
+                                                $statusClass = 'badge badge-orange bg-opacity-15';
+                                                $icon = '🟠';
+                                            } else { // Granted
+                                                $statusClass = 'badge badge-purple bg-opacity-15';
+                                                $icon = '🟣';
+                                            }
+                                        ?>
+                                        <tr>
+                                            <td class="font-monospace text-muted"><?= htmlspecialchars($l['service_number']) ?></td>
+                                            <td class="fw-bold text-dark"><?= htmlspecialchars($l['rank'] . ' ' . $l['full_name']) ?></td>
+                                            <td>
+                                                <div class="fw-medium text-dark"><?= htmlspecialchars($l['leave_start_date']) ?> to <?= htmlspecialchars($l['leave_end_date']) ?></div>
+                                                <span class="text-secondary small font-monospace" style="font-size: 0.725rem;">
+                                                    (<?= ceil((strtotime($l['leave_end_date']) - strtotime($l['leave_start_date'])) / 86400) + 1 ?> days)
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="text-dark small">
+                                                    <strong>Type:</strong> <?= htmlspecialchars($l['leave_type']) ?>
+                                                </div>
+                                                <?php if ($l['actual_reporting_date']): ?>
+                                                    <div class="text-success small mt-1" style="font-size:0.75rem;">
+                                                        <i class="fas fa-circle-check"></i> Reported: <?= htmlspecialchars($l['actual_reporting_date']) ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                                <?php if ($l['granted_end_date']): ?>
+                                                    <div class="text-purple small mt-1 border-top pt-1" style="font-size:0.75rem; border-color: rgba(111,66,193,0.15) !important;">
+                                                        <div><strong>Extension:</strong> to <?= htmlspecialchars($l['granted_end_date']) ?></div>
+                                                        <div><strong>Auth:</strong> <?= htmlspecialchars($l['granted_by']) ?></div>
+                                                        <div class="text-muted text-truncate" style="max-width:180px;"><strong>Reason:</strong> <?= htmlspecialchars($l['granted_reason']) ?></div>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td><span class="<?= $statusClass ?>"><?= $icon ?> <?= $status ?></span></td>
+                                            <td>
+                                                <div class="d-flex flex-column gap-1.5">
+                                                    <?php if ($l['actual_reporting_date'] === null): ?>
+                                                        <button type="button" class="btn btn-xs btn-outline-success py-1 px-1.5" onclick="openReturnModal(<?= $l['leave_id'] ?>, '<?= htmlspecialchars($l['service_number']) ?>');" style="font-size:0.75rem;">
+                                                            <i class="fas fa-check-circle"></i> Return
+                                                        </button>
+                                                        <button type="button" class="btn btn-xs btn-outline-purple py-1 px-1.5" onclick="openExtensionModal(<?= $l['leave_id'] ?>, '<?= htmlspecialchars($l['service_number']) ?>');" style="font-size:0.75rem;">
+                                                            <i class="fas fa-plane-departure"></i> Extend
+                                                        </button>
+                                                    <?php endif; ?>
+                                                    
+                                                    <div class="d-flex gap-1">
+                                                        <button type="button" class="btn btn-xs btn-outline-primary py-1 px-1 flex-grow-1" onclick="openEditModal(<?= $l['leave_id'] ?>, '<?= htmlspecialchars($l['service_number']) ?>', '<?= htmlspecialchars($l['leave_start_date']) ?>', '<?= htmlspecialchars($l['leave_end_date']) ?>', '<?= htmlspecialchars($l['leave_type']) ?>', '<?= htmlspecialchars($l['actual_reporting_date'] ?? '') ?>', '<?= htmlspecialchars($l['granted_end_date'] ?? '') ?>', '<?= htmlspecialchars($l['granted_reason'] ?? '') ?>');" style="font-size:0.725rem;">
+                                                            <i class="fas fa-edit"></i> Edit
+                                                        </button>
+                                                        <button type="button" class="btn btn-xs btn-outline-danger py-1 px-1 flex-grow-1" onclick="confirmDeleteLeave(<?= $l['leave_id'] ?>, '<?= htmlspecialchars($l['service_number']) ?>');" style="font-size:0.725rem;">
+                                                            <i class="fas fa-trash-alt"></i> Delete
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Calendar Tab Pane -->
+                <div class="tab-pane fade" id="calendar-pane" role="tabpanel" aria-labelledby="calendar-tab">
+                    <div id="leaveWatchCalendar" class="text-dark p-2" style="background:#ffffff; border-radius: 12px; min-height: 500px; border: 1px solid rgba(0,0,0,0.1);"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -515,6 +535,144 @@ document.addEventListener('DOMContentLoaded', () => {
         const modal = new bootstrap.Modal(modalEl);
         modal.show();
     };
+
+    // Initialize Leave Watch Calendar when the tab is clicked (to avoid sizing issues in hidden divs)
+    let leaveCalInitialized = false;
+    let leaveCalendar;
+
+    const calendarTabBtn = document.getElementById('calendar-tab');
+    if (calendarTabBtn) {
+        calendarTabBtn.addEventListener('shown.bs.tab', () => {
+            if (!leaveCalInitialized) {
+                const leaveCalEl = document.getElementById('leaveWatchCalendar');
+                leaveCalendar = new FullCalendar.Calendar(leaveCalEl, {
+                    initialView: 'dayGridMonth',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,listMonth'
+                    },
+                    themeSystem: 'bootstrap5',
+                    height: 'auto',
+                    events: function(info, successCallback, failureCallback) {
+                        const start = info.startStr.substring(0, 10);
+                        const end = info.endStr.substring(0, 10);
+                        const url = `${BASE_URL}/leaves/calendar-data?start=${start}&end=${end}`;
+
+                        fetch(url)
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.error) {
+                                    Swal.fire('Error', data.error, 'error');
+                                    failureCallback(data.error);
+                                    return;
+                                }
+
+                                // Map leaves to FullCalendar events
+                                const events = data.map(item => {
+                                    const endDateStr = item.granted_end_date || item.leave_end_date;
+                                    const parts = endDateStr.split('-');
+                                    const d = new Date(parts[0], parts[1] - 1, parts[2]);
+                                    d.setDate(d.getDate() + 1);
+                                    const endFormatted = d.toISOString().substring(0, 10);
+
+                                    let color = '#64748b'; // default slate
+                                    if (item.leave_type === 'Annual Leave') color = '#0ea5e9';
+                                    else if (item.leave_type === 'Casual Leave') color = '#10b981';
+                                    else if (item.leave_type === 'Sick Leave') color = '#f43f5e';
+                                    else if (item.leave_type === 'Duty Leave') color = '#6366f1';
+                                    else if (item.leave_type === 'Emergency Leave') color = '#f59e0b';
+
+                                    const nameParts = item.full_name.trim().split(' ');
+                                    const lastName = nameParts[nameParts.length - 1];
+
+                                    return {
+                                        id: item.leave_id,
+                                        title: `${item.rank_short_name || ''} ${lastName} (${item.leave_type})`,
+                                        start: item.leave_start_date,
+                                        end: endFormatted,
+                                        backgroundColor: color,
+                                        borderColor: color,
+                                        textColor: '#ffffff',
+                                        extendedProps: {
+                                            ...item
+                                        }
+                                    };
+                                });
+
+                                successCallback(events);
+                            })
+                            .catch(err => {
+                                console.error("Error fetching leaves calendar:", err);
+                                failureCallback(err);
+                            });
+                    },
+                    eventClick: function(info) {
+                        const ev = info.event.extendedProps;
+                        
+                        const actualReportText = ev.actual_reporting_date ? 
+                            `<span class="text-success fw-bold"><i class="fas fa-circle-check"></i> Returned on ${ev.actual_reporting_date}</span>` : 
+                            `<span class="text-warning fw-bold"><i class="fas fa-clock-rotate-left"></i> Awaiting Return</span>`;
+
+                        const extensionText = ev.granted_end_date ? 
+                            `<tr><td class="text-secondary py-1">Extension Return:</td><td class="fw-bold py-1 text-purple">${ev.granted_end_date} (Authorized by ${ev.granted_by})</td></tr>
+                             <tr><td class="text-secondary py-1">Extension Reason:</td><td class="py-1 text-dark-50 italic">"${ev.granted_reason}"</td></tr>` : '';
+
+                        const htmlContent = `
+                            <div class="text-start mt-3 text-dark">
+                                <table class="table table-sm table-borderless small mb-0 align-middle">
+                                    <tr>
+                                        <td class="text-secondary py-1" style="width: 35%;">Personnel:</td>
+                                        <td class="fw-bold py-1 text-info">${ev.rank} ${ev.full_name}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-secondary py-1">Service No:</td>
+                                        <td class="font-monospace fw-bold py-1">${ev.service_number}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-secondary py-1">Leave Type:</td>
+                                        <td class="fw-bold py-1">${ev.leave_type}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-secondary py-1">Leave Period:</td>
+                                        <td class="fw-bold py-1 text-dark">${ev.leave_start_date} to ${ev.leave_end_date}</td>
+                                    </tr>
+                                    ${extensionText}
+                                    <tr>
+                                        <td class="text-secondary py-1">Return Status:</td>
+                                        <td class="py-1">${actualReportText}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-secondary py-1">Status Badge:</td>
+                                        <td class="py-1"><span class="badge bg-light text-dark border">${ev.status}</span></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        `;
+
+                        Swal.fire({
+                            title: `<i class="fas fa-plane-departure text-primary"></i> Leave Period Details`,
+                            html: htmlContent,
+                            icon: 'info',
+                            confirmButtonText: 'Close',
+                            confirmButtonColor: '#64748b',
+                            customClass: {
+                                popup: 'glass-card border-light-subtle',
+                                confirmButton: 'btn btn-secondary px-4 py-2 small'
+                            },
+                            buttonsStyling: false
+                        });
+                    }
+                });
+
+                leaveCalendar.render();
+                leaveCalInitialized = true;
+            } else {
+                leaveCalendar.refetchEvents();
+                leaveCalendar.updateSize();
+            }
+        });
+    }
 });
 </script>
 

@@ -11,7 +11,7 @@ include __DIR__ . '/../layout/header.php';
 <div class="glass-card mb-4">
     <div class="card-header border-bottom border-secondary border-opacity-10 bg-transparent py-3 px-4 d-flex justify-content-between align-items-center">
         <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-list text-info me-2"></i> Personnel List</h5>
-        <?php if ($roleName === 'SNCO' || $roleName === 'Warrant Officer IC' || $roleName === 'Administrator'): ?>
+        <?php if ($roleName === 'Warrant Officer IC' || $roleName === 'Administrator' || $roleName === 'Super Admin'): ?>
             <button type="button" class="btn btn-sm btn-custom btn-custom-primary py-2" data-bs-toggle="modal" data-bs-target="#addPersonnelModal">
                 <i class="fas fa-user-plus"></i> Add New Personnel
             </button>
@@ -83,7 +83,7 @@ include __DIR__ . '/../layout/header.php';
 </div>
 
 <!-- Add Personnel Modal -->
-<?php if ($roleName === 'SNCO' || $roleName === 'Warrant Officer IC' || $roleName === 'Administrator'): ?>
+<?php if ($roleName === 'Warrant Officer IC' || $roleName === 'Administrator' || $roleName === 'Super Admin'): ?>
 <div class="modal fade" id="addPersonnelModal" tabindex="-1" aria-labelledby="addPersonnelModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <form action="<?= BASE_URL ?>/personnel/add" method="POST" class="modal-content glass-card">
@@ -120,8 +120,16 @@ include __DIR__ . '/../layout/header.php';
                         <input type="text" class="form-control form-control-custom" id="trade" name="trade" placeholder="e.g. Provost Guard" required>
                     </div>
                     <div class="col-md-6">
-                        <label for="squadron" class="form-label text-secondary small">Squadron</label>
-                        <input type="text" class="form-control form-control-custom" id="squadron" name="squadron" placeholder="e.g. Provost Squadron" required>
+                        <label for="f1250" class="form-label text-secondary small fw-bold">F.1250 ID Card Number</label>
+                        <input type="text" class="form-control form-control-custom" id="f1250" name="f1250" placeholder="e.g. F-1250-9988" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="section" class="form-label text-secondary small">Section</label>
+                        <input type="text" class="form-control form-control-custom" id="section" name="section" placeholder="e.g. Security Section" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="appointment" class="form-label text-secondary small">Appointment</label>
+                        <input type="text" class="form-control form-control-custom" id="appointment" name="appointment" placeholder="e.g. Guard Commander" required>
                     </div>
                     <div class="col-md-6">
                         <label for="camp_id" class="form-label text-secondary small">Assigned Camp / Base</label>
@@ -147,10 +155,6 @@ include __DIR__ . '/../layout/header.php';
                             <option value="Temporary Duty">Temporary Duty (TDY)</option>
                             <option value="Inactive">Inactive</option>
                         </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="email" class="form-label text-secondary small">Email Address</label>
-                        <input type="email" class="form-control form-control-custom" id="email" name="email" placeholder="e.g. user@slaf.lk" required>
                     </div>
                     <div class="col-md-6">
                         <label for="contact_number" class="form-label text-secondary small">Contact Number</label>

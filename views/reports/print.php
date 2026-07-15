@@ -100,7 +100,7 @@
                                         <strong><?= htmlspecialchars($row['rank']) ?></strong> 
                                         <?= htmlspecialchars($row['initials'] . ' ' . $row['full_name']) ?>
                                     </td>
-                                    <td><span class="badge bg-light text-dark border border-secondary border-opacity-20"><?= htmlspecialchars($row['duty_type_name']) ?></span></td>
+                                    <td><span class="badge d-inline-flex align-items-center gap-1" style="background-color: <?= htmlspecialchars($row['color_code']) ?>; color: #fff; border: 1px solid rgba(0,0,0,0.15);"><i class="<?= htmlspecialchars($row['icon_class']) ?>"></i> <?= htmlspecialchars($row['duty_type_name']) ?></span></td>
                                     <td><?= htmlspecialchars($row['shift_name']) ?></td>
                                     <td class="font-monospace small"><?= htmlspecialchars(date('H:i', strtotime($row['start_time']))) ?> - <?= htmlspecialchars(date('H:i', strtotime($row['end_time']))) ?></td>
                                     <td><?= htmlspecialchars($row['priority_level']) ?></td>

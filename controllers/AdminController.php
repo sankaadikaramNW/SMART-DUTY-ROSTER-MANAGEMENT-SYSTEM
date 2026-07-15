@@ -131,14 +131,23 @@ class AdminController {
 
             $dutyTypeId = isset($_POST['duty_type_id']) && $_POST['duty_type_id'] !== '' ? (int)$_POST['duty_type_id'] : null;
             $dutyTypeName = Security::sanitize($_POST['duty_type_name'] ?? '');
+            $dutyCode = Security::sanitize($_POST['duty_code'] ?? '');
             $description = Security::sanitize($_POST['description'] ?? null);
+            $colorCode = Security::sanitize($_POST['color_code'] ?? '#0d6efd');
+            $iconClass = Security::sanitize($_POST['icon_class'] ?? 'bi-shield');
+            $displayOrder = isset($_POST['display_order']) && $_POST['display_order'] !== '' ? (int)$_POST['display_order'] : 0;
             $status = Security::sanitize($_POST['status'] ?? 'Active');
 
             if (empty($dutyTypeName)) {
                 throw new Exception("Duty type name is required.");
             }
+            if (empty($dutyCode)) {
+                throw new Exception("Duty code is required.");
+            }
 
-            DutyType::save($dutyTypeId, $dutyTypeName, $description, $status);
+            $userId = Session::get('user_id');
+
+            DutyType::save($dutyTypeId, $dutyTypeName, $dutyCode, $description, $colorCode, $iconClass, $displayOrder, $status, $userId);
 
             Session::set('success_message', "Duty type '$dutyTypeName' saved successfully.");
             Response::redirect('/duty-types');
@@ -192,6 +201,19 @@ class AdminController {
             // Enforce location restrictions
             LocationMiddleware::validatePersonnel($serviceNumber);
 
+            $roleName = Session::get('role_name');
+            if ($roleName === 'Warrant Officer IC') {
+                if ($roleId === 1 || $roleId === 6) {
+                    throw new Exception("Unauthorized: Warrant Officer IC cannot assign Administrator or Super Admin roles.");
+                }
+                if ($userId) {
+                    $existingUser = User::getById($userId);
+                    if ($existingUser && ((int)$existingUser['role_id'] === 1 || (int)$existingUser['role_id'] === 6)) {
+                        throw new Exception("Unauthorized: You cannot modify Administrator or Super Admin accounts.");
+                    }
+                }
+            }
+
             if (!$userId && empty($password)) {
                 throw new Exception("Password is required for new accounts.");
             }
@@ -229,6 +251,154 @@ class AdminController {
             User::setStatus($userId, $status);
 
             Session::set('success_message', "User account status updated to $status.");
+            Response::redirect('/users');
+        } catch (Exception $e) {
+            Session::set('error_message', $e->getMessage());
+            Response::redirect('/users');
+        }
+    }
+
+    // Archived users list view
+    public function archivedUsersIndex() {
+        $restrictedCampId = LocationMiddleware::getCampConstraint();
+        $users = User::getAll($restrictedCampId, 1);
+        $pageTitle = 'Archived User Accounts';
+        include __DIR__ . '/../views/admin/archived_users.php';
+    }
+
+    // Locked users list view
+    public function lockedUsersIndex() {
+        $restrictedCampId = LocationMiddleware::getCampConstraint();
+        $db = Database::getInstance()->getConnection();
+        
+        $sql = "
+            SELECT u.*, r.role_name, p.full_name, rk.rank_name AS `rank`, p.camp_id, c.camp_name 
+            FROM users u
+            JOIN roles r ON u.role_id = r.role_id
+            JOIN personnel p ON u.service_number = p.service_number
+            LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
+            LEFT JOIN camps c ON p.camp_id = c.camp_id
+            WHERE u.status = 'Locked'
+        ";
+        
+        $params = [];
+        if ($restrictedCampId !== null) {
+            $sql .= " AND p.camp_id = :camp_id";
+            $params[':camp_id'] = $restrictedCampId;
+        }
+        
+        $sql .= " ORDER BY u.user_id ASC";
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        $users = $stmt->fetchAll();
+
+        $pageTitle = 'Locked User Accounts';
+        include __DIR__ . '/../views/admin/locked_users.php';
+    }
+
+    // Archive user account
+    public function archiveUser() {
+        try {
+            Security::verifyCsrf();
+            $roleName = Session::get('role_name');
+            if ($roleName !== 'Administrator' && $roleName !== 'Super Admin') {
+                throw new Exception("Unauthorized: Only Administrator and Super Administrator can archive user accounts.");
+            }
+
+            $userId = (int)($_POST['user_id'] ?? 0);
+            $reason = Security::sanitize($_POST['archive_reason'] ?? 'Administrative Decision');
+            if (!$userId || empty($reason)) {
+                throw new Exception("User ID and reason are required.");
+            }
+
+            $adminServiceNum = Session::get('service_number');
+            User::archive($userId, $reason, $adminServiceNum);
+
+            Session::set('success_message', "User account archived successfully.");
+            Response::redirect('/users');
+        } catch (Exception $e) {
+            Session::set('error_message', $e->getMessage());
+            Response::redirect('/users');
+        }
+    }
+
+    // Restore user account
+    public function restoreUser() {
+        try {
+            Security::verifyCsrf();
+            $roleName = Session::get('role_name');
+            if ($roleName !== 'Administrator' && $roleName !== 'Super Admin') {
+                throw new Exception("Unauthorized: Only Administrator and Super Administrator can restore user accounts.");
+            }
+
+            $userId = (int)($_POST['user_id'] ?? 0);
+            $reason = Security::sanitize($_POST['restore_reason'] ?? 'Administrative Decision');
+            if (!$userId || empty($reason)) {
+                throw new Exception("User ID and reason are required.");
+            }
+
+            $adminServiceNum = Session::get('service_number');
+            User::restore($userId, $reason, $adminServiceNum);
+
+            Session::set('success_message', "User account restored successfully.");
+            Response::redirect('/users/archived');
+        } catch (Exception $e) {
+            Session::set('error_message', $e->getMessage());
+            Response::redirect('/users/archived');
+        }
+    }
+
+    // Unlock locked account
+    public function unlockUser() {
+        try {
+            Security::verifyCsrf();
+            $roleName = Session::get('role_name');
+            if ($roleName !== 'Administrator' && $roleName !== 'Super Admin') {
+                throw new Exception("Unauthorized: Only Administrator and Super Administrator can unlock user accounts.");
+            }
+
+            $userId = (int)($_POST['user_id'] ?? 0);
+            $reason = Security::sanitize($_POST['unlock_reason'] ?? 'Administrative Decision');
+            if (!$userId || empty($reason)) {
+                throw new Exception("User ID and reason are required.");
+            }
+
+            $adminServiceNum = Session::get('service_number');
+            User::unlock($userId, $reason, $adminServiceNum);
+
+            Session::set('success_message', "User account unlocked successfully.");
+            Response::redirect('/users/locked');
+        } catch (Exception $e) {
+            Session::set('error_message', $e->getMessage());
+            Response::redirect('/users/locked');
+        }
+    }
+
+    // Reset password of user account
+    public function resetPassword() {
+        try {
+            Security::verifyCsrf();
+            $roleName = Session::get('role_name');
+            if ($roleName !== 'Administrator' && $roleName !== 'Super Admin') {
+                throw new Exception("Unauthorized: Only Administrator and Super Administrator can reset passwords.");
+            }
+
+            $userId = (int)($_POST['user_id'] ?? 0);
+            $tempPassword = $_POST['temp_password'] ?? '';
+            $reason = Security::sanitize($_POST['reset_reason'] ?? 'Requested by user');
+
+            if (!$userId || empty($tempPassword) || empty($reason)) {
+                throw new Exception("User ID, temporary password, and reason are required.");
+            }
+
+            if (strlen($tempPassword) < 8) {
+                throw new Exception("Temporary password must be at least 8 characters long.");
+            }
+
+            $adminServiceNum = Session::get('service_number');
+            User::resetPassword($userId, $tempPassword, $reason, $adminServiceNum);
+
+            Session::set('success_message', "Password reset successfully. The user will be forced to change it on their next login.");
             Response::redirect('/users');
         } catch (Exception $e) {
             Session::set('error_message', $e->getMessage());
