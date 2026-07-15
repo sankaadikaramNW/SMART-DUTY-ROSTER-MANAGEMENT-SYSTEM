@@ -615,19 +615,45 @@ class RosterController {
 
     // GET /rosters/crew-history — Fetch historical approval audit trail for a crew
     public function crewHistory() {
-        header('Content-Type: application/json');
         try {
             $rosterId = (int)($_GET['roster_id'] ?? 0);
             $dutyDate = Security::sanitize($_GET['duty_date'] ?? '');
             $shiftId = (int)($_GET['shift_id'] ?? 0);
             $dutyTypeId = (int)($_GET['duty_type_id'] ?? 0);
 
+            // If accessed directly without parameters, render the HTML view page
+            if (!$rosterId && empty($dutyDate) && !$shiftId && !$dutyTypeId) {
+                $db = Database::getInstance()->getConnection();
+                $activeCampId = LocationMiddleware::getCampConstraint() ?? Session::get('camp_id') ?? 1;
+                
+                $stmt = $db->prepare("
+                    SELECT dca.*, p.full_name, rk.rank_short_name, u.service_number AS username,
+                           dr.roster_name, dt.duty_type_name, s.shift_name, dt.color_code, dt.icon_class
+                    FROM duty_crew_approvals dca
+                    JOIN users u ON dca.action_by = u.user_id
+                    LEFT JOIN personnel p ON u.service_number = p.service_number
+                    LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
+                    JOIN duty_rosters dr ON dca.roster_id = dr.roster_id
+                    JOIN duty_types dt ON dca.duty_type_id = dt.duty_type_id
+                    JOIN shifts s ON dca.shift_id = s.shift_id
+                    WHERE dr.camp_id = ?
+                    ORDER BY dca.created_at DESC
+                ");
+                $stmt->execute([$activeCampId]);
+                $history = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                $pageTitle = 'Approval Action History';
+                include __DIR__ . '/../views/rosters/crew_history.php';
+                exit;
+            }
+
+            header('Content-Type: application/json');
             if (!$rosterId || empty($dutyDate) || !$shiftId || !$dutyTypeId) {
                 throw new Exception("Missing parameters.");
             }
 
             $db = Database::getInstance()->getConnection();
-            $stmt = $db->prepare("SELECT dca.*, p.full_name, rk.rank_short_name, u.username
+            $stmt = $db->prepare("SELECT dca.*, p.full_name, rk.rank_short_name, u.service_number AS username
                                   FROM duty_crew_approvals dca
                                   JOIN users u ON dca.action_by = u.user_id
                                   LEFT JOIN personnel p ON u.service_number = p.service_number
@@ -637,6 +663,9 @@ class RosterController {
             $stmt->execute([$rosterId, $dutyDate, $shiftId, $dutyTypeId]);
             echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
         } catch (Exception $e) {
+            if (!headers_sent()) {
+                header('Content-Type: application/json');
+            }
             echo json_encode(['error' => $e->getMessage()]);
         }
         exit;

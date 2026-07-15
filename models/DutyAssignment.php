@@ -9,7 +9,7 @@ class DutyAssignment {
     public static function getByRosterId($rosterId) {
         $db = Database::getInstance()->getConnection();
         $stmt = $db->prepare("
-            SELECT a.*, rk.rank_name AS `rank`, rk.rank_short_name, p.initials, p.full_name, p.trade, p.squadron, p.status AS personnel_status, c.camp_name,
+            SELECT a.*, rk.rank_name AS `rank`, rk.rank_short_name, p.initials, p.full_name, p.trade, p.status AS personnel_status, c.camp_name,
                    s.shift_name, s.start_time, s.end_time, t.duty_type_name, t.color_code, t.icon_class,
                    pos.effective_date AS posting_effective_date,
                    pos_from.camp_name AS posting_from_camp_name

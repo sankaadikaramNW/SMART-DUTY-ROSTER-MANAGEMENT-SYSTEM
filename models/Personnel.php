@@ -56,7 +56,7 @@ class Personnel {
     }
 
     // Create or update personnel details
-    public static function save($serviceNumber, $rankId, $initials, $fullName, $trade, $f1250, $section, $appointment, $campId, $contactNumber, $status, $isUpdate = false, $squadron = null, $email = null) {
+    public static function save($serviceNumber, $rankId, $initials, $fullName, $trade, $f1250, $section, $appointment, $campId, $contactNumber, $status, $isUpdate = false, $email = null) {
         $db = Database::getInstance()->getConnection();
         
         // Validate SNCO location compliance
@@ -79,7 +79,6 @@ class Personnel {
             'f1250' => $f1250,
             'section' => $section,
             'appointment' => $appointment,
-            'squadron' => $squadron,
             'camp_id' => $campId,
             'contact_number' => $contactNumber,
             'email' => $emailVal,
@@ -90,7 +89,7 @@ class Personnel {
             $stmt = $db->prepare("
                 UPDATE personnel 
                 SET rank_id = :rank_id, initials = :initials, full_name = :full_name, trade = :trade, 
-                    f1250 = :f1250, section = :section, appointment = :appointment, squadron = :squadron, 
+                    f1250 = :f1250, section = :section, appointment = :appointment, 
                     camp_id = :camp_id, contact_number = :contact_number, email = :email, status = :status 
                 WHERE service_number = :service_number
             ");
@@ -102,7 +101,6 @@ class Personnel {
                 ':f1250' => $f1250,
                 ':section' => $section,
                 ':appointment' => $appointment,
-                ':squadron' => $squadron,
                 ':camp_id' => $campId,
                 ':contact_number' => $contactNumber,
                 ':email' => $emailVal,
@@ -118,8 +116,8 @@ class Personnel {
             Logger::audit('Personnel Management', 'Update Personnel: ' . $serviceNumber, $prevData, $newData);
         } else {
             $stmt = $db->prepare("
-                INSERT INTO personnel (service_number, rank_id, initials, full_name, trade, f1250, section, appointment, squadron, camp_id, contact_number, email, status) 
-                VALUES (:service_number, :rank_id, :initials, :full_name, :trade, :f1250, :section, :appointment, :squadron, :camp_id, :contact_number, :email, :status)
+                INSERT INTO personnel (service_number, rank_id, initials, full_name, trade, f1250, section, appointment, camp_id, contact_number, email, status) 
+                VALUES (:service_number, :rank_id, :initials, :full_name, :trade, :f1250, :section, :appointment, :camp_id, :contact_number, :email, :status)
             ");
             $stmt->execute([
                 ':service_number' => $serviceNumber,
@@ -130,7 +128,6 @@ class Personnel {
                 ':f1250' => $f1250,
                 ':section' => $section,
                 ':appointment' => $appointment,
-                ':squadron' => $squadron,
                 ':camp_id' => $campId,
                 ':contact_number' => $contactNumber,
                 ':email' => $emailVal,

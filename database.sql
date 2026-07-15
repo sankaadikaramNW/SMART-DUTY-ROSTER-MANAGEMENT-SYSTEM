@@ -50,7 +50,6 @@ CREATE TABLE IF NOT EXISTS `personnel` (
   `initials` VARCHAR(50) NOT NULL,
   `full_name` VARCHAR(255) NOT NULL,
   `trade` VARCHAR(100) NOT NULL,
-  `squadron` VARCHAR(100) NOT NULL,
   `camp_id` INT NOT NULL,
   `contact_number` VARCHAR(30) NULL,
   `email` VARCHAR(150) UNIQUE NOT NULL,
@@ -281,23 +280,23 @@ INSERT INTO `ranks` (`rank_id`, `rank_code`, `rank_name`, `rank_short_name`, `di
 (13, 'AC', 'Aircraftman', 'AC', 13, 'Active');
 
 -- Seed Personnel (Admin, OCPROVST, SNCO, and Airmen for different bases)
-INSERT INTO `personnel` (`service_number`, `rank_id`, `initials`, `full_name`, `trade`, `squadron`, `camp_id`, `contact_number`, `email`, `status`) VALUES
+INSERT INTO `personnel` (`service_number`, `rank_id`, `initials`, `full_name`, `trade`, `camp_id`, `contact_number`, `email`, `status`) VALUES
 -- Super Admin
-('sadmin', 8, 'S.', 'Super Administrator', 'Cyber Security', 'Directorate of IT', 1, '+94777777777', 'sadmin@slaf.lk', 'Active'),
+('sadmin', 8, 'S.', 'Super Administrator', 'Cyber Security', 1, '+94777777777', 'sadmin@slaf.lk', 'Active'),
 -- Administrator
-('admin', 8, 'A.B.', 'John Smith', 'Admin General', 'Admin HQ', 1, '+94711111111', 'admin@slaf.lk', 'Active'),
+('admin', 8, 'A.B.', 'John Smith', 'Admin General', 1, '+94711111111', 'admin@slaf.lk', 'Active'),
 -- OCPROVST Katunayake
-('51838', 3, 'K.L.', 'Sathruwan', 'Provost Officer', 'Provost Squadron', 3, '+94722222222', 'provost@slaf.lk', 'Active'),
+('51838', 3, 'K.L.', 'Sathruwan', 'Provost Officer', 3, '+94722222222', 'provost@slaf.lk', 'Active'),
 -- SNCO for Ekala
-('51839', 9, 'M.R.', 'Rohan Fernando', 'Operations', 'No 3 Air Defence', 1, '+94733333333', 'snco.ekala@slaf.lk', 'Active'),
+('51839', 9, 'M.R.', 'Rohan Fernando', 'Operations', 1, '+94733333333', 'snco.ekala@slaf.lk', 'Active'),
 -- SNCO for Ratmalana
-('51840', 9, 'A.P.', 'Anura Priyantha', 'Operations', 'No 2 Squadron', 2, '+94733333334', 'snco.ratmalana@slaf.lk', 'Active'),
+('51840', 9, 'A.P.', 'Anura Priyantha', 'Operations', 2, '+94733333334', 'snco.ratmalana@slaf.lk', 'Active'),
 -- Test Personnel (LAC Adikaram) in Ratmalana (Camp 2)
-('51837', 12, 'S.', 'Adikaram', 'Provost Guard', 'No 2 Squadron', 2, '+94755555553', 'adikaram@slaf.lk', 'Active'),
+('51837', 12, 'S.', 'Adikaram', 'Provost Guard', 2, '+94755555553', 'adikaram@slaf.lk', 'Active'),
 -- OCPROVST for Ekala
-('51846', 3, 'K.L.', 'Ekala OCPROVST', 'Provost Officer', 'Provost Squadron', 1, '+94722222223', 'ocprovost.ekala@slaf.lk', 'Active'),
+('51846', 3, 'K.L.', 'Ekala OCPROVST', 'Provost Officer', 1, '+94722222223', 'ocprovost.ekala@slaf.lk', 'Active'),
 -- OCPROVST for Ratmalana
-('51847', 3, 'A.P.', 'Ratmalana OCPROVST', 'Provost Officer', 'No 2 Squadron', 2, '+94722222224', 'ocprovost.ratmalana@slaf.lk', 'Active');
+('51847', 3, 'A.P.', 'Ratmalana OCPROVST', 'Provost Officer', 2, '+94722222224', 'ocprovost.ratmalana@slaf.lk', 'Active');
 
 -- Seed Users (Passwords are all hashed using standard BCRYPT of 'Password@123')
 INSERT INTO `users` (`service_number`, `password_hash`, `role_id`, `status`) VALUES
@@ -364,10 +363,10 @@ CREATE TABLE IF NOT EXISTS `posting_approvals` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Seed LAC Adikaram (51837) and OCPROVST users for camps 1 and 2
-INSERT INTO `personnel` (`service_number`, `rank_id`, `initials`, `full_name`, `trade`, `squadron`, `camp_id`, `contact_number`, `email`, `status`) VALUES
-('51837', 5, 'S.', 'Adikaram', 'Provost Guard', 'No 2 Squadron', 2, '+94755555553', 'adikaram@slaf.lk', 'Active'),
-('51846', 2, 'K.L.', 'Ekala OCPROVST', 'Provost Officer', 'Provost Squadron', 1, '+94722222223', 'ocprovost.ekala@slaf.lk', 'Active'),
-('51847', 2, 'A.P.', 'Ratmalana OCPROVST', 'Provost Officer', 'No 2 Squadron', 2, '+94722222224', 'ocprovost.ratmalana@slaf.lk', 'Active');
+INSERT INTO `personnel` (`service_number`, `rank_id`, `initials`, `full_name`, `trade`, `camp_id`, `contact_number`, `email`, `status`) VALUES
+('51837', 5, 'S.', 'Adikaram', 'Provost Guard', 2, '+94755555553', 'adikaram@slaf.lk', 'Active'),
+('51846', 2, 'K.L.', 'Ekala OCPROVST', 'Provost Officer', 1, '+94722222223', 'ocprovost.ekala@slaf.lk', 'Active'),
+('51847', 2, 'A.P.', 'Ratmalana OCPROVST', 'Provost Officer', 2, '+94722222224', 'ocprovost.ratmalana@slaf.lk', 'Active');
 
 INSERT INTO `users` (`service_number`, `password_hash`, `role_id`, `status`) VALUES
 ('51837', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 4, 'Active'),

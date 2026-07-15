@@ -243,8 +243,8 @@ include __DIR__ . '/../layout/header.php';
                                 <td class="fw-bold py-1 text-dark" id="mFullName">-</td>
                             </tr>
                             <tr>
-                                <td class="text-secondary py-1">Trade/Squadron:</td>
-                                <td class="py-1 text-dark" id="mTradeSquadron">-</td>
+                                <td class="text-secondary py-1">Trade:</td>
+                                <td class="py-1 text-dark" id="mTrade">-</td>
                             </tr>
                             <tr>
                                 <td class="text-secondary py-1">Personnel Camp:</td>
@@ -581,7 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('mSvcNo').textContent = ev.service_number;
             document.getElementById('mRank').textContent = ev.rank;
             document.getElementById('mFullName').textContent = ev.full_name;
-            document.getElementById('mTradeSquadron').textContent = `${ev.trade || 'Provost'} / ${ev.squadron || 'Provost Sqn'}`;
+            document.getElementById('mTrade').textContent = ev.trade || 'Provost';
             document.getElementById('mPersonnelCamp').textContent = ev.personnel_camp_name || 'Own Base';
             
             // Personnel Status

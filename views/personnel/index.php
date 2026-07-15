@@ -34,7 +34,6 @@ include __DIR__ . '/../layout/header.php';
                         <th>Service Number</th>
                         <th>Rank & Name</th>
                         <th>Trade</th>
-                        <th>Squadron</th>
                         <th>Camp/Base</th>
                         <th>Status</th>
                         <th>Action</th>
@@ -43,7 +42,7 @@ include __DIR__ . '/../layout/header.php';
                 <tbody>
                     <?php if (empty($personnelList)): ?>
                         <tr>
-                            <td colspan="7" class="text-center text-secondary py-4">No personnel profiles found.</td>
+                            <td colspan="6" class="text-center text-secondary py-4">No personnel profiles found.</td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($personnelList as $p): ?>
@@ -54,7 +53,6 @@ include __DIR__ . '/../layout/header.php';
                                     <?= htmlspecialchars($p['initials'] . ' ' . $p['full_name']) ?>
                                 </td>
                                 <td class="search-cell-trade"><?= htmlspecialchars($p['trade']) ?></td>
-                                <td><?= htmlspecialchars($p['squadron']) ?></td>
                                 <td><?= htmlspecialchars($p['camp_name'] ?? 'No Location') ?></td>
                                 <td>
                                     <?php
@@ -218,7 +216,6 @@ include __DIR__ . '/../layout/header.php';
                                     ${escapeHtml(p.initials + ' ' + p.full_name)}
                                 </td>
                                 <td class="search-cell-trade">${escapeHtml(p.trade)}</td>
-                                <td>${escapeHtml(p.squadron)}</td>
                                 <td>${escapeHtml(p.camp_name || 'No Location')}</td>
                                 <td>
                                     <span class="badge ${badgeClass} bg-opacity-25 border ${borderBadgeClass} border-opacity-25 ${textBadgeClass} px-2 py-1 small rounded-pill">
@@ -236,7 +233,7 @@ include __DIR__ . '/../layout/header.php';
                     } else {
                         tbody.innerHTML = `
                             <tr>
-                                <td colspan="7" class="text-center text-secondary py-4">No matching personnel found.</td>
+                                <td colspan="6" class="text-center text-secondary py-4">No matching personnel found.</td>
                             </tr>
                         `;
                     }

@@ -47,7 +47,7 @@ class ReportController {
 
             $db = Database::getInstance()->getConnection();
 
-            $sql = "SELECT a.*, rk.rank_name AS `rank`, p.initials, p.full_name, p.trade, p.squadron, s.shift_name, s.start_time, s.end_time, t.duty_type_name, t.color_code, t.icon_class, r.roster_name, c.camp_name
+            $sql = "SELECT a.*, rk.rank_name AS `rank`, p.initials, p.full_name, p.trade, s.shift_name, s.start_time, s.end_time, t.duty_type_name, t.color_code, t.icon_class, r.roster_name, c.camp_name
                     FROM duty_assignments a
                     JOIN duty_rosters r ON a.roster_id = r.roster_id
                     JOIN camps c ON r.camp_id = c.camp_id
@@ -91,7 +91,7 @@ class ReportController {
                 $output = fopen('php://output', 'w');
 
                 // Header columns
-                fputcsv($output, ['Duty Date', 'Roster Name', 'Camp/Base', 'Service Number', 'Rank', 'Name', 'Trade', 'Squadron', 'Duty Type', 'Shift', 'Timings', 'Conflict Level', 'Justification']);
+                fputcsv($output, ['Duty Date', 'Roster Name', 'Camp/Base', 'Service Number', 'Rank', 'Name', 'Trade', 'Duty Type', 'Shift', 'Timings', 'Conflict Level', 'Justification']);
 
                 foreach ($results as $row) {
                     fputcsv($output, [
@@ -102,7 +102,6 @@ class ReportController {
                         $row['rank'],
                         $row['initials'] . ' ' . $row['full_name'],
                         $row['trade'],
-                        $row['squadron'],
                         $row['duty_type_name'],
                         $row['shift_name'],
                         $row['start_time'] . ' - ' . $row['end_time'],
