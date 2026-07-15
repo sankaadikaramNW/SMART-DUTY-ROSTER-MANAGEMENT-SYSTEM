@@ -20,8 +20,13 @@ class SecurityTest extends TestCase {
         $this->assertTrue(Security::validateServiceNumber('admin'));
         $this->assertTrue(Security::validateServiceNumber('sadmin'));
         $this->assertTrue(Security::validateServiceNumber('ADMIN'));
+        $this->assertTrue(Security::validateServiceNumber('AW/5188'));
+        $this->assertTrue(Security::validateServiceNumber('V/2311'));
+        $this->assertTrue(Security::validateServiceNumber('SLAF/AIR/301'));
         
         $this->assertFalse(Security::validateServiceNumber('invalid_user'));
-        $this->assertFalse(Security::validateServiceNumber('SLAF/AIR/301')); // Based on the regex /^\d+$/ in Security.php
+        $this->assertFalse(Security::validateServiceNumber('AW-5188'));
+        $this->assertFalse(Security::validateServiceNumber('AW@5188'));
+        $this->assertFalse(Security::validateServiceNumber('123456789012345678901'));
     }
 }

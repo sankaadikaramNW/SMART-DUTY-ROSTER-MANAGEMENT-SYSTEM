@@ -39,7 +39,7 @@ include __DIR__ . '/../layout/header.php';
                 <span class="input-group-text login-input-group-text">
                     <i class="fas fa-user"></i>
                 </span>
-                <input type="text" class="form-control login-input-height login-input-height-append" id="service_number" name="service_number" placeholder="Service No, admin or sadmin" pattern="[Ss]?[Aa][Dd][Mm][Ii][Nn]|\d+" title="Must be a valid Service Number (e.g., 51837, admin or sadmin)" required autocomplete="username">
+                <input type="text" class="form-control login-input-height login-input-height-append" id="service_number" name="service_number" placeholder="Username, Service No, admin or sadmin" pattern="[A-Za-z0-9/]{1,20}" title="Must be a valid Username or Service Number (letters, numbers, and / allowed, max 20 characters)" required autocomplete="username">
             </div>
         </div>
         

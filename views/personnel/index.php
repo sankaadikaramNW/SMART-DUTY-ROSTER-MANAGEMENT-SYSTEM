@@ -94,7 +94,7 @@ include __DIR__ . '/../layout/header.php';
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label for="service_number" class="form-label text-secondary small">Service Number</label>
-                        <input type="text" class="form-control form-control-custom" id="service_number" name="service_number" placeholder="e.g. 51837, admin or sadmin" pattern="[Ss]?[Aa][Dd][Mm][Ii][Nn]|\d+" title="Must be a valid Service Number (e.g., 51837, admin or sadmin)" required>
+                        <input type="text" class="form-control form-control-custom" id="service_number" name="service_number" placeholder="" pattern="[A-Za-z0-9/]{1,20}" title="Must be a valid Service Number (letters, numbers, and / allowed, max 20 characters)" required>
                     </div>
                     <div class="col-md-6">
                         <label for="rank_id" class="form-label text-secondary small">Rank</label>
@@ -107,27 +107,27 @@ include __DIR__ . '/../layout/header.php';
                     </div>
                     <div class="col-md-4">
                         <label for="initials" class="form-label text-secondary small">Initials</label>
-                        <input type="text" class="form-control form-control-custom" id="initials" name="initials" placeholder="e.g. A.B." required>
+                        <input type="text" class="form-control form-control-custom" id="initials" name="initials" placeholder="" required>
                     </div>
                     <div class="col-md-8">
                         <label for="full_name" class="form-label text-secondary small">Full Name</label>
-                        <input type="text" class="form-control form-control-custom" id="full_name" name="full_name" placeholder="e.g. Silva J.A." required>
+                        <input type="text" class="form-control form-control-custom" id="full_name" name="full_name" placeholder="" required>
                     </div>
                     <div class="col-md-6">
                         <label for="trade" class="form-label text-secondary small">Trade / Specialty</label>
-                        <input type="text" class="form-control form-control-custom" id="trade" name="trade" placeholder="e.g. Provost Guard" required>
+                        <input type="text" class="form-control form-control-custom" id="trade" name="trade" placeholder="" required>
                     </div>
                     <div class="col-md-6">
                         <label for="f1250" class="form-label text-secondary small fw-bold">F.1250 ID Card Number</label>
-                        <input type="text" class="form-control form-control-custom" id="f1250" name="f1250" placeholder="e.g. F-1250-9988" required>
+                        <input type="text" class="form-control form-control-custom" id="f1250" name="f1250" placeholder="" required>
                     </div>
                     <div class="col-md-6">
                         <label for="section" class="form-label text-secondary small">Section</label>
-                        <input type="text" class="form-control form-control-custom" id="section" name="section" placeholder="e.g. Security Section" required>
+                        <input type="text" class="form-control form-control-custom" id="section" name="section" placeholder="" required>
                     </div>
                     <div class="col-md-6">
                         <label for="appointment" class="form-label text-secondary small">Appointment</label>
-                        <input type="text" class="form-control form-control-custom" id="appointment" name="appointment" placeholder="e.g. Guard Commander" required>
+                        <input type="text" class="form-control form-control-custom" id="appointment" name="appointment" placeholder="" required>
                     </div>
                     <div class="col-md-6">
                         <label for="camp_id" class="form-label text-secondary small">Assigned Camp / Base</label>
@@ -156,7 +156,7 @@ include __DIR__ . '/../layout/header.php';
                     </div>
                     <div class="col-md-6">
                         <label for="contact_number" class="form-label text-secondary small">Contact Number</label>
-                        <input type="text" class="form-control form-control-custom" id="contact_number" name="contact_number" placeholder="e.g. +94771234567">
+                        <input type="text" class="form-control form-control-custom" id="contact_number" name="contact_number" placeholder="">
                     </div>
                 </div>
             </div>
@@ -297,6 +297,37 @@ include __DIR__ . '/../layout/header.php';
         }
     });
 </script>
+
+<?php if (Session::has('create_user_account_for')): 
+    $svcNum = Session::get('create_user_account_for');
+    Session::remove('create_user_account_for');
+?>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        Swal.fire({
+            title: 'Create User Account?',
+            text: 'Personnel profile for <?= htmlspecialchars($svcNum) ?> created successfully. Would you like to create a User Account for this personnel now?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: '<i class="fas fa-user-plus me-1"></i> Create User Account',
+            confirmButtonColor: '#0ea5e9',
+            cancelButtonText: 'Later',
+            cancelButtonColor: '#64748b',
+            background: '#ffffff',
+            customClass: {
+                popup: 'glass-card text-dark',
+                confirmButton: 'btn btn-primary px-4 py-2 small me-2',
+                cancelButton: 'btn btn-secondary px-4 py-2 small'
+            },
+            buttonsStyling: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = `${BASE_URL}/users?create_for=<?= urlencode($svcNum) ?>`;
+            }
+        });
+    });
+</script>
+<?php endif; ?>
 
 <?php
 include __DIR__ . '/../layout/footer.php';

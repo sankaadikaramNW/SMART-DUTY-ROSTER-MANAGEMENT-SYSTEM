@@ -90,7 +90,7 @@ class DutyAssignment {
     public static function getCalendarData($campId, $startDate, $endDate, $statusList = [], $extraFilters = []) {
         $db = Database::getInstance()->getConnection();
         
-        $sql = "SELECT a.*, rk.rank_name AS `rank`, rk.rank_short_name, p.initials, p.full_name, p.status AS personnel_status,
+        $sql = "SELECT a.*, rk.rank_name AS `rank`, rk.rank_short_name, p.initials, p.full_name, p.trade, p.status AS personnel_status,
                        pc.camp_name AS personnel_camp_name,
                        s.shift_name, s.start_time, s.end_time, 
                        t.duty_type_name, t.color_code, t.icon_class, t.duty_code,

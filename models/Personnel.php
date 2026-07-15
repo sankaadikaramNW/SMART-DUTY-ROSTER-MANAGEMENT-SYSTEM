@@ -171,7 +171,8 @@ class Personnel {
 
         $sql = "SELECT p.*, c.camp_name, rk.rank_name AS `rank`, rk.rank_short_name,
                        pos.effective_date AS posting_effective_date,
-                       pos_from.camp_name AS posting_from_camp_name
+                       pos_from.camp_name AS posting_from_camp_name,
+                       (SELECT COUNT(*) FROM users u WHERE u.service_number = p.service_number AND u.is_archived = 0) AS has_user_account
                 FROM personnel p 
                 LEFT JOIN camps c ON p.camp_id = c.camp_id 
                 LEFT JOIN ranks rk ON p.rank_id = rk.rank_id

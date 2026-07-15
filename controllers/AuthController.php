@@ -26,16 +26,16 @@ class AuthController {
             }
 
             if (!Security::validateServiceNumber($serviceNumber)) {
-                throw new Exception("Login username must be a valid Service Number (e.g., SLAF/AIR/301).");
+                throw new Exception("Login username must be a valid Username or Service Number.");
             }
 
             // Retrieve user details first (including inactive or locked status)
-            $user = User::getByServiceNumber($serviceNumber);
+            $user = User::getByUsername($serviceNumber);
 
             if (!$user) {
                 // Fail generic
                 Logger::loginAttempt($serviceNumber, 'Failed', 'User account does not exist.');
-                throw new Exception("Invalid Service Number or Password.");
+                throw new Exception("Invalid Username/Service Number or Password.");
             }
 
             // 1. Check if archived (both user or personnel)

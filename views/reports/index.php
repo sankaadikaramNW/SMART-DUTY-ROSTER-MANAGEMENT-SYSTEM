@@ -70,7 +70,7 @@ include __DIR__ . '/../layout/header.php';
                         <!-- Optional Airman Service Number -->
                         <div class="col-12">
                             <label for="service_number" class="form-label text-secondary small">Filter by Specific Service Number (Optional)</label>
-                            <input type="text" class="form-control form-control-custom" id="service_number" name="service_number" placeholder="e.g. 51837 or admin">
+                            <input type="text" class="form-control form-control-custom" id="service_number" name="service_number" placeholder="">
                         </div>
 
                         <!-- Export Type Selection -->

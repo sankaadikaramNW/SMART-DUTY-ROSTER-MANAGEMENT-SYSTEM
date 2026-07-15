@@ -94,7 +94,7 @@ class PersonnelController {
         try {
             Security::verifyCsrf();
 
-            $serviceNumber = strtoupper(Security::sanitize($_POST['service_number'] ?? ''));
+            $serviceNumber = trim(strtoupper(Security::sanitize($_POST['service_number'] ?? '')));
             $isAdmin = (strtolower($serviceNumber) === 'admin' || strtolower($serviceNumber) === 'sadmin');
             $rankId = !empty($_POST['rank_id']) ? (int)$_POST['rank_id'] : null;
             $initials = Security::sanitize($_POST['initials'] ?? '');
@@ -112,12 +112,13 @@ class PersonnelController {
             }
 
             if (!Security::validateServiceNumber($serviceNumber)) {
-                throw new Exception("Service Number must follow the format SLAF/BRANCH/NUMBER (e.g., SLAF/AIR/301).");
+                throw new Exception("Service Number must follow the format SLAF/BRANCH/NUMBER (e.g., SLAF/AIR/301) or letters, numbers, slash.");
             }
 
             Personnel::save($serviceNumber, $rankId, $initials, $fullName, $trade, $f1250, $section, $appointment, $campId, $contactNumber, $status, false);
 
             Session::set('success_message', "Personnel profile $serviceNumber created successfully.");
+            Session::set('create_user_account_for', $serviceNumber);
             Response::redirect('/personnel');
         } catch (Exception $e) {
             Session::set('error_message', $e->getMessage());

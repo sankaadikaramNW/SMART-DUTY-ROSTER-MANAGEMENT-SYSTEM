@@ -190,12 +190,19 @@ class AdminController {
 
             $userId = isset($_POST['user_id']) && $_POST['user_id'] !== '' ? (int)$_POST['user_id'] : null;
             $serviceNumber = Security::sanitize($_POST['service_number'] ?? '');
+            $username = Security::sanitize($_POST['username'] ?? '');
             $password = $_POST['password'] ?? '';
             $roleId = (int)($_POST['role_id'] ?? 0);
             $status = Security::sanitize($_POST['status'] ?? 'Active');
 
             if (empty($serviceNumber) || !$roleId) {
                 throw new Exception("Service number and role are required.");
+            }
+
+            // Suggest/fallback username
+            $username = trim($username);
+            if (empty($username)) {
+                $username = preg_replace('/[^A-Za-z0-9]/', '', $serviceNumber);
             }
 
             // Enforce location restrictions
@@ -211,6 +218,9 @@ class AdminController {
                     if ($existingUser && ((int)$existingUser['role_id'] === 1 || (int)$existingUser['role_id'] === 6)) {
                         throw new Exception("Unauthorized: You cannot modify Administrator or Super Admin accounts.");
                     }
+                    if (!empty($password)) {
+                        throw new Exception("Unauthorized: Warrant Officer IC cannot reset user passwords.");
+                    }
                 }
             }
 
@@ -218,7 +228,7 @@ class AdminController {
                 throw new Exception("Password is required for new accounts.");
             }
 
-            User::save($userId, $serviceNumber, $password, $roleId, $status);
+            User::save($userId, $serviceNumber, $username, $password, $roleId, $status);
 
             Session::set('success_message', "User account for '$serviceNumber' saved successfully.");
             Response::redirect('/users');
@@ -301,8 +311,8 @@ class AdminController {
         try {
             Security::verifyCsrf();
             $roleName = Session::get('role_name');
-            if ($roleName !== 'Administrator' && $roleName !== 'Super Admin') {
-                throw new Exception("Unauthorized: Only Administrator and Super Administrator can archive user accounts.");
+            if ($roleName !== 'Administrator' && $roleName !== 'Super Admin' && $roleName !== 'Warrant Officer IC') {
+                throw new Exception("Unauthorized: You do not have permissions to archive user accounts.");
             }
 
             $userId = (int)($_POST['user_id'] ?? 0);
@@ -310,6 +320,14 @@ class AdminController {
             if (!$userId || empty($reason)) {
                 throw new Exception("User ID and reason are required.");
             }
+
+            $user = User::getById($userId);
+            if (!$user) {
+                throw new Exception("User account not found.");
+            }
+
+            // Enforce location isolation
+            LocationMiddleware::validatePersonnel($user['service_number']);
 
             $adminServiceNum = Session::get('service_number');
             User::archive($userId, $reason, $adminServiceNum);
@@ -327,8 +345,8 @@ class AdminController {
         try {
             Security::verifyCsrf();
             $roleName = Session::get('role_name');
-            if ($roleName !== 'Administrator' && $roleName !== 'Super Admin') {
-                throw new Exception("Unauthorized: Only Administrator and Super Administrator can restore user accounts.");
+            if ($roleName !== 'Administrator' && $roleName !== 'Super Admin' && $roleName !== 'Warrant Officer IC') {
+                throw new Exception("Unauthorized: You do not have permissions to restore user accounts.");
             }
 
             $userId = (int)($_POST['user_id'] ?? 0);
@@ -336,6 +354,14 @@ class AdminController {
             if (!$userId || empty($reason)) {
                 throw new Exception("User ID and reason are required.");
             }
+
+            $user = User::getById($userId);
+            if (!$user) {
+                throw new Exception("User account not found.");
+            }
+
+            // Enforce location isolation
+            LocationMiddleware::validatePersonnel($user['service_number']);
 
             $adminServiceNum = Session::get('service_number');
             User::restore($userId, $reason, $adminServiceNum);

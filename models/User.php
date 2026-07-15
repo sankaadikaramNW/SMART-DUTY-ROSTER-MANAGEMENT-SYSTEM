@@ -5,8 +5,8 @@
 
 class User {
 
-    // Authenticate a user via service number and password check
-    public static function authenticate($serviceNumber, $password) {
+    // Authenticate a user via username/service number and password check
+    public static function authenticate($username, $password) {
         $db = Database::getInstance()->getConnection();
         $stmt = $db->prepare("
             SELECT u.*, r.role_name, p.camp_id, p.full_name, rk.rank_name AS `rank` 
@@ -14,9 +14,9 @@ class User {
             JOIN roles r ON u.role_id = r.role_id
             JOIN personnel p ON u.service_number = p.service_number
             LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
-            WHERE u.service_number = :service_number AND u.status = 'Active' AND p.status = 'Active'
+            WHERE (u.username = :login1 OR u.service_number = :login2) AND u.status = 'Active' AND p.status = 'Active'
         ");
-        $stmt->execute([':service_number' => $serviceNumber]);
+        $stmt->execute([':login1' => $username, ':login2' => $username]);
         $user = $stmt->fetch();
         
         if ($user && Security::verifyPassword($password, $user['password_hash'])) {
@@ -78,12 +78,34 @@ class User {
     }
 
     // Create or update user credentials and role access
-    public static function save($id, $serviceNumber, $password, $roleId, $status) {
+    public static function save($id, $serviceNumber, $username, $password, $roleId, $status) {
         $db = Database::getInstance()->getConnection();
+        
+        $username = trim($username);
+        if (empty($username)) {
+            $username = $serviceNumber;
+        }
+
+        // Validate uniqueness of username
+        $stmt = $db->prepare("SELECT COUNT(*) FROM users WHERE username = ? AND user_id != ? AND is_archived = 0");
+        $stmt->execute([$username, $id ?? 0]);
+        if ($stmt->fetchColumn() > 0) {
+            throw new Exception("Username is already taken by another account.");
+        }
+
+        // Prevent duplicate user accounts for the same personnel
+        if (!$id) {
+            $stmt = $db->prepare("SELECT COUNT(*) FROM users WHERE service_number = ? AND is_archived = 0");
+            $stmt->execute([$serviceNumber]);
+            if ($stmt->fetchColumn() > 0) {
+                throw new Exception("User account already exists for this personnel.");
+            }
+        }
         
         $prevData = $id ? self::getById($id) : null;
         $newData = [
             'service_number' => $serviceNumber,
+            'username' => $username,
             'role_id' => $roleId,
             'status' => $status
         ];
@@ -93,11 +115,12 @@ class User {
                 $hash = Security::hashPassword($password);
                 $stmt = $db->prepare("
                     UPDATE users 
-                    SET service_number = :service_number, password_hash = :hash, role_id = :role_id, status = :status 
+                    SET service_number = :service_number, username = :username, password_hash = :hash, role_id = :role_id, status = :status 
                     WHERE user_id = :user_id
                 ");
                 $stmt->execute([
                     ':service_number' => $serviceNumber,
+                    ':username' => $username,
                     ':hash' => $hash,
                     ':role_id' => $roleId,
                     ':status' => $status,
@@ -106,11 +129,12 @@ class User {
             } else {
                 $stmt = $db->prepare("
                     UPDATE users 
-                    SET service_number = :service_number, role_id = :role_id, status = :status 
+                    SET service_number = :service_number, username = :username, role_id = :role_id, status = :status 
                     WHERE user_id = :user_id
                 ");
                 $stmt->execute([
                     ':service_number' => $serviceNumber,
+                    ':username' => $username,
                     ':role_id' => $roleId,
                     ':status' => $status,
                     ':user_id' => $id
@@ -120,11 +144,12 @@ class User {
         } else {
             $hash = Security::hashPassword($password);
             $stmt = $db->prepare("
-                INSERT INTO users (service_number, password_hash, role_id, status) 
-                VALUES (:service_number, :hash, :role_id, :status)
+                INSERT INTO users (service_number, username, password_hash, role_id, status) 
+                VALUES (:service_number, :username, :hash, :role_id, :status)
             ");
             $stmt->execute([
                 ':service_number' => $serviceNumber,
+                ':username' => $username,
                 ':hash' => $hash,
                 ':role_id' => $roleId,
                 ':status' => $status
@@ -168,6 +193,22 @@ class User {
             WHERE u.service_number = :service_number
         ");
         $stmt->execute([':service_number' => $serviceNumber]);
+        return $stmt->fetch();
+    }
+
+    // Retrieve user by username or service number (includes inactive, locked, or archived)
+    public static function getByUsername($username) {
+        $db = Database::getInstance()->getConnection();
+        $stmt = $db->prepare("
+            SELECT u.*, r.role_name, p.camp_id, p.full_name, rk.rank_name AS `rank`, p.status AS personnel_status, p.is_archived AS personnel_is_archived, c.camp_name 
+            FROM users u
+            JOIN roles r ON u.role_id = r.role_id
+            JOIN personnel p ON u.service_number = p.service_number
+            LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
+            LEFT JOIN camps c ON p.camp_id = c.camp_id
+            WHERE u.username = :username1 OR u.service_number = :username2
+        ");
+        $stmt->execute([':username1' => $username, ':username2' => $username]);
         return $stmt->fetch();
     }
 

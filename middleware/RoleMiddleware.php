@@ -57,7 +57,7 @@ class RoleMiddleware {
                 '/transfers', '/transfers/view', '/transfers/create', '/transfers/edit', '/transfers/action', '/transfers/cancel',
                 '/rosters', '/rosters/create', '/rosters/save', '/rosters/view', '/rosters/calendar', '/rosters/calendar-data', '/rosters/timeline', '/rosters/conflict-check', '/rosters/action',
                 '/rosters/bulk-approve', '/rosters/bulk-reject', '/rosters/crew-history', '/rosters/audit-print',
-                '/users', '/users/save', '/users/status',
+                '/users', '/users/save', '/users/status', '/users/archive', '/users/restore',
                 '/reports', '/reports/generate', '/notifications', '/notifications/read',
                 '/leaves', '/leaves/save', '/leaves/calendar-data', '/dashboard/attendance-stats', '/leaves/report-return', '/leaves/grant-extension', '/leaves/edit', '/leaves/delete',
                 '/personnel/archived', '/users/archived',

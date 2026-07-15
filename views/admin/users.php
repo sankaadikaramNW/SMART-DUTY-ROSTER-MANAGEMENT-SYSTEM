@@ -23,6 +23,7 @@ include __DIR__ . '/../layout/header.php';
                 <thead>
                     <tr>
                         <th>Service Number</th>
+                        <th>Username</th>
                         <th>Rank & Name</th>
                         <th>Camp/Base</th>
                         <th>System Role</th>
@@ -33,12 +34,13 @@ include __DIR__ . '/../layout/header.php';
                 <tbody>
                     <?php if (empty($users)): ?>
                         <tr>
-                            <td colspan="6" class="text-center text-secondary py-4">No user accounts registered.</td>
+                            <td colspan="7" class="text-center text-secondary py-4">No user accounts registered.</td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($users as $u): ?>
                             <tr>
                                 <td class="fw-bold"><?= htmlspecialchars($u['service_number']) ?></td>
+                                <td class="text-info fw-bold"><?= htmlspecialchars($u['username'] ?? '') ?></td>
                                 <td>
                                     <span class="text-info font-monospace small"><?= htmlspecialchars($u['rank'] ?? 'No Rank') ?></span> 
                                     <?= htmlspecialchars($u['full_name']) ?>
@@ -75,7 +77,9 @@ include __DIR__ . '/../layout/header.php';
                                             <button type="button" class="btn btn-sm btn-custom btn-custom-warning py-1 px-2 me-1" onclick="openResetPasswordModal(<?= $u['user_id'] ?>, '<?= htmlspecialchars($u['service_number'], ENT_QUOTES, 'UTF-8') ?>')">
                                                 <i class="fas fa-key"></i> Reset
                                             </button>
-                                            
+                                        <?php endif; ?>
+
+                                        <?php if ($roleName === 'Administrator' || $roleName === 'Super Admin' || $roleName === 'Warrant Officer IC'): ?>
                                             <button type="button" class="btn btn-sm btn-custom btn-custom-danger py-1 px-2" onclick="confirmArchiveUser(<?= $u['user_id'] ?>, '<?= htmlspecialchars($u['service_number'], ENT_QUOTES, 'UTF-8') ?>')">
                                                 <i class="fas fa-box-archive"></i> Archive
                                             </button>
@@ -117,6 +121,13 @@ include __DIR__ . '/../layout/header.php';
                     <input type="text" class="form-control form-control-custom bg-light text-muted d-none" id="personnel_display" readonly>
                     <!-- Hidden field to hold selected service number -->
                     <input type="hidden" id="service_number_val" name="service_number" required>
+                    <!-- User Account exists warning message -->
+                    <div id="userExistsWarning" class="text-danger small mt-1" style="display: none;"><i class="fas fa-triangle-exclamation"></i> User account already exists.</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="username" class="form-label text-secondary small fw-bold">Username</label>
+                    <input type="text" class="form-control form-control-custom" id="username" name="username" placeholder="Suggested username (alphanumeric only)..." required pattern="[A-Za-z0-9]+" title="Must contain only letters and numbers (no slashes or special characters)">
                 </div>
                 
                 <div class="mb-3">
@@ -151,6 +162,7 @@ include __DIR__ . '/../layout/header.php';
             <div class="modal-footer">
                 <?php
                 $submitLabel = "Save User";
+                $submitId = "btnSaveUser";
                 $submitIcon = "fas fa-floppy-disk";
                 $cancelIcon = "fas fa-xmark";
                 include __DIR__ . '/../components/form-buttons.php';
@@ -170,6 +182,11 @@ include __DIR__ . '/../layout/header.php';
         const hiddenService = document.getElementById('service_number_val');
 
         searchInput.addEventListener('input', () => {
+            // Reset warnings
+            document.getElementById('userExistsWarning').style.display = 'none';
+            const saveBtn = document.getElementById('btnSaveUser');
+            if (saveBtn) saveBtn.disabled = false;
+
             const query = searchInput.value.trim();
             if (query.length < 2) {
                 resultsDiv.innerHTML = '';
@@ -192,6 +209,22 @@ include __DIR__ . '/../layout/header.php';
                                 hiddenService.value = item.service_number;
                                 resultsDiv.innerHTML = '';
                                 resultsDiv.style.display = 'none';
+
+                                // Suggest username
+                                const usernameField = document.getElementById('username');
+                                if (usernameField) {
+                                    usernameField.value = item.service_number.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+                                }
+
+                                // Check if user account already exists
+                                const existsWarning = document.getElementById('userExistsWarning');
+                                if (parseInt(item.has_user_account) > 0) {
+                                    existsWarning.style.display = 'block';
+                                    if (saveBtn) saveBtn.disabled = true;
+                                } else {
+                                    existsWarning.style.display = 'none';
+                                    if (saveBtn) saveBtn.disabled = false;
+                                }
                             });
                             resultsDiv.appendChild(btn);
                         });
@@ -220,18 +253,25 @@ include __DIR__ . '/../layout/header.php';
         const hiddenService = document.getElementById('service_number_val');
         const searchInput = document.getElementById('personnel_search');
 
+        // Reset warning state
+        document.getElementById('userExistsWarning').style.display = 'none';
+        const saveBtn = document.getElementById('btnSaveUser');
+        if (saveBtn) saveBtn.disabled = false;
+
         if (data) {
             searchWrapper.classList.add('d-none');
             displayInput.classList.remove('d-none');
             displayInput.value = `${data.service_number} - ${data.rank} ${data.full_name}`;
             hiddenService.value = data.service_number;
             searchInput.removeAttribute('required');
+            document.getElementById('username').value = data.username || '';
         } else {
             searchWrapper.classList.remove('d-none');
             displayInput.classList.add('d-none');
             displayInput.value = '';
             searchInput.value = '';
             hiddenService.value = '';
+            document.getElementById('username').value = '';
             searchInput.setAttribute('required', 'required');
         }
 
@@ -337,6 +377,50 @@ include __DIR__ . '/../layout/header.php';
         });
     }
 </script>
+
+<?php if (isset($_GET['create_for'])): ?>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const createFor = <?= json_encode($_GET['create_for']) ?>;
+        fetch(`${BASE_URL}/personnel/search?q=${encodeURIComponent(createFor)}`)
+            .then(res => res.json())
+            .then(data => {
+                const item = data.find(p => p.service_number === createFor);
+                if (item) {
+                    // Open the modal!
+                    openUserModal();
+                    
+                    const searchInput = document.getElementById('personnel_search');
+                    const hiddenService = document.getElementById('service_number_val');
+                    
+                    searchInput.value = `${item.rank} ${item.full_name} (${item.service_number})`;
+                    hiddenService.value = item.service_number;
+                    
+                    // Suggest username
+                    const usernameInput = document.getElementById('username');
+                    if (usernameInput) {
+                        usernameInput.value = item.service_number.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+                    }
+
+                    // Check if user account already exists
+                    const warning = document.getElementById('userExistsWarning');
+                    const submitBtn = document.getElementById('btnSaveUser');
+                    if (parseInt(item.has_user_account) > 0) {
+                        warning.style.display = 'block';
+                        if (submitBtn) {
+                            submitBtn.disabled = true;
+                        }
+                    } else {
+                        warning.style.display = 'none';
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                        }
+                    }
+                }
+            });
+    });
+</script>
+<?php endif; ?>
 
 <?php
 include __DIR__ . '/../layout/footer.php';

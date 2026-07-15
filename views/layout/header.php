@@ -197,8 +197,14 @@ if ($isLoggedIn && $serviceNum) {
                         <a class="sidebar-link <?= ($route ?? '') === '/personnel/archived' ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel/archived">
                             <i class="fas fa-box-archive text-warning"></i> Archived Personnel (Read Only)
                         </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/users' ? 'active' : '' ?>" href="<?= BASE_URL ?>/users">
+                            <i class="fas fa-user-shield text-info"></i> Active Users
+                        </a>
                         <a class="sidebar-link <?= ($route ?? '') === '/users/archived' ? 'active' : '' ?>" href="<?= BASE_URL ?>/users/archived">
-                            <i class="fas fa-user-lock text-warning"></i> Archived Users (Read Only)
+                            <i class="fas fa-user-lock text-warning"></i> Archived Users
+                        </a>
+                        <a class="sidebar-link <?= ($route ?? '') === '/users/locked' ? 'active' : '' ?>" href="<?= BASE_URL ?>/users/locked">
+                            <i class="fas fa-ban text-danger"></i> Locked Accounts
                         </a>
                         <a class="sidebar-link <?= ($route ?? '') === '/personnel/view' && ($_GET['service_number'] ?? '') === $serviceNum ? 'active' : '' ?>" href="<?= BASE_URL ?>/personnel/view?service_number=<?= urlencode($serviceNum) ?>">
                             <i class="fas fa-user-gear"></i> Profile
