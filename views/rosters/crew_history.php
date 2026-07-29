@@ -59,7 +59,7 @@ include __DIR__ . '/../layout/header.php';
                         <th style="width: 15%;">Action Timestamp</th>
                         <th style="width: 15%;">Action By</th>
                         <th style="width: 10%;">Action</th>
-                        <th style="width: 25%;">Roster & Watch Crew</th>
+                        <th style="width: 25%;">Roster Details</th>
                         <th style="width: 20%;">Directives / Remarks</th>
                         <th style="width: 15%;">Network & Client Info</th>
                     </tr>
@@ -103,9 +103,18 @@ include __DIR__ . '/../layout/header.php';
                                         <span class="badge px-2 py-0.5 rounded d-inline-flex align-items-center gap-1 small text-dark" style="background: <?= htmlspecialchars($log['color_code']) ?>1c; border: 1px solid <?= htmlspecialchars($log['color_code']) ?>44; color: <?= htmlspecialchars($log['color_code']) ?> !important; font-size: 0.7rem;">
                                             <i class="<?= htmlspecialchars($log['icon_class']) ?>"></i> <?= htmlspecialchars($log['duty_type_name']) ?>
                                         </span>
-                                        <span class="text-secondary small font-monospace" style="font-size: 0.72rem;">
-                                            <?= date('d M Y', strtotime($log['duty_date'])) ?> &bull; <?= htmlspecialchars($log['shift_name']) ?>
-                                        </span>
+                                         <span class="text-secondary small font-monospace" style="font-size: 0.72rem;">
+                                             <?php if (!empty($log['duty_start_datetime']) && !empty($log['duty_end_datetime'])): ?>
+                                                 <?php if (date('Y-m-d', strtotime($log['duty_start_datetime'])) !== date('Y-m-d', strtotime($log['duty_end_datetime']))): ?>
+                                                     <?= date('d-M H:i', strtotime($log['duty_start_datetime'])) ?> &rarr; 
+                                                     <?= date('d-M H:i', strtotime($log['duty_end_datetime'])) ?>
+                                                 <?php else: ?>
+                                                     <?= date('d M Y', strtotime($log['duty_date'])) ?> &bull; <?= htmlspecialchars($log['shift_name']) ?> (<?= date('H:i', strtotime($log['duty_start_datetime'])) ?> - <?= date('H:i', strtotime($log['duty_end_datetime'])) ?>)
+                                                 <?php endif; ?>
+                                             <?php else: ?>
+                                                 <?= date('d M Y', strtotime($log['duty_date'])) ?> &bull; <?= htmlspecialchars($log['shift_name']) ?>
+                                             <?php endif; ?>
+                                         </span>
                                     </div>
                                 </td>
                                 <td class="small text-secondary">

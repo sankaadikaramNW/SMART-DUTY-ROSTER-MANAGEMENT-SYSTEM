@@ -212,10 +212,15 @@ document.addEventListener('DOMContentLoaded', () => {
                             textColor = '#854d0e'; // dark text
                         }
 
+                        // Calculate start and end datetime
+                        const startDatetime = ev.duty_start_datetime.replace(' ', 'T');
+                        const endDatetime = ev.duty_end_datetime.replace(' ', 'T');
+
                         return {
                             id: ev.assignment_id,
                             title: ev.duty_type_name,
-                            start: ev.duty_date,
+                            start: startDatetime,
+                            end: endDatetime,
                             backgroundColor: bgColor,
                             borderColor: borderColor,
                             textColor: textColor,
@@ -239,9 +244,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             
                             switch (activeSummaryFilter) {
                                 case 'today':
-                                    return ev.start === todayYmd;
+                                    return props.duty_date === todayYmd;
                                 case 'upcoming':
-                                    return ev.start > todayYmd;
+                                    return props.duty_date > todayYmd;
                                 case 'pending':
                                     return props.status === 'Pending' || props.roster_status === 'Submitted';
                                 case 'completed':
@@ -287,8 +292,18 @@ document.addEventListener('DOMContentLoaded', () => {
         eventDidMount: function(info) {
             const ev = info.event.extendedProps;
             const statusLabel = ev.hasConflict ? '⚠️ Duplicate Assignment / Conflict' : ev.personnel_status;
+            
+            const startHour = ev.duty_start_datetime.substring(11, 16);
+            const endHour = ev.duty_end_datetime.substring(11, 16);
+            let timeRangeText = '';
+            if (ev.duty_start_datetime.substring(0, 10) !== ev.duty_end_datetime.substring(0, 10)) {
+                timeRangeText = `${ev.duty_start_datetime.substring(0, 10)} ${startHour} → ${ev.duty_end_datetime.substring(0, 10)} ${endHour}`;
+            } else {
+                timeRangeText = `${ev.duty_start_datetime.substring(0, 10)} ${startHour} → ${endHour}`;
+            }
+
             const tooltipTitle = `${ev.duty_type_name} (${ev.shift_name})\n` +
-                                 `Time: ${ev.start_time.substring(0, 5)} - ${ev.end_time.substring(0, 5)}\n` +
+                                 `Time: ${timeRangeText}\n` +
                                  `Personnel: ${ev.rank} ${ev.full_name}\n` +
                                  `Status: ${statusLabel}`;
 
@@ -298,10 +313,10 @@ document.addEventListener('DOMContentLoaded', () => {
             new bootstrap.Tooltip(info.el);
         },
         dateClick: function(info) {
-            showDayCrewTimeline(info.dateStr);
+            showDayCrewTimeline(info.dateStr.substring(0, 10));
         },
         eventClick: function(info) {
-            showDayCrewTimeline(info.event.startStr);
+            showDayCrewTimeline(info.event.startStr.substring(0, 10));
         }
     });
 
@@ -372,8 +387,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let today = 0, upcoming = 0, pending = 0, completed = 0, rejected = 0, cancelled = 0, conflict = 0;
 
         events.forEach(ev => {
-            const start = ev.start;
             const props = ev.extendedProps;
+            const start = props.duty_date;
             
             if (start === todayYmd) today++;
             if (start > todayYmd) upcoming++;
@@ -411,8 +426,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Group by shift start time
-        dayEvents.sort((a, b) => a.start_time.localeCompare(b.start_time));
+        // Group by shift start datetime
+        dayEvents.sort((a, b) => a.duty_start_datetime.localeCompare(b.duty_start_datetime));
 
         let htmlContent = `
             <div class="text-start mt-3">
@@ -466,7 +481,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="badge bg-opacity-25 border px-2.5 py-0.5 rounded small" style="background-color: ${ev.color_code}22; color: ${ev.color_code}; border-color: ${ev.color_code}44;">
                                 <i class="${ev.icon_class} me-1"></i> ${ev.duty_type_name}
                             </span>
-                            <span class="text-secondary small font-monospace"><i class="far fa-clock"></i> ${ev.start_time.substring(0, 5)} - ${ev.end_time.substring(0, 5)} (${ev.shift_name})</span>
+                            <span class="text-secondary small font-monospace"><i class="far fa-clock"></i> ${
+                                ev.duty_start_datetime.substring(0, 10) !== ev.duty_end_datetime.substring(0, 10) ?
+                                `${ev.duty_start_datetime.substring(5, 10)} ${ev.duty_start_datetime.substring(11, 16)} → ${ev.duty_end_datetime.substring(5, 10)} ${ev.duty_end_datetime.substring(11, 16)}` :
+                                `${ev.duty_start_datetime.substring(11, 16)} - ${ev.duty_end_datetime.substring(11, 16)}`
+                            } (${ev.shift_name})</span>
                             ${conflictWarning}
                         </div>
                         <div class="mt-2 text-dark">

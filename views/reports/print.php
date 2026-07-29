@@ -102,7 +102,15 @@
                                     </td>
                                     <td><span class="badge d-inline-flex align-items-center gap-1" style="background-color: <?= htmlspecialchars($row['color_code']) ?>; color: #fff; border: 1px solid rgba(0,0,0,0.15);"><i class="<?= htmlspecialchars($row['icon_class']) ?>"></i> <?= htmlspecialchars($row['duty_type_name']) ?></span></td>
                                     <td><?= htmlspecialchars($row['shift_name']) ?></td>
-                                    <td class="font-monospace small"><?= htmlspecialchars(date('H:i', strtotime($row['start_time']))) ?> - <?= htmlspecialchars(date('H:i', strtotime($row['end_time']))) ?></td>
+                                     <td class="font-monospace small">
+                                          <?php if (date('Y-m-d', strtotime($row['duty_start_datetime'])) !== date('Y-m-d', strtotime($row['duty_end_datetime']))): ?>
+                                              <?= date('d-M H:i', strtotime($row['duty_start_datetime'])) ?> &rarr; 
+                                              <?= date('d-M H:i', strtotime($row['duty_end_datetime'])) ?>
+                                          <?php else: ?>
+                                              <?= date('H:i', strtotime($row['duty_start_datetime'])) ?> - <?= date('H:i', strtotime($row['duty_end_datetime'])) ?>
+                                          <?php endif; ?>
+                                          (<?= (float)$row['duration_hours'] ?> hrs)
+                                      </td>
                                     <td><?= htmlspecialchars($row['priority_level']) ?></td>
                                 </tr>
                             <?php endforeach; ?>

@@ -300,10 +300,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     allRawAssignments = data;
 
-                    // Group by roster_id | duty_date | shift_id | duty_type_id
+                    // Group by roster_id | duty_date | shift_id | duty_type_id | timings
                     const crews = {};
                     data.forEach(item => {
-                        const key = `${item.roster_id}-${item.duty_date}-${item.shift_id}-${item.duty_type_id}`;
+                        const key = `${item.roster_id}-${item.duty_date}-${item.shift_id}-${item.duty_type_id}-${item.duty_start_datetime}-${item.duty_end_datetime}`;
                         if (!crews[key]) {
                             crews[key] = {
                                 crew_id: key,
@@ -312,6 +312,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 duty_date: item.duty_date,
                                 shift_id: item.shift_id,
                                 shift_name: item.shift_name,
+                                duty_start_datetime: item.duty_start_datetime,
+                                duty_end_datetime: item.duty_end_datetime,
+                                duty_duration_hours: item.duty_duration_hours,
                                 start_time: item.start_time,
                                 end_time: item.end_time,
                                 duty_type_id: item.duty_type_id,
@@ -350,10 +353,15 @@ document.addEventListener('DOMContentLoaded', () => {
                             textColor = '#854d0e';
                         }
 
+                        // Calculate start and end datetime
+                        const startDatetime = crew.duty_start_datetime.replace(' ', 'T');
+                        const endDatetime = crew.duty_end_datetime.replace(' ', 'T');
+
                         return {
                             id: crew.crew_id,
                             title: `${crew.duty_type_name} (${crew.shift_name}) [${crew.personnel.length}]`,
-                            start: crew.duty_date,
+                            start: startDatetime,
+                            end: endDatetime,
                             backgroundColor: bgColor,
                             borderColor: borderColor,
                             textColor: textColor,
@@ -397,7 +405,21 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('mCrewId').textContent = 'CREW-' + ev.crew_id;
             document.getElementById('mCrewDate').textContent = formatDateStr(ev.duty_date);
             document.getElementById('mCrewType').textContent = ev.duty_type_name;
-            document.getElementById('mCrewShift').textContent = `${ev.shift_name} (${ev.start_time.substring(0,5)} - ${ev.end_time.substring(0,5)})`;
+            
+            // Format timings, check if cross midnight
+            const startHour = ev.duty_start_datetime.substring(11, 16);
+            const endHour = ev.duty_end_datetime.substring(11, 16);
+            let shiftText = '';
+            if (ev.duty_start_datetime.substring(0, 10) !== ev.duty_end_datetime.substring(0, 10)) {
+                const nextDateFormatted = formatDateStr(ev.duty_end_datetime.substring(0, 10));
+                // Extract "Month Day" part from "Weekday, Month Day, Year"
+                const parts = nextDateFormatted.split(',');
+                const nextDateShort = parts.length > 1 ? parts[1].trim() : nextDateFormatted;
+                shiftText = `${ev.shift_name} (${startHour} hrs → ${nextDateShort} ${endHour} hrs)`;
+            } else {
+                shiftText = `${ev.shift_name} (${startHour} - ${endHour})`;
+            }
+            document.getElementById('mCrewShift').textContent = shiftText;
             document.getElementById('mCrewLocation').textContent = ev.camp_name;
             document.getElementById('mRosterName').textContent = ev.roster_name + ' (ID: #' + ev.roster_id + ')';
             

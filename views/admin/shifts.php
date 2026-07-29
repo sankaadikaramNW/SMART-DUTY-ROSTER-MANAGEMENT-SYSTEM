@@ -21,10 +21,9 @@ include __DIR__ . '/../layout/header.php';
                 <thead>
                     <tr>
                         <th>Shift Name</th>
-                        <th>Start Time</th>
-                        <th>End Time</th>
-                        <th>Duration (hrs)</th>
+                        <th>Shift Code</th>
                         <th>Description</th>
+                        <th>Display Order</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -32,16 +31,15 @@ include __DIR__ . '/../layout/header.php';
                 <tbody>
                     <?php if (empty($shifts)): ?>
                         <tr>
-                            <td colspan="7" class="text-center text-secondary py-4">No duty shifts registered.</td>
+                            <td colspan="6" class="text-center text-secondary py-4">No duty shifts registered.</td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($shifts as $s): ?>
                             <tr>
                                 <td class="fw-bold text-info"><?= htmlspecialchars($s['shift_name']) ?></td>
-                                <td class="font-monospace"><?= htmlspecialchars($s['start_time']) ?></td>
-                                <td class="font-monospace"><?= htmlspecialchars($s['end_time']) ?></td>
-                                <td><?= number_format($s['duration_hours'], 2) ?></td>
+                                <td class="font-monospace text-warning fw-bold"><?= htmlspecialchars($s['shift_code'] ?? 'N/A') ?></td>
                                 <td class="small text-secondary"><?= htmlspecialchars($s['description'] ?? 'N/A') ?></td>
+                                <td class="fw-semibold text-center"><?= (int)$s['display_order'] ?></td>
                                 <td>
                                     <span class="badge rounded-pill bg-<?= $s['status'] === 'Active' ? 'success' : 'secondary' ?> bg-opacity-25 border border-<?= $s['status'] === 'Active' ? 'success' : 'secondary' ?> border-opacity-25 text-<?= $s['status'] === 'Active' ? 'success' : 'secondary' ?> px-2">
                                         <?= $s['status'] ?>
@@ -74,23 +72,19 @@ include __DIR__ . '/../layout/header.php';
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="mb-3">
-                    <label for="shift_name" class="form-label text-secondary small">Shift Name</label>
-                    <input type="text" class="form-control form-control-custom" id="shift_name" name="shift_name" required placeholder="e.g. Night Shift">
-                </div>
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
-                        <label for="start_time" class="form-label text-secondary small">Start Time</label>
-                        <input type="time" class="form-control form-control-custom" id="start_time" name="start_time" required>
+                        <label for="shift_name" class="form-label text-secondary small">Shift Name</label>
+                        <input type="text" class="form-control form-control-custom" id="shift_name" name="shift_name" required placeholder="e.g. Night Shift">
                     </div>
                     <div class="col-md-6">
-                        <label for="end_time" class="form-label text-secondary small">End Time</label>
-                        <input type="time" class="form-control form-control-custom" id="end_time" name="end_time" required>
+                        <label for="shift_code" class="form-label text-secondary small">Shift Code</label>
+                        <input type="text" class="form-control form-control-custom" id="shift_code" name="shift_code" required placeholder="e.g. SH-NIGHT">
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label for="duration_hours" class="form-label text-secondary small">Duration (Hours)</label>
-                    <input type="number" step="0.25" class="form-control form-control-custom" id="duration_hours" name="duration_hours" required placeholder="e.g. 8">
+                    <label for="display_order" class="form-label text-secondary small">Display Order</label>
+                    <input type="number" class="form-control form-control-custom" id="display_order" name="display_order" required value="0" min="0">
                 </div>
                 <div class="mb-3">
                     <label for="description" class="form-label text-secondary small">Description</label>
@@ -125,9 +119,8 @@ include __DIR__ . '/../layout/header.php';
     function openShiftModal(data = null) {
         document.getElementById('shift_id').value = data ? data.shift_id : '';
         document.getElementById('shift_name').value = data ? data.shift_name : '';
-        document.getElementById('start_time').value = data ? data.start_time : '';
-        document.getElementById('end_time').value = data ? data.end_time : '';
-        document.getElementById('duration_hours').value = data ? data.duration_hours : '';
+        document.getElementById('shift_code').value = data ? (data.shift_code || '') : '';
+        document.getElementById('display_order').value = data ? (data.display_order || 0) : 0;
         document.getElementById('description').value = data ? (data.description || '') : '';
         document.getElementById('status').value = data ? data.status : 'Active';
 

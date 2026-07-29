@@ -155,10 +155,10 @@ if ($isLoggedIn && $serviceNum) {
                         <!-- ROSTER OPERATIONS -->
                         <div class="sidebar-group-title">Roster Operations</div>
                         <a class="sidebar-link <?= ($route ?? '') === '/rosters/approve' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters/approve">
-                            <i class="fas fa-stamp text-warning"></i> Pending Duty Crew Approvals
+                            <i class="fas fa-stamp text-warning"></i> Pending Duty Roster Approvals
                         </a>
                         <a class="sidebar-link <?= ($route ?? '') === '/rosters' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters">
-                            <i class="fas fa-clipboard-list text-success"></i> Approved Duty Crews
+                            <i class="fas fa-clipboard-list text-success"></i> Approved Duty Rosters
                         </a>
                         <a class="sidebar-link <?= ($route ?? '') === '/rosters/calendar' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters/calendar">
                             <i class="fas fa-calendar-week"></i> Duty Calendar

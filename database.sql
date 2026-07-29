@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS `personnel` (
   `trade` VARCHAR(100) NOT NULL,
   `camp_id` INT NOT NULL,
   `contact_number` VARCHAR(30) NULL,
-  `email` VARCHAR(150) UNIQUE NOT NULL,
+  `email` VARCHAR(150) UNIQUE NULL,
   `status` ENUM('Active', 'Inactive', 'Temporary Duty', 'Leave') DEFAULT 'Active',
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -103,13 +103,16 @@ CREATE TABLE IF NOT EXISTS `postings` (
 CREATE TABLE IF NOT EXISTS `shifts` (
   `shift_id` INT AUTO_INCREMENT PRIMARY KEY,
   `shift_name` VARCHAR(100) NOT NULL,
-  `start_time` TIME NOT NULL,
-  `end_time` TIME NOT NULL,
-  `duration_hours` DECIMAL(4,2) NOT NULL,
+  `shift_code` VARCHAR(50) NULL,
   `description` VARCHAR(255) NULL,
+  `display_order` INT DEFAULT 0,
   `status` ENUM('Active', 'Inactive') DEFAULT 'Active',
+  `created_by` INT NULL,
+  `updated_by` INT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (`created_by`) REFERENCES `users` (`user_id`),
+  FOREIGN KEY (`updated_by`) REFERENCES `users` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -150,6 +153,9 @@ CREATE TABLE IF NOT EXISTS `duty_assignments` (
   `assignment_id` INT AUTO_INCREMENT PRIMARY KEY,
   `roster_id` INT NOT NULL,
   `duty_date` DATE NOT NULL,
+  `duty_start_datetime` DATETIME NOT NULL,
+  `duty_end_datetime` DATETIME NOT NULL,
+  `duty_duration_hours` DECIMAL(5,2) NOT NULL,
   `duty_type_id` INT NOT NULL,
   `shift_id` INT NOT NULL,
   `service_number` VARCHAR(30) NOT NULL,
@@ -248,11 +254,11 @@ INSERT INTO `roles` (`role_id`, `role_name`, `description`) VALUES
 (6, 'Super Admin', 'Super Admin with absolute privileges, including immutable log auditing.');
 
 -- Seed Shifts
-INSERT INTO `shifts` (`shift_id`, `shift_name`, `start_time`, `end_time`, `duration_hours`, `description`, `status`) VALUES
-(1, 'Morning Shift', '06:00:00', '14:00:00', 8.00, 'Regular morning watch', 'Active'),
-(2, 'Afternoon Shift', '14:00:00', '22:00:00', 8.00, 'Regular afternoon watch', 'Active'),
-(3, 'Night Shift', '22:00:00', '06:00:00', 8.00, 'Overnight watch', 'Active'),
-(4, '24 Hour Duty', '08:00:00', '08:00:00', 24.00, 'Full day watch duty rotation', 'Active');
+INSERT INTO `shifts` (`shift_id`, `shift_name`, `shift_code`, `description`, `display_order`, `status`) VALUES
+(1, 'Morning Shift', 'SH-MORNING', 'Regular morning watch', 0, 'Active'),
+(2, 'Afternoon Shift', 'SH-AFTERNOON', 'Regular afternoon watch', 0, 'Active'),
+(3, 'Night Shift', 'SH-NIGHT', 'Overnight watch', 0, 'Active'),
+(4, '24 Hour Duty', 'SH-24HRS', 'Full day watch duty rotation', 0, 'Active');
 
 -- Seed Duty Types
 INSERT INTO `duty_types` (`duty_type_id`, `duty_type_name`, `description`, `status`) VALUES

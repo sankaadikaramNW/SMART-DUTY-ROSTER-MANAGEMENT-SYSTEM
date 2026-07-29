@@ -119,20 +119,31 @@ include __DIR__ . '/../layout/header.php';
                         `;
 
                         list.forEach(as => {
-                            groupContent += `
-                                <div class="col">
-                                    <div class="glass-card p-3 d-flex align-items-center justify-content-between">
-                                        <div>
-                                            <div class="fw-bold text-dark">${as.rank} ${as.full_name}</div>
-                                            <div class="text-secondary font-monospace" style="font-size: 0.8rem;"><i class="fas fa-hashtag"></i> ${as.service_number}</div>
-                                            <div class="small text-muted mt-2"><i class="fas fa-clock"></i> ${as.shift_name} (${as.start_time.substring(0, 5)} - ${as.end_time.substring(0, 5)})</div>
-                                        </div>
-                                        <div class="text-end">
-                                            <span class="badge bg-primary bg-opacity-25 border border-primary border-opacity-25 text-info px-3 py-1.5 rounded">${as.duty_type_name}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
+                             const startHour = as.duty_start_datetime.substring(11, 16);
+                             const endHour = as.duty_end_datetime.substring(11, 16);
+                             let timingsText = '';
+                             if (as.duty_start_datetime.substring(0, 10) !== as.duty_end_datetime.substring(0, 10)) {
+                                 const nextDateFormatted = new Date(as.duty_end_datetime.replace(' ', 'T')).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                                 const startDateFormatted = new Date(as.duty_start_datetime.replace(' ', 'T')).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                                 timingsText = `${startDateFormatted} ${startHour} &rarr; ${nextDateFormatted} ${endHour}`;
+                             } else {
+                                 timingsText = `${startHour} - ${endHour}`;
+                             }
+
+                             groupContent += `
+                                 <div class="col">
+                                     <div class="glass-card p-3 d-flex align-items-center justify-content-between">
+                                         <div>
+                                             <div class="fw-bold text-dark">${as.rank} ${as.full_name}</div>
+                                             <div class="text-secondary font-monospace" style="font-size: 0.8rem;"><i class="fas fa-hashtag"></i> ${as.service_number}</div>
+                                             <div class="small text-muted mt-2"><i class="fas fa-clock"></i> ${as.shift_name} (${timingsText})</div>
+                                         </div>
+                                         <div class="text-end">
+                                             <span class="badge bg-primary bg-opacity-25 border border-primary border-opacity-25 text-info px-3 py-1.5 rounded">${as.duty_type_name}</span>
+                                         </div>
+                                     </div>
+                                 </div>
+                             `;
                         });
 
                         groupContent += `

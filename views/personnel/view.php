@@ -7,9 +7,15 @@ include __DIR__ . '/../layout/header.php';
         <p class="text-secondary">View detailed airman record and posting histories.</p>
     </div>
     <div class="col-md-6 text-md-end">
-        <a href="<?= BASE_URL ?>/personnel" class="btn btn-custom btn-custom-secondary">
-            <i class="fas fa-arrow-left"></i> Back to List
-        </a>
+        <?php if ($roleName !== 'Airman'): ?>
+            <a href="<?= BASE_URL ?>/personnel" class="btn btn-custom btn-custom-secondary">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        <?php else: ?>
+            <a href="<?= BASE_URL ?>/dashboard" class="btn btn-custom btn-custom-secondary">
+                <i class="fas fa-home"></i> Back to Dashboard
+            </a>
+        <?php endif; ?>
     </div>
 </div>
 

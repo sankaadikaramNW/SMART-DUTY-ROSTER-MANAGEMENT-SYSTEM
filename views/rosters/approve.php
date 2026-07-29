@@ -6,7 +6,7 @@ include __DIR__ . '/../layout/header.php';
 <div class="row mb-4 align-items-center animate-fade-in">
     <div class="col-md-8 col-12">
         <h2 class="fw-bold mb-1 gradient-text"><i class="fas fa-stamp"></i> Roster Duty Approvals</h2>
-        <p class="text-secondary mb-0">Perform bulk crew reviews, inspect personnel warnings, and authorize guard duty rosters.</p>
+        <p class="text-secondary mb-0">Perform bulk roster reviews, inspect personnel warnings, and authorize guard duty rosters.</p>
     </div>
     <div class="col-md-4 col-12 text-md-end mt-2 mt-md-0">
         <a href="<?= BASE_URL ?>/rosters/calendar" class="btn btn-custom btn-custom-secondary btn-sm">
@@ -20,8 +20,8 @@ include __DIR__ . '/../layout/header.php';
         <div class="text-success mb-3" style="font-size: 3.5rem;">
             <i class="fas fa-circle-check"></i>
         </div>
-        <h4 class="fw-bold text-dark">No Pending Duty Crews</h4>
-        <p class="text-secondary">All submitted duty rosters and guard crews have been processed.</p>
+        <h4 class="fw-bold text-dark">No Pending Duty Rosters</h4>
+        <p class="text-secondary">All submitted duty rosters have been processed.</p>
         <a href="<?= BASE_URL ?>/dashboard" class="btn btn-custom btn-custom-primary mt-2 px-4 py-2">
             <i class="fas fa-chart-line me-1"></i> Go to Dashboard
         </a>
@@ -54,7 +54,7 @@ include __DIR__ . '/../layout/header.php';
                     <tr>
                         <th style="width: 3%;"></th> <!-- Checkbox -->
                         <th style="width: 3%;"></th> <!-- Accordion Toggle -->
-                        <th style="width: 14%;">Crew ID</th>
+                        <th style="width: 14%;">Roster ID</th>
                         <th style="width: 10%;">Duty Date</th>
                         <th style="width: 10%;">Shift</th>
                         <th style="width: 12%;">Duty Type</th>
@@ -80,13 +80,20 @@ include __DIR__ . '/../layout/header.php';
                                 </button>
                             </td>
                             <!-- Crew ID -->
-                            <td class="font-monospace text-primary fw-bold" style="font-size:0.75rem;">CREW-<?= htmlspecialchars($key) ?></td>
+                            <td class="font-monospace text-primary fw-bold" style="font-size:0.75rem;">ROSTER-<?= htmlspecialchars($key) ?></td>
                             <!-- Duty Date -->
                             <td class="fw-semibold text-dark"><?= date('D, d M Y', strtotime($crew['duty_date'])) ?></td>
                             <!-- Shift -->
                             <td>
                                 <span class="fw-semibold text-dark"><?= htmlspecialchars($crew['shift_name']) ?></span>
-                                <div class="text-secondary" style="font-size:0.72rem;"><?= substr($crew['start_time'], 0, 5) ?> - <?= substr($crew['end_time'], 0, 5) ?></div>
+                                <div class="text-secondary" style="font-size:0.72rem;">
+                                    <?php if (date('Y-m-d', strtotime($crew['duty_start_datetime'])) !== date('Y-m-d', strtotime($crew['duty_end_datetime']))): ?>
+                                        <?= date('d-M H:i', strtotime($crew['duty_start_datetime'])) ?> &rarr; 
+                                        <?= date('d-M H:i', strtotime($crew['duty_end_datetime'])) ?>
+                                    <?php else: ?>
+                                        <?= date('H:i', strtotime($crew['duty_start_datetime'])) ?> - <?= date('H:i', strtotime($crew['duty_end_datetime'])) ?>
+                                    <?php endif; ?>
+                                </div>
                             </td>
                             <!-- Duty Type -->
                             <td>
@@ -131,7 +138,7 @@ include __DIR__ . '/../layout/header.php';
                         <tr class="crew-detail-row bg-light" id="detail-<?= htmlspecialchars($key) ?>" style="display: none;">
                             <td colspan="11" class="p-3">
                                 <div class="p-3 rounded border border-light bg-white bg-opacity-75 shadow-sm">
-                                    <h6 class="fw-bold text-primary mb-2.5"><i class="fas fa-users-gear me-1"></i> Crew Personnel Roster Details</h6>
+                                    <h6 class="fw-bold text-primary mb-2.5"><i class="fas fa-users-gear me-1"></i> Roster Personnel Details</h6>
                                     
                                     <div class="table-responsive">
                                         <table class="table table-hover table-bordered table-sm small mb-0 align-middle text-dark">
@@ -253,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selected.length === 0) {
             Swal.fire({
                 title: 'No Selection',
-                text: 'Please select at least one duty crew to approve.',
+                text: 'Please select at least one duty roster to approve.',
                 icon: 'warning',
                 confirmButtonColor: '#0ea5e9'
             });
@@ -261,8 +268,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         Swal.fire({
-            title: 'Bulk Approve Crews',
-            text: `Are you sure you want to approve the selected ${selected.length} duty crew(s)? This will publish their watch assignments immediately.`,
+            title: 'Bulk Approve Rosters',
+            text: `Are you sure you want to approve the selected ${selected.length} duty roster(s)? This will publish their watch assignments immediately.`,
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#10b981',
@@ -304,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (data.success) {
                         Swal.fire({
                             title: 'Success',
-                            text: data.message || 'Duty crews approved and published successfully.',
+                            text: data.message || 'Duty rosters approved and published successfully.',
                             icon: 'success',
                             confirmButtonColor: '#10b981'
                         }).then(() => {
@@ -329,7 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selected.length === 0) {
             Swal.fire({
                 title: 'No Selection',
-                text: 'Please select at least one duty crew to reject.',
+                text: 'Please select at least one duty roster to reject.',
                 icon: 'warning',
                 confirmButtonColor: '#0ea5e9'
             });
@@ -337,8 +344,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         Swal.fire({
-            title: 'Bulk Reject Crews',
-            text: `Are you sure you want to reject the selected ${selected.length} duty crew(s)? Rejection remarks are mandatory.`,
+            title: 'Bulk Reject Rosters',
+            text: `Are you sure you want to reject the selected ${selected.length} duty roster(s)? Rejection remarks are mandatory.`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ef4444',
@@ -382,7 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (data.success) {
                         Swal.fire({
                             title: 'Returned',
-                            text: data.message || 'Selected duty crews have been returned to SNCO.',
+                            text: data.message || 'Selected duty rosters have been returned to SNCO.',
                             icon: 'info',
                             confirmButtonColor: '#0ea5e9'
                         }).then(() => {

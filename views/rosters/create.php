@@ -57,11 +57,13 @@ include __DIR__ . '/../layout/header.php';
                     <table class="table-custom align-middle" id="assignmentsTable">
                         <thead>
                             <tr>
-                                <th style="width: 10%;">Date</th>
-                                <th style="width: 12%;">Shift Rotation</th>
-                                <th style="width: 16%;">Duty Type</th>
-                                <th style="width: 44%;">Assigned Personnel</th>
-                                <th style="width: 14%;">Remarks</th>
+                                <th style="width: 12%;">Shift Name</th>
+                                <th style="width: 18%;">Duty Start Date & Time</th>
+                                <th style="width: 18%;">Duty End Date & Time</th>
+                                <th style="width: 10%;">Duration</th>
+                                <th style="width: 12%;">Duty Type</th>
+                                <th style="width: 20%;">Assigned Personnel</th>
+                                <th style="width: 8%;">Remarks</th>
                                 <th style="width: 4%;"></th>
                             </tr>
                         </thead>
@@ -72,14 +74,21 @@ include __DIR__ . '/../layout/header.php';
                                 <?php foreach ($assignments as $index => $as): ?>
                                     <tr class="assignment-row" data-index="<?= $index ?>">
                                         <td>
-                                            <input type="date" class="form-control form-control-custom row-date" value="<?= htmlspecialchars($as['duty_date']) ?>" required>
-                                        </td>
-                                        <td>
                                             <select class="form-select form-control-custom row-shift" required>
                                                 <?php foreach ($shifts as $s): ?>
                                                     <option value="<?= $s['shift_id'] ?>" <?= (int)$as['shift_id'] === (int)$s['shift_id'] ? 'selected' : '' ?>><?= htmlspecialchars($s['shift_name']) ?></option>
                                                 <?php endforeach; ?>
                                             </select>
+                                        </td>
+                                        <td>
+                                            <input type="datetime-local" class="form-control form-control-custom row-start-dt" value="<?= htmlspecialchars(date('Y-m-d\TH:i', strtotime($as['duty_start_datetime']))) ?>" required>
+                                        </td>
+                                        <td>
+                                            <input type="datetime-local" class="form-control form-control-custom row-end-dt" value="<?= htmlspecialchars(date('Y-m-d\TH:i', strtotime($as['duty_end_datetime']))) ?>" required>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control form-control-custom row-duration" value="<?= isset($as['duration_hours']) ? htmlspecialchars((float)$as['duration_hours'] . ' Hours') : '' ?>" readonly style="background-color: rgba(0,0,0,0.03); cursor: not-allowed;">
+                                            <div class="row-live-preview mt-1 small text-info font-monospace" style="font-size:0.72rem; line-height: 1.2;"></div>
                                         </td>
                                         <td>
                                             <select class="form-select form-control-custom row-duty-type" required>
@@ -188,6 +197,49 @@ include __DIR__ . '/../layout/header.php';
             }
         }
 
+        function calculateRowDuration(row) {
+            const startInput = row.querySelector('.row-start-dt');
+            const endInput = row.querySelector('.row-end-dt');
+            const durationInput = row.querySelector('.row-duration');
+            const previewDiv = row.querySelector('.row-live-preview');
+            const shiftSelect = row.querySelector('.row-shift');
+            
+            const startVal = startInput.value;
+            const endVal = endInput.value;
+            const shiftName = shiftSelect.options[shiftSelect.selectedIndex] ? shiftSelect.options[shiftSelect.selectedIndex].text : '';
+
+            if (startVal && endVal) {
+                const startD = new Date(startVal);
+                const endD = new Date(endVal);
+                const diffMs = endD - startD;
+                
+                if (diffMs > 0) {
+                    const diffHrs = diffMs / (1000 * 60 * 60);
+                    const formattedHrs = diffHrs % 1 === 0 ? diffHrs : diffHrs.toFixed(1);
+                    durationInput.value = `${formattedHrs} Hours`;
+
+                    // Format dates nicely: 15-Aug-2026 22:00
+                    const pad = (n) => String(n).padStart(2, '0');
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    
+                    const formatDt = (d) => {
+                        return `${pad(d.getDate())}-${months[d.getMonth()]}-${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                    };
+                    
+                    const startF = formatDt(startD);
+                    const endF = formatDt(endD);
+                    
+                    previewDiv.innerHTML = `<span class="text-success"><i class="fas fa-circle-check"></i> ${shiftName}: ${startF} hrs → ${endF} hrs (${formattedHrs} Hours)</span>`;
+                } else {
+                    durationInput.value = '0 Hours';
+                    previewDiv.innerHTML = `<span class="text-danger"><i class="fas fa-triangle-exclamation"></i> End date must be later than start date</span>`;
+                }
+            } else {
+                durationInput.value = '';
+                previewDiv.innerHTML = `<span class="text-secondary small">Select start and end datetimes.</span>`;
+            }
+        }
+
         // Function to add a row
         function addRow() {
             const tr = document.createElement('tr');
@@ -195,15 +247,24 @@ include __DIR__ . '/../layout/header.php';
             tr.dataset.index = rowIndex;
 
             const defaultDate = document.getElementById('start_date').value || '';
+            const defaultStart = defaultDate ? `${defaultDate}T08:00` : '';
+            const defaultEnd = defaultDate ? `${defaultDate}T16:00` : '';
 
             tr.innerHTML = `
-                <td>
-                    <input type="date" class="form-control form-control-custom row-date" value="${defaultDate}" required>
-                </td>
                 <td>
                     <select class="form-select form-control-custom row-shift" required>
                         ${shiftsHtml}
                     </select>
+                </td>
+                <td>
+                    <input type="datetime-local" class="form-control form-control-custom row-start-dt" value="${defaultStart}" required>
+                </td>
+                <td>
+                    <input type="datetime-local" class="form-control form-control-custom row-end-dt" value="${defaultEnd}" required>
+                </td>
+                <td>
+                    <input type="text" class="form-control form-control-custom row-duration" value="" readonly style="background-color: rgba(0,0,0,0.03); cursor: not-allowed;">
+                    <div class="row-live-preview mt-1 small text-info font-monospace" style="font-size:0.72rem; line-height: 1.2;"></div>
                 </td>
                 <td>
                     <select class="form-select form-control-custom row-duty-type" required>
@@ -241,10 +302,17 @@ include __DIR__ . '/../layout/header.php';
                 clearConflictMarkings();
             });
 
+            // Bind change listeners to trigger dynamic duration calculation
+            const triggerCalc = () => calculateRowDuration(tr);
+            tr.querySelector('.row-start-dt').addEventListener('change', triggerCalc);
+            tr.querySelector('.row-end-dt').addEventListener('change', triggerCalc);
+            tr.querySelector('.row-shift').addEventListener('change', triggerCalc);
+
             tbody.appendChild(tr);
             initAutocomplete(tr);
             updateDutyTypePreview(tr);
             tr.querySelector('.row-duty-type').addEventListener('change', () => updateDutyTypePreview(tr));
+            triggerCalc();
             rowIndex++;
         }
 
@@ -254,11 +322,17 @@ include __DIR__ . '/../layout/header.php';
             addRow();
             addRow();
         } else {
-            // Initialize autocomplete and preview on existing rows
+            // Initialize autocomplete, preview, and calculators on existing rows
             tbody.querySelectorAll('.assignment-row').forEach(row => {
                 initAutocomplete(row);
                 updateDutyTypePreview(row);
                 row.querySelector('.row-duty-type').addEventListener('change', () => updateDutyTypePreview(row));
+                
+                const triggerCalc = () => calculateRowDuration(row);
+                row.querySelector('.row-start-dt').addEventListener('change', triggerCalc);
+                row.querySelector('.row-end-dt').addEventListener('change', triggerCalc);
+                row.querySelector('.row-shift').addEventListener('change', triggerCalc);
+                triggerCalc();
             });
 
             // Re-bind remove buttons on existing rows
@@ -277,15 +351,24 @@ include __DIR__ . '/../layout/header.php';
             const rows = tbody.querySelectorAll('.assignment-row');
             const data = [];
             rows.forEach(row => {
-                const date = row.querySelector('.row-date').value;
+                const startDt = row.querySelector('.row-start-dt').value;
+                const endDt = row.querySelector('.row-end-dt').value;
                 const shiftId = row.querySelector('.row-shift').value;
                 const dutyTypeId = row.querySelector('.row-duty-type').value;
                 const serviceNumber = row.querySelector('.row-personnel').value;
                 const remarks = row.querySelector('.row-remarks').value;
 
-                if (date && serviceNumber) {
+                if (startDt && endDt && serviceNumber) {
+                    const sD = new Date(startDt);
+                    const eD = new Date(endDt);
+                    const durationHours = (eD - sD) / (1000 * 60 * 60);
+                    const dateStr = startDt.substring(0, 10);
+
                     data.push({
-                        duty_date: date,
+                        duty_date: dateStr,
+                        duty_start_datetime: startDt.replace('T', ' ') + ':00',
+                        duty_end_datetime: endDt.replace('T', ' ') + ':00',
+                        duty_duration_hours: durationHours,
                         shift_id: parseInt(shiftId),
                         duty_type_id: parseInt(dutyTypeId),
                         service_number: serviceNumber,
@@ -309,9 +392,63 @@ include __DIR__ . '/../layout/header.php';
             });
         }
 
+        function validateAssignments() {
+            const rows = tbody.querySelectorAll('.assignment-row');
+            if (rows.length === 0) {
+                alert("Please add at least one complete assignment row.");
+                return false;
+            }
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const shiftSelect = row.querySelector('.row-shift');
+                const shiftName = shiftSelect.options[shiftSelect.selectedIndex] ? shiftSelect.options[shiftSelect.selectedIndex].text : `Row ${i + 1}`;
+                const startDt = row.querySelector('.row-start-dt').value;
+                const endDt = row.querySelector('.row-end-dt').value;
+                const serviceNumber = row.querySelector('.row-personnel').value;
+
+                if (!startDt) {
+                    alert(`Validation Error in row ${i + 1} (${shiftName}): Start Date & Time is required.`);
+                    row.querySelector('.row-start-dt').focus();
+                    return false;
+                }
+                if (!endDt) {
+                    alert(`Validation Error in row ${i + 1} (${shiftName}): End Date & Time is required.`);
+                    row.querySelector('.row-end-dt').focus();
+                    return false;
+                }
+
+                const sD = new Date(startDt);
+                const eD = new Date(endDt);
+
+                if (eD <= sD) {
+                    alert(`Validation Error in row ${i + 1} (${shiftName}): End Date & Time must be later than Start Date & Time.`);
+                    row.querySelector('.row-end-dt').focus();
+                    return false;
+                }
+
+                const durationHours = (eD - sD) / (1000 * 60 * 60);
+                if (durationHours <= 0) {
+                    alert(`Validation Error in row ${i + 1} (${shiftName}): Duty duration must be greater than zero.`);
+                    row.querySelector('.row-end-dt').focus();
+                    return false;
+                }
+
+                if (!serviceNumber) {
+                    alert(`Validation Error in row ${i + 1} (${shiftName}): Assigned Personnel is required.`);
+                    row.querySelector('.row-personnel-search-input').focus();
+                    return false;
+                }
+            }
+            return true;
+        }
+
         // Conflict check click
         checkConflictsBtn.addEventListener('click', () => {
             clearConflictMarkings();
+            if (!validateAssignments()) {
+                return;
+            }
             const assignments = gatherAssignments();
             if (assignments.length === 0) {
                 alert("Please add at least one complete assignment (with date and personnel selected) to verify.");
@@ -371,7 +508,8 @@ include __DIR__ . '/../layout/header.php';
                                 // Add to summary
                                 const li = document.createElement('li');
                                 li.className = 'mb-1 text-danger';
-                                li.innerHTML = `<span class="badge bg-${conf.level === 'Critical' ? 'danger' : 'warning'} me-2">${conf.level}</span> On ${row.querySelector('.row-date').value}: ${conf.message}`;
+                                const startDtVal = row.querySelector('.row-start-dt') ? row.querySelector('.row-start-dt').value.substring(0, 10) : '';
+                                li.innerHTML = `<span class="badge bg-${conf.level === 'Critical' ? 'danger' : 'warning'} me-2">${conf.level}</span> On ${startDtVal}: ${conf.message}`;
                                 conflictsSummaryList.appendChild(li);
                             });
 
@@ -396,12 +534,17 @@ include __DIR__ . '/../layout/header.php';
             const rosterName = document.getElementById('roster_name').value.trim();
             const startDate = document.getElementById('start_date').value;
             const endDate = document.getElementById('end_date').value;
-            const assignments = gatherAssignments();
 
             if (!rosterName || !startDate || !endDate) {
                 alert("Please fill in the Roster name, start date, and end date.");
                 return;
             }
+
+            if (!validateAssignments()) {
+                return;
+            }
+
+            const assignments = gatherAssignments();
 
             const payload = {
                 roster_id: document.getElementById('roster_id').value || null,

@@ -48,7 +48,15 @@ include __DIR__ . '/../layout/header.php';
                                     <td><span class="badge px-2.5 py-1 rounded d-inline-flex align-items-center gap-1" style="background: <?= htmlspecialchars($as['color_code']) ?>1c; border: 1px solid <?= htmlspecialchars($as['color_code']) ?>55; color: <?= htmlspecialchars($as['color_code']) ?>;"><i class="<?= htmlspecialchars($as['icon_class']) ?>"></i> <?= htmlspecialchars($as['duty_type_name']) ?></span></td>
                                     <td>
                                         <div class="fw-medium text-dark"><?= htmlspecialchars($as['shift_name']) ?></div>
-                                        <span class="small text-muted"><?= htmlspecialchars(date('H:i', strtotime($as['start_time']))) ?> - <?= htmlspecialchars(date('H:i', strtotime($as['end_time']))) ?></span>
+                                        <span class="small text-muted">
+                                            <?php if (date('Y-m-d', strtotime($as['duty_start_datetime'])) !== date('Y-m-d', strtotime($as['duty_end_datetime']))): ?>
+                                                <?= date('d-M H:i', strtotime($as['duty_start_datetime'])) ?> hrs &rarr; 
+                                                <?= date('d-M H:i', strtotime($as['duty_end_datetime'])) ?> hrs
+                                            <?php else: ?>
+                                                <?= date('H:i', strtotime($as['duty_start_datetime'])) ?> - <?= date('H:i', strtotime($as['duty_end_datetime'])) ?>
+                                            <?php endif; ?>
+                                            (<?= (float)$as['duration_hours'] ?> hrs)
+                                        </span>
                                     </td>
                                     <td>
                                         <?php

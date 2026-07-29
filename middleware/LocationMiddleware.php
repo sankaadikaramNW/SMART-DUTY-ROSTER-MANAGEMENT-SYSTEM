@@ -9,7 +9,7 @@ class LocationMiddleware {
     // Retrieve active camp constraint. Returns camp_id for SNCO and OCPROVST, null for Admin (allowing global view)
     public static function getCampConstraint() {
         $roleName = Session::get('role_name');
-        if ($roleName === 'SNCO' || $roleName === 'OCPROVST' || $roleName === 'Warrant Officer IC') {
+        if ($roleName === 'SNCO' || $roleName === 'OCPROVST' || $roleName === 'Warrant Officer IC' || $roleName === 'Airman') {
             $campId = Session::get('camp_id');
             if (!$campId) {
                 throw new Exception("Security Error: Camp mapping not found for $roleName.");

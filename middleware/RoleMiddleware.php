@@ -72,6 +72,7 @@ class RoleMiddleware {
             ],
             'Airman' => [
                 '/dashboard', '/logout',
+                '/rosters', '/rosters/calendar', '/rosters/view', '/personnel/view',
                 '/rosters/calendar-data', '/rosters/timeline',
                 '/notifications', '/notifications/read',
                 '/leaves/calendar-data',
