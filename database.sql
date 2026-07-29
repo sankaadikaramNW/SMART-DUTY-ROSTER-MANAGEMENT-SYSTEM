@@ -52,15 +52,26 @@ CREATE TABLE IF NOT EXISTS `personnel` (
   `trade` VARCHAR(100) NOT NULL,
   `camp_id` INT NOT NULL,
   `contact_number` VARCHAR(30) NULL,
-  `email` VARCHAR(150) UNIQUE NULL,
+  `email` VARCHAR(150) UNIQUE NOT NULL,
+  `f1250` VARCHAR(100) NULL,
+  `section` VARCHAR(100) NULL,
+  `appointment` VARCHAR(100) NULL,
   `status` ENUM('Active', 'Inactive', 'Temporary Duty', 'Leave') DEFAULT 'Active',
+  `is_archived` TINYINT(1) NOT NULL DEFAULT 0,
+  `archived_at` TIMESTAMP NULL DEFAULT NULL,
+  `archived_by` VARCHAR(30) NULL DEFAULT NULL,
+  `archive_reason` TEXT NULL DEFAULT NULL,
+  `restored_at` TIMESTAMP NULL DEFAULT NULL,
+  `restored_by` VARCHAR(30) NULL DEFAULT NULL,
+  `restore_reason` TEXT NULL DEFAULT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (`camp_id`) REFERENCES `camps` (`camp_id`) ON UPDATE CASCADE,
   FOREIGN KEY (`rank_id`) REFERENCES `ranks` (`rank_id`) ON UPDATE CASCADE,
   INDEX idx_personnel_camp (`camp_id`),
   INDEX idx_personnel_status (`status`),
-  INDEX idx_personnel_rank (`rank_id`)
+  INDEX idx_personnel_rank (`rank_id`),
+  INDEX idx_personnel_archived (`is_archived`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -69,14 +80,35 @@ CREATE TABLE IF NOT EXISTS `personnel` (
 CREATE TABLE IF NOT EXISTS `users` (
   `user_id` INT AUTO_INCREMENT PRIMARY KEY,
   `service_number` VARCHAR(30) UNIQUE NOT NULL,
+  `username` VARCHAR(100) NULL,
   `password_hash` VARCHAR(255) NOT NULL,
   `role_id` INT NOT NULL,
-  `status` ENUM('Active', 'Suspended') DEFAULT 'Active',
+  `status` ENUM('Active', 'Suspended', 'Locked') DEFAULT 'Active',
+  `failed_attempts` INT NOT NULL DEFAULT 0,
+  `lock_date` TIMESTAMP NULL DEFAULT NULL,
+  `lock_reason` VARCHAR(255) NULL,
+  `locked_until` TIMESTAMP NULL DEFAULT NULL,
+  `force_password_change` TINYINT(1) NOT NULL DEFAULT 0,
+  `password_reset_at` TIMESTAMP NULL DEFAULT NULL,
+  `password_reset_by` VARCHAR(30) NULL,
+  `password_reset_reason` VARCHAR(255) NULL,
+  `unlock_reason` VARCHAR(255) NULL,
+  `unlock_date` TIMESTAMP NULL DEFAULT NULL,
+  `unlocked_by` VARCHAR(30) NULL,
+  `is_archived` TINYINT(1) NOT NULL DEFAULT 0,
+  `archived_at` TIMESTAMP NULL DEFAULT NULL,
+  `archived_by` VARCHAR(30) NULL,
+  `archive_reason` TEXT NULL,
+  `restored_at` TIMESTAMP NULL DEFAULT NULL,
+  `restored_by` VARCHAR(30) NULL,
+  `restore_reason` TEXT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (`service_number`) REFERENCES `personnel` (`service_number`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (`role_id`) REFERENCES `roles` (`role_id`) ON UPDATE CASCADE,
-  INDEX idx_users_role (`role_id`)
+  INDEX idx_users_role (`role_id`),
+  INDEX idx_users_username (`username`),
+  INDEX idx_users_archived (`is_archived`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -103,16 +135,13 @@ CREATE TABLE IF NOT EXISTS `postings` (
 CREATE TABLE IF NOT EXISTS `shifts` (
   `shift_id` INT AUTO_INCREMENT PRIMARY KEY,
   `shift_name` VARCHAR(100) NOT NULL,
-  `shift_code` VARCHAR(50) NULL,
+  `start_time` TIME NOT NULL,
+  `end_time` TIME NOT NULL,
+  `duration_hours` DECIMAL(4,2) NOT NULL,
   `description` VARCHAR(255) NULL,
-  `display_order` INT DEFAULT 0,
   `status` ENUM('Active', 'Inactive') DEFAULT 'Active',
-  `created_by` INT NULL,
-  `updated_by` INT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (`created_by`) REFERENCES `users` (`user_id`),
-  FOREIGN KEY (`updated_by`) REFERENCES `users` (`user_id`)
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -121,10 +150,18 @@ CREATE TABLE IF NOT EXISTS `shifts` (
 CREATE TABLE IF NOT EXISTS `duty_types` (
   `duty_type_id` INT AUTO_INCREMENT PRIMARY KEY,
   `duty_type_name` VARCHAR(100) UNIQUE NOT NULL,
+  `duty_code` VARCHAR(50) UNIQUE NOT NULL,
   `description` VARCHAR(255) NULL,
+  `color_code` VARCHAR(50) NULL,
+  `icon_class` VARCHAR(50) NULL,
+  `display_order` INT DEFAULT 0,
   `status` ENUM('Active', 'Inactive') DEFAULT 'Active',
+  `created_by` INT NULL,
+  `updated_by` INT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (`created_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
+  FOREIGN KEY (`updated_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -138,10 +175,23 @@ CREATE TABLE IF NOT EXISTS `duty_rosters` (
   `end_date` DATE NOT NULL,
   `status` ENUM('Draft', 'Submitted', 'Approved', 'Rejected', 'Published') DEFAULT 'Draft',
   `created_by` INT NOT NULL,
+  `last_updated_by` INT NULL,
+  `submitted_by` INT NULL,
+  `submitted_date` DATETIME NULL,
+  `approved_by` INT NULL,
+  `approved_date` DATETIME NULL,
+  `rejected_by` INT NULL,
+  `rejected_date` DATETIME NULL,
+  `rejection_reason` TEXT NULL,
+  `audit_log_ref` VARCHAR(255) NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (`camp_id`) REFERENCES `camps` (`camp_id`),
   FOREIGN KEY (`created_by`) REFERENCES `users` (`user_id`),
+  FOREIGN KEY (`last_updated_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
+  FOREIGN KEY (`submitted_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
+  FOREIGN KEY (`approved_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
+  FOREIGN KEY (`rejected_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
   INDEX idx_rosters_camp_dates (`camp_id`, `start_date`, `end_date`),
   INDEX idx_rosters_status (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -153,9 +203,6 @@ CREATE TABLE IF NOT EXISTS `duty_assignments` (
   `assignment_id` INT AUTO_INCREMENT PRIMARY KEY,
   `roster_id` INT NOT NULL,
   `duty_date` DATE NOT NULL,
-  `duty_start_datetime` DATETIME NOT NULL,
-  `duty_end_datetime` DATETIME NOT NULL,
-  `duty_duration_hours` DECIMAL(5,2) NOT NULL,
   `duty_type_id` INT NOT NULL,
   `shift_id` INT NOT NULL,
   `service_number` VARCHAR(30) NOT NULL,
@@ -187,6 +234,29 @@ CREATE TABLE IF NOT EXISTS `approvals` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (`roster_id`) REFERENCES `duty_rosters` (`roster_id`) ON DELETE CASCADE,
   FOREIGN KEY (`action_by`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table `duty_crew_approvals`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `duty_crew_approvals` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `roster_id` INT NOT NULL,
+  `duty_date` DATE NOT NULL,
+  `shift_id` INT NOT NULL,
+  `duty_type_id` INT NOT NULL,
+  `action_by` INT NOT NULL,
+  `action` VARCHAR(50) NOT NULL,
+  `remarks` TEXT NULL,
+  `previous_status` VARCHAR(50) NOT NULL,
+  `new_status` VARCHAR(50) NOT NULL,
+  `ip_address` VARCHAR(45) NULL,
+  `user_agent` VARCHAR(255) NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`roster_id`) REFERENCES `duty_rosters` (`roster_id`) ON DELETE CASCADE,
+  FOREIGN KEY (`action_by`) REFERENCES `users` (`user_id`),
+  FOREIGN KEY (`shift_id`) REFERENCES `shifts` (`shift_id`),
+  FOREIGN KEY (`duty_type_id`) REFERENCES `duty_types` (`duty_type_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -254,20 +324,20 @@ INSERT INTO `roles` (`role_id`, `role_name`, `description`) VALUES
 (6, 'Super Admin', 'Super Admin with absolute privileges, including immutable log auditing.');
 
 -- Seed Shifts
-INSERT INTO `shifts` (`shift_id`, `shift_name`, `shift_code`, `description`, `display_order`, `status`) VALUES
-(1, 'Morning Shift', 'SH-MORNING', 'Regular morning watch', 0, 'Active'),
-(2, 'Afternoon Shift', 'SH-AFTERNOON', 'Regular afternoon watch', 0, 'Active'),
-(3, 'Night Shift', 'SH-NIGHT', 'Overnight watch', 0, 'Active'),
-(4, '24 Hour Duty', 'SH-24HRS', 'Full day watch duty rotation', 0, 'Active');
+INSERT INTO `shifts` (`shift_id`, `shift_name`, `start_time`, `end_time`, `duration_hours`, `description`, `status`) VALUES
+(1, 'Morning Shift', '06:00:00', '14:00:00', 8.00, 'Regular morning watch', 'Active'),
+(2, 'Afternoon Shift', '14:00:00', '22:00:00', 8.00, 'Regular afternoon watch', 'Active'),
+(3, 'Night Shift', '22:00:00', '06:00:00', 8.00, 'Overnight watch', 'Active'),
+(4, '24 Hour Duty', '08:00:00', '08:00:00', 24.00, 'Full day watch duty rotation', 'Active');
 
 -- Seed Duty Types
-INSERT INTO `duty_types` (`duty_type_id`, `duty_type_name`, `description`, `status`) VALUES
-(1, 'Guard Duty', 'Security sentry watch points', 'Active'),
-(2, 'Main Gate Duty', 'Entry point checking and authorization', 'Active'),
-(3, 'Patrol Duty', 'Base perimeter foot/vehicle patrols', 'Active'),
-(4, 'Armoury Duty', 'Armour keeper and weapon logs guard', 'Active'),
-(5, 'Operations Room Duty', 'Communication and radar watch', 'Active'),
-(6, 'VIP Security Duty', 'Security escort and safety detail', 'Active');
+INSERT INTO `duty_types` (`duty_type_id`, `duty_type_name`, `duty_code`, `description`, `color_code`, `icon_class`, `display_order`, `status`) VALUES
+(1, 'Guard Duty', 'GD', 'Security sentry watch points', '#e74c3c', 'bi-shield', 1, 'Active'),
+(2, 'Main Gate Duty', 'MGD', 'Entry point checking and authorization', '#3498db', 'bi-door-closed', 2, 'Active'),
+(3, 'Patrol Duty', 'PD', 'Base perimeter foot/vehicle patrols', '#2ecc71', 'bi-person-walking', 3, 'Active'),
+(4, 'Armoury Duty', 'AD', 'Armour keeper and weapon logs guard', '#f1c40f', 'bi-key', 4, 'Active'),
+(5, 'Operations Room Duty', 'ORD', 'Communication and radar watch', '#9b59b6', 'bi-cpu', 5, 'Active'),
+(6, 'VIP Security Duty', 'VSD', 'Security escort and safety detail', '#e67e22', 'bi-person-badge', 6, 'Active');
 
 -- Seed Ranks
 INSERT INTO `ranks` (`rank_id`, `rank_code`, `rank_name`, `rank_short_name`, `display_order`, `status`) VALUES
@@ -305,15 +375,15 @@ INSERT INTO `personnel` (`service_number`, `rank_id`, `initials`, `full_name`, `
 ('51847', 3, 'A.P.', 'Ratmalana OCPROVST', 'Provost Officer', 2, '+94722222224', 'ocprovost.ratmalana@slaf.lk', 'Active');
 
 -- Seed Users (Passwords are all hashed using standard BCRYPT of 'Password@123')
-INSERT INTO `users` (`service_number`, `password_hash`, `role_id`, `status`) VALUES
-('sadmin', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 6, 'Active'),
-('admin', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 1, 'Active'),
-('51838', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 2, 'Active'),
-('51839', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 3, 'Active'),
-('51840', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 3, 'Active'),
-('51837', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 4, 'Active'),
-('51846', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 2, 'Active'),
-('51847', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 2, 'Active');
+INSERT INTO `users` (`service_number`, `username`, `password_hash`, `role_id`, `status`) VALUES
+('sadmin', 'sadmin', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 6, 'Active'),
+('admin', 'admin', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 1, 'Active'),
+('51838', '51838', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 2, 'Active'),
+('51839', '51839', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 3, 'Active'),
+('51840', '51840', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 3, 'Active'),
+('51837', '51837', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 4, 'Active'),
+('51846', '51846', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 2, 'Active'),
+('51847', '51847', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 2, 'Active');
 
 -- Seed initial active postings
 INSERT INTO `postings` (`service_number`, `from_camp_id`, `to_camp_id`, `effective_date`, `end_date`, `status`) VALUES
@@ -368,21 +438,7 @@ CREATE TABLE IF NOT EXISTS `posting_approvals` (
   INDEX idx_posting_approval_transfer (`transfer_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Seed LAC Adikaram (51837) and OCPROVST users for camps 1 and 2
-INSERT INTO `personnel` (`service_number`, `rank_id`, `initials`, `full_name`, `trade`, `camp_id`, `contact_number`, `email`, `status`) VALUES
-('51837', 5, 'S.', 'Adikaram', 'Provost Guard', 2, '+94755555553', 'adikaram@slaf.lk', 'Active'),
-('51846', 2, 'K.L.', 'Ekala OCPROVST', 'Provost Officer', 1, '+94722222223', 'ocprovost.ekala@slaf.lk', 'Active'),
-('51847', 2, 'A.P.', 'Ratmalana OCPROVST', 'Provost Officer', 2, '+94722222224', 'ocprovost.ratmalana@slaf.lk', 'Active');
 
-INSERT INTO `users` (`service_number`, `password_hash`, `role_id`, `status`) VALUES
-('51837', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 4, 'Active'),
-('51846', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 2, 'Active'),
-('51847', '$2y$12$uKibVn5mEo7hktNktAjsaOA3dNtWzK2NlFWlWeFM2bHd7re2Dl9Oi', 2, 'Active');
-
-INSERT INTO `postings` (`service_number`, `from_camp_id`, `to_camp_id`, `effective_date`, `end_date`, `status`) VALUES
-('51837', 2, 2, '2025-01-01', NULL, 'Active'),
-('51846', 1, 1, '2025-01-01', NULL, 'Active'),
-('51847', 2, 2, '2025-01-01', NULL, 'Active');
 
 -- --------------------------------------------------------
 -- Table `camp_attendance`

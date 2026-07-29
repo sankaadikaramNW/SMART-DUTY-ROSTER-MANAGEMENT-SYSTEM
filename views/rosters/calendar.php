@@ -210,18 +210,8 @@ include __DIR__ . '/../layout/header.php';
                                 <td class="fw-bold py-1 text-dark" id="mShiftName">-</td>
                             </tr>
                             <tr>
-                                <td class="text-secondary py-1">Duty Time:</td>
+                                <td class="text-secondary py-1">Watch Timings:</td>
                                 <td class="font-monospace py-1 text-dark" id="mShiftTimings">-</td>
-                            </tr>
-                            <tr>
-                                <td class="text-secondary py-1">Duration:</td>
-                                <td class="fw-bold py-1 text-dark" id="mDuration">-</td>
-                            </tr>
-                            <tr>
-                                <td class="text-secondary py-1">Approval Status:</td>
-                                <td class="py-1">
-                                    <span class="badge" id="mApprovalStatusBadge">-</span>
-                                </td>
                             </tr>
                             <tr>
                                 <td class="text-secondary py-1">Camp / Base:</td>
@@ -469,15 +459,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         const nameParts = ev.full_name.trim().split(' ');
                         const lastName = nameParts[nameParts.length - 1];
 
-                        // Calculate start and end datetime
-                        const startDatetime = ev.duty_start_datetime.replace(' ', 'T');
-                        const endDatetime = ev.duty_end_datetime.replace(' ', 'T');
-
                         return {
                             id: ev.assignment_id,
                             title: ev.duty_type_name,
-                            start: startDatetime,
-                            end: endDatetime,
+                            start: ev.duty_date,
                             backgroundColor: bgColor,
                             borderColor: borderColor,
                             textColor: textColor,
@@ -502,9 +487,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             
                             switch (activeSummaryFilter) {
                                 case 'today':
-                                    return props.duty_date === todayYmd;
+                                    return ev.start === todayYmd;
                                 case 'upcoming':
-                                    return props.duty_date > todayYmd;
+                                    return ev.start > todayYmd;
                                 case 'pending':
                                     return props.status === 'Pending' || props.roster_status === 'Submitted';
                                 case 'completed':
@@ -551,18 +536,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Add hover tooltip using Bootstrap Tooltip
             const ev = info.event.extendedProps;
             const statusLabel = ev.hasConflict ? '⚠️ Duplicate Assignment / Conflict' : ev.status;
-            
-            const startHour = ev.duty_start_datetime.substring(11, 16);
-            const endHour = ev.duty_end_datetime.substring(11, 16);
-            let timeRangeText = '';
-            if (ev.duty_start_datetime.substring(0, 10) !== ev.duty_end_datetime.substring(0, 10)) {
-                timeRangeText = `${ev.duty_start_datetime.substring(0, 10)} ${startHour} → ${ev.duty_end_datetime.substring(0, 10)} ${endHour}`;
-            } else {
-                timeRangeText = `${startHour} - ${endHour}`;
-            }
-
             const tooltipTitle = `${ev.duty_type_name} (${ev.shift_name})\n` +
-                                 `Time: ${timeRangeText}\n` +
+                                 `Time: ${ev.start_time.substring(0, 5)} - ${ev.end_time.substring(0, 5)}\n` +
                                  `Personnel: ${ev.rank} ${ev.full_name}\n` +
                                  `Status: ${statusLabel}\n` +
                                  `Priority: ${ev.priority_level}`;
@@ -588,42 +563,7 @@ document.addEventListener('DOMContentLoaded', () => {
             badge.style.color = '#ffffff';
 
             document.getElementById('mShiftName').textContent = ev.shift_name;
-            
-            // Duty Time (Shift Timings)
-            const startD = new Date(ev.duty_start_datetime.replace(' ', 'T'));
-            const endD = new Date(ev.duty_end_datetime.replace(' ', 'T'));
-            
-            const startStrFormatted = formatDateStr(ev.duty_start_datetime.substring(0, 10));
-            const endStrFormatted = formatDateStr(ev.duty_end_datetime.substring(0, 10));
-            const startHour = ev.duty_start_datetime.substring(11, 16);
-            const endHour = ev.duty_end_datetime.substring(11, 16);
-            
-            let dutyTimeText = '';
-            if (ev.duty_start_datetime.substring(0, 10) !== ev.duty_end_datetime.substring(0, 10)) {
-                dutyTimeText = `${startStrFormatted} ${startHour} hrs → ${endStrFormatted} ${endHour} hrs`;
-            } else {
-                dutyTimeText = `${startStrFormatted} ${startHour} hrs → ${endHour} hrs`;
-            }
-            document.getElementById('mShiftTimings').textContent = dutyTimeText;
-
-            // Duration calculation
-            document.getElementById('mDuration').textContent = `${parseFloat(ev.duty_duration_hours)} Hours`;
-
-            // Approval Status Badge
-            const appStatusBadge = document.getElementById('mApprovalStatusBadge');
-            const rosterStatus = ev.roster_status || ev.status;
-            appStatusBadge.textContent = rosterStatus;
-            appStatusBadge.className = 'badge';
-            if (rosterStatus === 'Approved') {
-                appStatusBadge.classList.add('bg-success');
-            } else if (rosterStatus === 'Pending' || rosterStatus === 'Submitted') {
-                appStatusBadge.classList.add('bg-warning', 'text-dark');
-            } else if (rosterStatus === 'Rejected') {
-                appStatusBadge.classList.add('bg-danger');
-            } else {
-                appStatusBadge.classList.add('bg-secondary');
-            }
-
+            document.getElementById('mShiftTimings').textContent = `${ev.start_time.substring(0, 5)} - ${ev.end_time.substring(0, 5)}`;
             document.getElementById('mCampName').textContent = ev.roster_camp_name || ev.camp_name;
             
             // Priority styling
@@ -805,8 +745,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let today = 0, upcoming = 0, pending = 0, completed = 0, rejected = 0, cancelled = 0, conflict = 0;
 
         events.forEach(ev => {
+            const start = ev.start;
             const props = ev.extendedProps;
-            const start = props.duty_date;
             
             if (start === todayYmd) today++;
             if (start > todayYmd) upcoming++;

@@ -80,7 +80,7 @@ class RosterController {
 
             $roleName = Session::get('role_name');
             if ($roleName === 'Airman' && $roster['status'] !== 'Published') {
-                throw new Exception("Unauthorized Access: Airman can only view published rosters.");
+                throw new Exception("Unauthorized Access: Airmen are only permitted to view published rosters.");
             }
 
             if ($roleName === 'Warrant Officer IC') {
@@ -327,8 +327,7 @@ class RosterController {
             foreach ($rosters as $r) {
                 // Fetch all assignments for this roster
                 $stmt = $db->prepare("
-                    SELECT da.*, dt.duty_type_name, dt.color_code, dt.icon_class, s.shift_name,
-                           TIME(da.duty_start_datetime) AS start_time, TIME(da.duty_end_datetime) AS end_time,
+                    SELECT da.*, dt.duty_type_name, dt.color_code, dt.icon_class, s.shift_name, s.start_time, s.end_time,
                            p.full_name AS personnel_name, rk.rank_short_name AS personnel_rank, p.trade AS personnel_trade, p.status AS personnel_status, p.section AS personnel_section
                     FROM duty_assignments da
                     JOIN duty_types dt ON da.duty_type_id = dt.duty_type_id
@@ -336,14 +335,14 @@ class RosterController {
                     JOIN personnel p ON da.service_number = p.service_number
                     LEFT JOIN ranks rk ON p.rank_id = rk.rank_id
                     WHERE da.roster_id = ?
-                    ORDER BY da.duty_date ASC, da.duty_start_datetime ASC
+                    ORDER BY da.duty_date ASC, s.start_time ASC
                 ");
                 $stmt->execute([$r['roster_id']]);
                 $assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                // Group assignments of this roster by duty_date, shift_id, duty_type_id, and timings
+                // Group assignments of this roster by duty_date, shift_id, duty_type_id
                 foreach ($assignments as $as) {
-                    $key = "{$r['roster_id']}-{$as['duty_date']}-{$as['shift_id']}-{$as['duty_type_id']}-" . md5($as['duty_start_datetime'] . $as['duty_end_datetime']);
+                    $key = "{$r['roster_id']}-{$as['duty_date']}-{$as['shift_id']}-{$as['duty_type_id']}";
                     if (!isset($dutyCrews[$key])) {
                         $dutyCrews[$key] = [
                             'crew_key' => $key,
@@ -353,8 +352,6 @@ class RosterController {
                             'duty_date' => $as['duty_date'],
                             'shift_id' => $as['shift_id'],
                             'shift_name' => $as['shift_name'],
-                            'duty_start_datetime' => $as['duty_start_datetime'],
-                            'duty_end_datetime' => $as['duty_end_datetime'],
                             'start_time' => $as['start_time'],
                             'end_time' => $as['end_time'],
                             'duty_type_id' => $as['duty_type_id'],
@@ -640,13 +637,7 @@ class RosterController {
                 
                 $stmt = $db->prepare("
                     SELECT dca.*, p.full_name, rk.rank_short_name, u.service_number AS username,
-                           dr.roster_name, dt.duty_type_name, s.shift_name, dt.color_code, dt.icon_class,
-                           (SELECT MIN(da.duty_start_datetime) FROM duty_assignments da 
-                            WHERE da.roster_id = dca.roster_id AND da.duty_date = dca.duty_date 
-                              AND da.shift_id = dca.shift_id AND da.duty_type_id = dca.duty_type_id) AS duty_start_datetime,
-                           (SELECT MAX(da.duty_end_datetime) FROM duty_assignments da 
-                            WHERE da.roster_id = dca.roster_id AND da.duty_date = dca.duty_date 
-                              AND da.shift_id = dca.shift_id AND da.duty_type_id = dca.duty_type_id) AS duty_end_datetime
+                           dr.roster_name, dt.duty_type_name, s.shift_name, dt.color_code, dt.icon_class
                     FROM duty_crew_approvals dca
                     JOIN users u ON dca.action_by = u.user_id
                     LEFT JOIN personnel p ON u.service_number = p.service_number

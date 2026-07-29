@@ -1,6 +1,9 @@
 <?php
 include __DIR__ . '/../layout/header.php';
 ?>
+<?php if (!empty(TURNSTILE_SITE_KEY)): ?>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<?php endif; ?>
 <div class="login-card mx-auto text-center animate-fade-in">
     <div class="mb-3">
         <img src="<?= BASE_URL ?>/views/assets/images/slaf_logo.png?v=<?= time() ?>" alt="Sri Lanka Air Force Logo" class="login-logo mb-2" style="width:110px !important;height:auto !important;display:block;margin:0 auto 12px;">
@@ -52,8 +55,11 @@ include __DIR__ . '/../layout/header.php';
                 <input type="password" class="form-control login-input-height login-input-height-append" id="password" name="password" placeholder="Enter password" required autocomplete="current-password">
             </div>
         </div>
-        
-        
+        <?php if (!empty(TURNSTILE_SITE_KEY)): ?>
+            <div class="mb-3 d-flex justify-content-center">
+                <div class="cf-turnstile" data-sitekey="<?= htmlspecialchars(TURNSTILE_SITE_KEY) ?>" data-theme="light"></div>
+            </div>
+        <?php endif; ?>
 
         <div class="d-grid mb-3">
             <button type="submit" id="submitBtn" class="btn btn-primary login-btn d-flex align-items-center justify-content-center gap-2">

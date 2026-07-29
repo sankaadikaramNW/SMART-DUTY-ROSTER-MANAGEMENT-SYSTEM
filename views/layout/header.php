@@ -53,7 +53,7 @@ if ($isLoggedIn && $serviceNum) {
     <!-- Bootstrap 5 CSS -->
     <link href="<?= BASE_URL ?>/views/assets/vendor/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome 6 for Icons -->
-    <link href="<?= BASE_URL ?>/views/assets/vendor/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <!-- Custom Style Sheet -->
@@ -184,12 +184,6 @@ if ($isLoggedIn && $serviceNum) {
                         </a>
                         <a class="sidebar-link <?= ($route ?? '') === '/rosters' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters">
                             <i class="fas fa-calendar-days"></i> Duty Roster Management
-                        </a>
-                        <a class="sidebar-link <?= ($route ?? '') === '/rosters/create' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters/create">
-                            <i class="fas fa-calendar-plus text-primary"></i> Duty Assignment
-                        </a>
-                        <a class="sidebar-link <?= ($route ?? '') === '/rosters/calendar' ? 'active' : '' ?>" href="<?= BASE_URL ?>/rosters/calendar">
-                            <i class="fas fa-calendar-week"></i> Duty Calendar
                         </a>
                         <a class="sidebar-link <?= ($route ?? '') === '/reports' ? 'active' : '' ?>" href="<?= BASE_URL ?>/reports">
                             <i class="fas fa-print"></i> Reports

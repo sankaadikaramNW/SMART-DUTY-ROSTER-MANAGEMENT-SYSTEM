@@ -18,6 +18,9 @@ class AuthController {
             // Verify CSRF
             Security::verifyCsrf();
 
+            // Verify Cloudflare Turnstile
+            Security::verifyTurnstile();
+
             $serviceNumber = strtoupper(Security::sanitize($_POST['service_number'] ?? ''));
             $password = $_POST['password'] ?? '';
 

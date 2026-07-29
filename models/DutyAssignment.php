@@ -10,9 +10,7 @@ class DutyAssignment {
         $db = Database::getInstance()->getConnection();
         $stmt = $db->prepare("
             SELECT a.*, rk.rank_name AS `rank`, rk.rank_short_name, p.initials, p.full_name, p.trade, p.status AS personnel_status, c.camp_name,
-                   s.shift_name, TIME(a.duty_start_datetime) AS start_time, TIME(a.duty_end_datetime) AS end_time, 
-                   a.duty_duration_hours AS duration_hours,
-                   t.duty_type_name, t.color_code, t.icon_class,
+                   s.shift_name, s.start_time, s.end_time, t.duty_type_name, t.color_code, t.icon_class,
                    pos.effective_date AS posting_effective_date,
                    pos_from.camp_name AS posting_from_camp_name
             FROM duty_assignments a
@@ -24,7 +22,7 @@ class DutyAssignment {
             LEFT JOIN postings pos ON p.service_number = pos.service_number AND pos.status = 'Active'
             LEFT JOIN camps pos_from ON pos.from_camp_id = pos_from.camp_id
             WHERE a.roster_id = :roster_id
-            ORDER BY a.duty_date ASC, a.duty_start_datetime ASC
+            ORDER BY a.duty_date ASC, s.start_time ASC
         ");
         $stmt->execute([':roster_id' => $rosterId]);
         return $stmt->fetchAll();
@@ -54,9 +52,9 @@ class DutyAssignment {
             if (!empty($assignments)) {
                 $stmt = $db->prepare("
                     INSERT INTO duty_assignments 
-                    (roster_id, duty_date, duty_start_datetime, duty_end_datetime, duty_duration_hours, duty_type_id, shift_id, service_number, priority_level, remarks, conflict_level, justification, supervisor_remarks)
+                    (roster_id, duty_date, duty_type_id, shift_id, service_number, priority_level, remarks, conflict_level, justification, supervisor_remarks)
                     VALUES 
-                    (:roster_id, :duty_date, :duty_start_datetime, :duty_end_datetime, :duty_duration_hours, :duty_type_id, :shift_id, :service_number, :priority_level, :remarks, :conflict_level, :justification, :supervisor_remarks)
+                    (:roster_id, :duty_date, :duty_type_id, :shift_id, :service_number, :priority_level, :remarks, :conflict_level, :justification, :supervisor_remarks)
                 ");
                 foreach ($assignments as $a) {
                     // Backend validation: verify personnel belongs to the roster's camp
@@ -66,30 +64,9 @@ class DutyAssignment {
                         throw new Exception("Security Error: Personnel " . $a['service_number'] . " does not belong to this camp/base and cannot be assigned to this roster.");
                     }
 
-                    // Datetime validations
-                    if (empty($a['duty_start_datetime']) || empty($a['duty_end_datetime'])) {
-                        throw new Exception("Validation Error: Start Date & Time and End Date & Time are required for all assignments.");
-                    }
-                    $sTime = strtotime($a['duty_start_datetime']);
-                    $eTime = strtotime($a['duty_end_datetime']);
-                    if ($eTime <= $sTime) {
-                        throw new Exception("Validation Error: End Date & Time must be later than Start Date & Time.");
-                    }
-                    
-                    $duration = ($eTime - $sTime) / 3600;
-                    if ($duration <= 0) {
-                        throw new Exception("Validation Error: Duty duration must be greater than zero.");
-                    }
-
-                    // Extract date portion for duty_date
-                    $dutyDate = date('Y-m-d', $sTime);
-
                     $stmt->execute([
                         ':roster_id' => $rosterId,
-                        ':duty_date' => $dutyDate,
-                        ':duty_start_datetime' => $a['duty_start_datetime'],
-                        ':duty_end_datetime' => $a['duty_end_datetime'],
-                        ':duty_duration_hours' => $duration,
+                        ':duty_date' => $a['duty_date'],
                         ':duty_type_id' => $a['duty_type_id'],
                         ':shift_id' => $a['shift_id'],
                         ':service_number' => $a['service_number'],
@@ -115,9 +92,7 @@ class DutyAssignment {
         
         $sql = "SELECT a.*, rk.rank_name AS `rank`, rk.rank_short_name, p.initials, p.full_name, p.trade, p.status AS personnel_status,
                        pc.camp_name AS personnel_camp_name,
-                       s.shift_name, a.duty_start_datetime, a.duty_end_datetime, 
-                       TIME(a.duty_start_datetime) AS start_time, TIME(a.duty_end_datetime) AS end_time, 
-                       a.duty_duration_hours AS duration_hours,
+                       s.shift_name, s.start_time, s.end_time, 
                        t.duty_type_name, t.color_code, t.icon_class, t.duty_code,
                        r.roster_name, r.status AS roster_status, r.created_at AS roster_created_at,
                        c.camp_name AS roster_camp_name,
@@ -201,7 +176,7 @@ class DutyAssignment {
             }
         }
 
-        $sql .= " ORDER BY a.duty_date ASC, a.duty_start_datetime ASC";
+        $sql .= " ORDER BY a.duty_date ASC, s.start_time ASC";
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll();
@@ -290,10 +265,7 @@ class DutyAssignment {
                 'roster_status' => $da['roster_status'],
                 'shift_id' => $da['shift_id'],
                 'duty_type_id' => $da['duty_type_id'],
-                'duty_date' => $da['duty_date'],
-                'duty_start_datetime' => $da['duty_start_datetime'],
-                'duty_end_datetime' => $da['duty_end_datetime'],
-                'duty_duration_hours' => $da['duty_duration_hours']
+                'duty_date' => $da['duty_date']
             ];
         }
 
@@ -315,10 +287,7 @@ class DutyAssignment {
                 'index' => $idx,
                 'shift_id' => $pa['shift_id'],
                 'duty_type_id' => $pa['duty_type_id'],
-                'duty_date' => $pa['duty_date'],
-                'duty_start_datetime' => $pa['duty_start_datetime'],
-                'duty_end_datetime' => $pa['duty_end_datetime'],
-                'duty_duration_hours' => $pa['duty_duration_hours']
+                'duty_date' => $pa['duty_date']
             ];
         }
 
@@ -333,25 +302,6 @@ class DutyAssignment {
             }
 
             $paConflicts = [];
-
-            // Validation: verify start/end dates
-            if (empty($pa['duty_start_datetime']) || empty($pa['duty_end_datetime'])) {
-                $paConflicts[] = [
-                    'type' => 'Validation Error',
-                    'level' => 'Critical',
-                    'message' => "Start and End Date/Times are required."
-                ];
-            } else {
-                $sTime = strtotime($pa['duty_start_datetime']);
-                $eTime = strtotime($pa['duty_end_datetime']);
-                if ($eTime <= $sTime) {
-                    $paConflicts[] = [
-                        'type' => 'Validation Error',
-                        'level' => 'Critical',
-                        'message' => "End Date & Time must be later than Start Date & Time."
-                    ];
-                }
-            }
 
             // Check Personnel constraints
             $person = isset($personnelMap[$sNum]) ? $personnelMap[$sNum] : null;
@@ -412,45 +362,12 @@ class DutyAssignment {
                 ];
             }
 
-            // Check actual timing overlap with all other assignments for this user
-            $allAssignmentsForUser = [];
-            if (isset($schedule[$sNum])) {
-                foreach ($schedule[$sNum] as $day => $dayAsList) {
-                    foreach ($dayAsList as $otherAs) {
-                        if ($otherAs['source'] === 'proposed' && isset($otherAs['index']) && $otherAs['index'] === $idx) {
-                            continue;
-                        }
-                        $allAssignmentsForUser[] = $otherAs;
-                    }
-                }
-            }
-
-            foreach ($allAssignmentsForUser as $otherAs) {
-                if (!empty($pa['duty_start_datetime']) && !empty($pa['duty_end_datetime']) &&
-                    !empty($otherAs['duty_start_datetime']) && !empty($otherAs['duty_end_datetime'])) {
-                    
-                    $s1 = strtotime($pa['duty_start_datetime']);
-                    $e1 = strtotime($pa['duty_end_datetime']);
-                    $s2 = strtotime($otherAs['duty_start_datetime']);
-                    $e2 = strtotime($otherAs['duty_end_datetime']);
-                    
-                    if ($s1 < $e2 && $s2 < $e1) {
-                        $srcText = $otherAs['source'] === 'database' ? "Roster '{$otherAs['roster_name']}'" : "another proposed assignment";
-                        $paConflicts[] = [
-                            'type' => 'Time Overlap Conflict',
-                            'level' => 'Critical',
-                            'message' => "Time Overlap: Duty times overlap with " . $srcText . " (" . date('d-M H:i', $s2) . " to " . date('d-M H:i', $e2) . ")."
-                        ];
-                        break;
-                    }
-                }
-            }
-
             // Check Rest Period (24-Hour Duty)
             $prevDateStr = date('Y-m-d', strtotime($date . ' -1 day'));
             $prevDayAssignments = isset($schedule[$sNum][$prevDateStr]) ? $schedule[$sNum][$prevDateStr] : [];
             foreach ($prevDayAssignments as $pda) {
-                if ((float)$pda['duty_duration_hours'] >= 24) {
+                $pShift = isset($shifts[$pda['shift_id']]) ? $shifts[$pda['shift_id']] : null;
+                if ($pShift && (float)$pShift['duration_hours'] >= 24) {
                     $srcName = $pda['source'] === 'database' ? "Roster '{$pda['roster_name']}'" : "Proposed assignment";
                     $paConflicts[] = [
                         'type' => 'Rest Period Violation (24-Hour)',

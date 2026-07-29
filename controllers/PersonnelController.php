@@ -23,16 +23,12 @@ class PersonnelController {
                 throw new Exception("Service number is required.");
             }
 
-            $roleName = Session::get('role_name');
-            if ($roleName === 'Airman' && $serviceNumber !== Session::get('service_number')) {
-                throw new Exception("Unauthorized Access: You can only view your own profile.");
-            }
-
             $person = Personnel::getByServiceNumber($serviceNumber);
             if (!$person) {
                 throw new Exception("Personnel profile not found.");
             }
 
+            $roleName = Session::get('role_name');
             if ($roleName === 'Warrant Officer IC') {
                 Logger::audit('Personnel Management', 'View Personnel Profile: ' . $serviceNumber);
             }
@@ -47,7 +43,8 @@ class PersonnelController {
             include __DIR__ . '/../views/personnel/view.php';
         } catch (Exception $e) {
             Session::set('error_message', $e->getMessage());
-            if (Session::get('role_name') === 'Airman') {
+            $roleName = Session::get('role_name');
+            if ($roleName === 'Airman') {
                 Response::redirect('/dashboard');
             } else {
                 Response::redirect('/personnel');

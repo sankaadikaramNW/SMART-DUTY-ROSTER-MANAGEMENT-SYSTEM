@@ -48,6 +48,70 @@ class Security {
         return true;
     }
 
+    // Verify Cloudflare Turnstile token
+    public static function verifyTurnstile() {
+        if (empty(TURNSTILE_SITE_KEY) || empty(TURNSTILE_SECRET_KEY)) {
+            return true; // Bypassed if Turnstile is not configured
+        }
+
+        $token = $_POST['cf-turnstile-response'] ?? '';
+        if (empty($token)) {
+            throw new Exception("Please complete the Cloudflare Turnstile verification.");
+        }
+
+        $url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+        $data = [
+            'secret' => TURNSTILE_SECRET_KEY,
+            'response' => $token,
+            'remoteip' => $_SERVER['REMOTE_ADDR'] ?? ''
+        ];
+
+        $result = false;
+
+        // Try cURL first (handles allow_url_fopen restrictions and SSL certificate mismatches)
+        if (function_exists('curl_init')) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Bypasses outdated server CA certificates issues
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            $result = curl_exec($ch);
+            curl_close($ch);
+        }
+
+        // Fallback to file_get_contents with SSL verification disabled
+        if ($result === false) {
+            $options = [
+                'http' => [
+                    'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+                    'method'  => 'POST',
+                    'content' => http_build_query($data),
+                    'timeout' => 5,
+                    'ssl' => [
+                        'verify_peer' => false,
+                        'verify_peer_name' => false,
+                    ]
+                ]
+            ];
+            $context = stream_context_create($options);
+            $result = @file_get_contents($url, false, $context);
+        }
+
+        if ($result === false) {
+            throw new Exception("Unable to contact Cloudflare Turnstile verification service.");
+        }
+
+        $response = json_decode($result, true);
+        if (!$response || !isset($response['success']) || !$response['success']) {
+            throw new Exception("Cloudflare Turnstile verification failed. Please try again.");
+        }
+
+        return true;
+    }
+
     // Sanitize string data
     public static function sanitize($data) {
         if (is_array($data)) {

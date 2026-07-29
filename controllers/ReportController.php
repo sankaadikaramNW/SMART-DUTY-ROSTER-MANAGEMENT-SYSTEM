@@ -47,10 +47,7 @@ class ReportController {
 
             $db = Database::getInstance()->getConnection();
 
-            $sql = "SELECT a.*, rk.rank_name AS `rank`, p.initials, p.full_name, p.trade, s.shift_name, 
-                           TIME(a.duty_start_datetime) AS start_time, TIME(a.duty_end_datetime) AS end_time, 
-                           a.duty_duration_hours AS duration_hours,
-                           t.duty_type_name, t.color_code, t.icon_class, r.roster_name, c.camp_name
+            $sql = "SELECT a.*, rk.rank_name AS `rank`, p.initials, p.full_name, p.trade, s.shift_name, s.start_time, s.end_time, t.duty_type_name, t.color_code, t.icon_class, r.roster_name, c.camp_name
                     FROM duty_assignments a
                     JOIN duty_rosters r ON a.roster_id = r.roster_id
                     JOIN camps c ON r.camp_id = c.camp_id
@@ -79,7 +76,7 @@ class ReportController {
                 $params[':service_number'] = $serviceNumber;
             }
 
-            $sql .= " ORDER BY a.duty_date ASC, a.duty_start_datetime ASC";
+            $sql .= " ORDER BY a.duty_date ASC, s.start_time ASC";
 
             $stmt = $db->prepare($sql);
             $stmt->execute($params);

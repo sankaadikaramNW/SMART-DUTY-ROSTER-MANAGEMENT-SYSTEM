@@ -7,7 +7,7 @@
     <!-- Bootstrap 5 CSS -->
     <link href="<?= BASE_URL ?>/views/assets/vendor/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome 6 for Icons -->
-    <link href="<?= BASE_URL ?>/views/assets/vendor/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <style>
         body {
             background-color: white !important;
@@ -102,15 +102,7 @@
                                     </td>
                                     <td><span class="badge d-inline-flex align-items-center gap-1" style="background-color: <?= htmlspecialchars($row['color_code']) ?>; color: #fff; border: 1px solid rgba(0,0,0,0.15);"><i class="<?= htmlspecialchars($row['icon_class']) ?>"></i> <?= htmlspecialchars($row['duty_type_name']) ?></span></td>
                                     <td><?= htmlspecialchars($row['shift_name']) ?></td>
-                                     <td class="font-monospace small">
-                                          <?php if (date('Y-m-d', strtotime($row['duty_start_datetime'])) !== date('Y-m-d', strtotime($row['duty_end_datetime']))): ?>
-                                              <?= date('d-M H:i', strtotime($row['duty_start_datetime'])) ?> &rarr; 
-                                              <?= date('d-M H:i', strtotime($row['duty_end_datetime'])) ?>
-                                          <?php else: ?>
-                                              <?= date('H:i', strtotime($row['duty_start_datetime'])) ?> - <?= date('H:i', strtotime($row['duty_end_datetime'])) ?>
-                                          <?php endif; ?>
-                                          (<?= (float)$row['duration_hours'] ?> hrs)
-                                      </td>
+                                    <td class="font-monospace small"><?= htmlspecialchars(date('H:i', strtotime($row['start_time']))) ?> - <?= htmlspecialchars(date('H:i', strtotime($row['end_time']))) ?></td>
                                     <td><?= htmlspecialchars($row['priority_level']) ?></td>
                                 </tr>
                             <?php endforeach; ?>

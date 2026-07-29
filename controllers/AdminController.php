@@ -104,16 +104,17 @@ class AdminController {
 
             $shiftId = isset($_POST['shift_id']) && $_POST['shift_id'] !== '' ? (int)$_POST['shift_id'] : null;
             $shiftName = Security::sanitize($_POST['shift_name'] ?? '');
-            $shiftCode = Security::sanitize($_POST['shift_code'] ?? '');
+            $startTime = Security::sanitize($_POST['start_time'] ?? '');
+            $endTime = Security::sanitize($_POST['end_time'] ?? '');
+            $duration = (float)($_POST['duration_hours'] ?? 0.0);
             $description = Security::sanitize($_POST['description'] ?? null);
-            $displayOrder = isset($_POST['display_order']) && $_POST['display_order'] !== '' ? (int)$_POST['display_order'] : 0;
             $status = Security::sanitize($_POST['status'] ?? 'Active');
 
-            if (empty($shiftName) || empty($shiftCode)) {
-                throw new Exception("Shift name and shift code are required.");
+            if (empty($shiftName) || empty($startTime) || empty($endTime)) {
+                throw new Exception("Shift name and timings are required.");
             }
 
-            Shift::save($shiftId, $shiftName, $shiftCode, $description, $displayOrder, $status);
+            Shift::save($shiftId, $shiftName, $startTime, $endTime, $duration, $description, $status);
 
             Session::set('success_message', "Shift '$shiftName' saved successfully.");
             Response::redirect('/shifts');

@@ -6,8 +6,12 @@
 // Load Env helper manually to ensure compatibility with all entry points
 require_once dirname(__DIR__) . '/helpers/Env.php';
 
-// Load .env configuration file
-Env::load(dirname(__DIR__) . '/.env');
+// Load .env or env configuration file
+if (file_exists(dirname(__DIR__) . '/.env')) {
+    Env::load(dirname(__DIR__) . '/.env');
+} else {
+    Env::load(dirname(__DIR__) . '/env');
+}
 
 // Dynamically discover base URL as fallback
 $protocol = 'http://';
@@ -52,6 +56,10 @@ define('UPLOAD_PATH', Env::get('UPLOAD_PATH', 'uploads/'));
 
 // Log configuration
 define('LOG_LEVEL', Env::get('LOG_LEVEL', 'debug'));
+
+// Cloudflare Turnstile Keys
+define('TURNSTILE_SITE_KEY', Env::get('TURNSTILE_SITE_KEY'));
+define('TURNSTILE_SECRET_KEY', Env::get('TURNSTILE_SECRET_KEY'));
 
 // Set timezone from environment configuration
 date_default_timezone_set(Env::get('TIMEZONE', 'Asia/Colombo'));

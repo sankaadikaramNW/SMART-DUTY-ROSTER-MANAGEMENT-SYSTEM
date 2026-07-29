@@ -14,6 +14,15 @@ class RoleMiddleware {
         if ($route === '/audit-logs' && $roleName !== 'Super Admin') {
             throw new Exception("Unauthorized Access: System Audit Trail is reserved for Super Admin.");
         }
+
+        // Airman can only view their own profile
+        if ($route === '/personnel/view' && $roleName === 'Airman') {
+            $requestedServiceNum = isset($_GET['service_number']) ? trim(strtoupper($_GET['service_number'])) : '';
+            $userServiceNum = isset($serviceNum) ? trim(strtoupper($serviceNum)) : '';
+            if (empty($requestedServiceNum) || $requestedServiceNum !== $userServiceNum) {
+                throw new Exception("Unauthorized Access: Your account ($roleName) is only allowed to view your own profile.");
+            }
+        }
         
         // Define role permissions matrix
         $rolePermissions = [
@@ -55,7 +64,7 @@ class RoleMiddleware {
                 '/dashboard', '/logout',
                 '/personnel', '/personnel/view', '/personnel/search', '/personnel/history', '/personnel/add', '/personnel/edit', '/postings', '/postings/add',
                 '/transfers', '/transfers/view', '/transfers/create', '/transfers/edit', '/transfers/action', '/transfers/cancel',
-                '/rosters', '/rosters/create', '/rosters/save', '/rosters/view', '/rosters/calendar', '/rosters/calendar-data', '/rosters/timeline', '/rosters/conflict-check', '/rosters/action',
+                '/rosters', '/rosters/save', '/rosters/view', '/rosters/calendar-data', '/rosters/timeline', '/rosters/conflict-check', '/rosters/action',
                 '/rosters/bulk-approve', '/rosters/bulk-reject', '/rosters/crew-history', '/rosters/audit-print',
                 '/users', '/users/save', '/users/status', '/users/archive', '/users/restore',
                 '/reports', '/reports/generate', '/notifications', '/notifications/read',
@@ -72,8 +81,8 @@ class RoleMiddleware {
             ],
             'Airman' => [
                 '/dashboard', '/logout',
-                '/rosters', '/rosters/calendar', '/rosters/view', '/personnel/view',
-                '/rosters/calendar-data', '/rosters/timeline',
+                '/rosters', '/rosters/view', '/rosters/calendar', '/rosters/calendar-data', '/rosters/timeline',
+                '/personnel/view',
                 '/notifications', '/notifications/read',
                 '/leaves/calendar-data',
                 '/change-password', '/change-password/save', '/help'

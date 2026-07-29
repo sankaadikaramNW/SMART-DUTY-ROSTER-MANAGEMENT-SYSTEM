@@ -21,7 +21,7 @@ include __DIR__ . '/../../views/layout/header.php';
         <div class="glass-card p-3 border-start border-warning border-4 hover-lift">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
-                    <span class="text-secondary small fw-bold d-block text-uppercase">Pending Crews</span>
+                    <span class="text-secondary small fw-bold d-block text-uppercase">Pending Rosters</span>
                     <h3 class="fw-bold text-warning mb-0 mt-1"><?= $ocStats['pending_crews'] ?></h3>
                 </div>
                 <div class="fs-3 text-warning opacity-75"><i class="fas fa-clock-rotate-left"></i></div>
@@ -37,7 +37,7 @@ include __DIR__ . '/../../views/layout/header.php';
         <div class="glass-card p-3 border-start border-success border-4 hover-lift">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
-                    <span class="text-secondary small fw-bold d-block text-uppercase">Approved Crews</span>
+                    <span class="text-secondary small fw-bold d-block text-uppercase">Approved Rosters</span>
                     <h3 class="fw-bold text-success mb-0 mt-1"><?= $ocStats['approved_crews'] ?></h3>
                 </div>
                 <div class="fs-3 text-success opacity-75"><i class="fas fa-circle-check"></i></div>
@@ -51,7 +51,7 @@ include __DIR__ . '/../../views/layout/header.php';
         <div class="glass-card p-3 border-start border-danger border-4 hover-lift">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
-                    <span class="text-secondary small fw-bold d-block text-uppercase">Rejected Crews</span>
+                    <span class="text-secondary small fw-bold d-block text-uppercase">Rejected Rosters</span>
                     <h3 class="fw-bold text-danger mb-0 mt-1"><?= $ocStats['rejected_crews'] ?></h3>
                 </div>
                 <div class="fs-3 text-danger opacity-75"><i class="fas fa-circle-xmark"></i></div>
@@ -163,7 +163,7 @@ include __DIR__ . '/../../views/layout/header.php';
         <div class="modal-content glass-card text-dark">
             <div class="modal-header bg-primary bg-opacity-10 py-3 px-4">
                 <h5 class="modal-title fw-bold text-dark" id="ocCrewDetailsModalLabel">
-                    <i class="fas fa-shield-halved text-primary me-2"></i> Duty Crew Roster Details
+                    <i class="fas fa-shield-halved text-primary me-2"></i> Duty Roster Details
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -172,10 +172,10 @@ include __DIR__ . '/../../views/layout/header.php';
                 <div class="row g-3">
                     <!-- Column 1: Crew Details -->
                     <div class="col-md-6 border-end border-secondary border-opacity-10 pr-md-4">
-                        <h6 class="fw-bold text-primary mb-3"><i class="fas fa-circle-info"></i> Crew Watch Parameters</h6>
+                        <h6 class="fw-bold text-primary mb-3"><i class="fas fa-circle-info"></i> Roster Watch Parameters</h6>
                         <table class="table table-sm table-borderless small mb-0 align-middle text-dark">
                             <tr>
-                                <td class="text-secondary py-1" style="width: 38%;">Crew ID:</td>
+                                <td class="text-secondary py-1" style="width: 38%;">Roster ID:</td>
                                 <td class="fw-bold py-1 text-dark" id="mCrewId">-</td>
                             </tr>
                             <tr>
@@ -300,10 +300,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     allRawAssignments = data;
 
-                    // Group by roster_id | duty_date | shift_id | duty_type_id | timings
+                    // Group by roster_id | duty_date | shift_id | duty_type_id
                     const crews = {};
                     data.forEach(item => {
-                        const key = `${item.roster_id}-${item.duty_date}-${item.shift_id}-${item.duty_type_id}-${item.duty_start_datetime}-${item.duty_end_datetime}`;
+                        const key = `${item.roster_id}-${item.duty_date}-${item.shift_id}-${item.duty_type_id}`;
                         if (!crews[key]) {
                             crews[key] = {
                                 crew_id: key,
@@ -312,9 +312,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                 duty_date: item.duty_date,
                                 shift_id: item.shift_id,
                                 shift_name: item.shift_name,
-                                duty_start_datetime: item.duty_start_datetime,
-                                duty_end_datetime: item.duty_end_datetime,
-                                duty_duration_hours: item.duty_duration_hours,
                                 start_time: item.start_time,
                                 end_time: item.end_time,
                                 duty_type_id: item.duty_type_id,
@@ -353,15 +350,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             textColor = '#854d0e';
                         }
 
-                        // Calculate start and end datetime
-                        const startDatetime = crew.duty_start_datetime.replace(' ', 'T');
-                        const endDatetime = crew.duty_end_datetime.replace(' ', 'T');
-
                         return {
                             id: crew.crew_id,
                             title: `${crew.duty_type_name} (${crew.shift_name}) [${crew.personnel.length}]`,
-                            start: startDatetime,
-                            end: endDatetime,
+                            start: crew.duty_date,
                             backgroundColor: bgColor,
                             borderColor: borderColor,
                             textColor: textColor,
@@ -405,21 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('mCrewId').textContent = 'CREW-' + ev.crew_id;
             document.getElementById('mCrewDate').textContent = formatDateStr(ev.duty_date);
             document.getElementById('mCrewType').textContent = ev.duty_type_name;
-            
-            // Format timings, check if cross midnight
-            const startHour = ev.duty_start_datetime.substring(11, 16);
-            const endHour = ev.duty_end_datetime.substring(11, 16);
-            let shiftText = '';
-            if (ev.duty_start_datetime.substring(0, 10) !== ev.duty_end_datetime.substring(0, 10)) {
-                const nextDateFormatted = formatDateStr(ev.duty_end_datetime.substring(0, 10));
-                // Extract "Month Day" part from "Weekday, Month Day, Year"
-                const parts = nextDateFormatted.split(',');
-                const nextDateShort = parts.length > 1 ? parts[1].trim() : nextDateFormatted;
-                shiftText = `${ev.shift_name} (${startHour} hrs → ${nextDateShort} ${endHour} hrs)`;
-            } else {
-                shiftText = `${ev.shift_name} (${startHour} - ${endHour})`;
-            }
-            document.getElementById('mCrewShift').textContent = shiftText;
+            document.getElementById('mCrewShift').textContent = `${ev.shift_name} (${ev.start_time.substring(0,5)} - ${ev.end_time.substring(0,5)})`;
             document.getElementById('mCrewLocation').textContent = ev.camp_name;
             document.getElementById('mRosterName').textContent = ev.roster_name + ' (ID: #' + ev.roster_id + ')';
             

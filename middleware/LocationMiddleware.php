@@ -6,7 +6,7 @@
 
 class LocationMiddleware {
 
-    // Retrieve active camp constraint. Returns camp_id for SNCO and OCPROVST, null for Admin (allowing global view)
+    // Retrieve active camp constraint. Returns camp_id for SNCO, OCPROVST, Warrant Officer IC and Airman, null for Admin (allowing global view)
     public static function getCampConstraint() {
         $roleName = Session::get('role_name');
         if ($roleName === 'SNCO' || $roleName === 'OCPROVST' || $roleName === 'Warrant Officer IC' || $roleName === 'Airman') {

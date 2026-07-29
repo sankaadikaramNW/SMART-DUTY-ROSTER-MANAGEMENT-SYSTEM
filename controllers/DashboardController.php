@@ -90,6 +90,9 @@ class DashboardController {
             $pageTitle = 'Dashboard - Watch Calendar';
             include __DIR__ . '/../views/dashboard/index.php';
         } catch (Exception $e) {
+            if (Session::has('user_id')) {
+                throw $e;
+            }
             Session::set('error_message', $e->getMessage());
             Response::redirect('/login');
         }

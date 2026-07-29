@@ -6,7 +6,7 @@ include __DIR__ . '/../layout/header.php';
 <div class="row mb-4 align-items-center animate-fade-in">
     <div class="col-md-8 col-12">
         <h2 class="fw-bold mb-1 gradient-text"><i class="fas fa-stamp"></i> Roster Duty Approvals</h2>
-        <p class="text-secondary mb-0">Perform bulk roster reviews, inspect personnel warnings, and authorize guard duty rosters.</p>
+        <p class="text-secondary mb-0">Perform bulk crew reviews, inspect personnel warnings, and authorize guard duty rosters.</p>
     </div>
     <div class="col-md-4 col-12 text-md-end mt-2 mt-md-0">
         <a href="<?= BASE_URL ?>/rosters/calendar" class="btn btn-custom btn-custom-secondary btn-sm">
@@ -46,7 +46,7 @@ include __DIR__ . '/../layout/header.php';
         </div>
     </div>
 
-    <!-- ===== DUTY CREW GRID TABLE ===== -->
+    <!-- ===== DUTY ROSTER GRID TABLE ===== -->
     <div class="glass-card p-0 overflow-hidden animate-fade-in">
         <div class="table-custom-container">
             <table class="table-custom text-dark" style="font-size: 0.85rem;">
@@ -86,14 +86,7 @@ include __DIR__ . '/../layout/header.php';
                             <!-- Shift -->
                             <td>
                                 <span class="fw-semibold text-dark"><?= htmlspecialchars($crew['shift_name']) ?></span>
-                                <div class="text-secondary" style="font-size:0.72rem;">
-                                    <?php if (date('Y-m-d', strtotime($crew['duty_start_datetime'])) !== date('Y-m-d', strtotime($crew['duty_end_datetime']))): ?>
-                                        <?= date('d-M H:i', strtotime($crew['duty_start_datetime'])) ?> &rarr; 
-                                        <?= date('d-M H:i', strtotime($crew['duty_end_datetime'])) ?>
-                                    <?php else: ?>
-                                        <?= date('H:i', strtotime($crew['duty_start_datetime'])) ?> - <?= date('H:i', strtotime($crew['duty_end_datetime'])) ?>
-                                    <?php endif; ?>
-                                </div>
+                                <div class="text-secondary" style="font-size:0.72rem;"><?= substr($crew['start_time'], 0, 5) ?> - <?= substr($crew['end_time'], 0, 5) ?></div>
                             </td>
                             <!-- Duty Type -->
                             <td>

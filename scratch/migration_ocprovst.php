@@ -3,9 +3,9 @@
  * Database Migration Script for OCPROVST realignments
  */
 
-require_once 'c:/xampp/htdocs/SMART DUTY ROSTER MANAGEMENT SYSTEM/helpers/Env.php';
-require_once 'c:/xampp/htdocs/SMART DUTY ROSTER MANAGEMENT SYSTEM/config/config.php';
-require_once 'c:/xampp/htdocs/SMART DUTY ROSTER MANAGEMENT SYSTEM/config/database.php';
+require_once __DIR__ . '/../helpers/Env.php';
+require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../config/database.php';
 
 try {
     $db = Database::getInstance()->getConnection();
